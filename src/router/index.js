@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import ExampleModule from '../modules/example'
+import DashboardModule from '../modules/dashboard'
 
 const routes = [
-  { path: '/', redirect: '/example' },
-  ...ExampleModule.routes
+  { path: '/', redirect: '/dashboard' },
+  ...DashboardModule.routes
 ]
 
 const router = createRouter({
