@@ -39,7 +39,7 @@ jobs:
           path: dist
 
   deploy:
-    runs-on: [self-hosted, energi-fe]
+    runs-on: energi-fe
     needs: build
 
     permissions:
