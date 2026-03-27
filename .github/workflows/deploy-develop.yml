@@ -1,0 +1,105 @@
+name: Deploy Develop Frontend
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-develop-frontend
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend dist
+        run: npm run build
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist
+
+  deploy:
+    runs-on: [self-hosted, energi-fe]
+    needs: build
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist
+
+      - name: Prune old Podman images
+        run: podman image prune -f --filter until=24h
+
+      - name: Backup current Podman image or container
+        run: |
+          set -euo pipefail
+
+          backup_image='energi-fe:backup'
+
+          if podman ps -a --format '{{.Names}}' | grep -qx 'energi-fe-dev'; then
+            podman image exists "$backup_image" && podman rmi -f "$backup_image"
+            podman commit energi-fe-dev "$backup_image"
+          elif podman image exists 'energi-fe:dev'; then
+            podman image exists "$backup_image" && podman rmi -f "$backup_image"
+            podman tag 'energi-fe:dev' "$backup_image"
+          fi
+
+      - name: Build container image
+        run: podman build -f dockerfile.development -t energi-fe:dev .
+
+      - name: Run container
+        run: |
+          podman run -d \
+            --name energi-fe-dev \
+            -p 127.0.0.1:11001:10001 \
+            -e NODE_ENV=development \
+            -e PORT=10001 \
+            -e HOST=0.0.0.0 \
+            -e DIST_DIR=/app/dist \
+            energi-fe:dev
+
+      - name: Smoke test
+        run: |
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:11001/ >/dev/null; then
+              exit 0
+            fi
+
+            sleep 3
+          done
+
+          echo "Container did not become ready in time"
+          podman logs energi-fe-dev
+          exit 1
+
+      - name: Cleanup
+        if: always()
+        run: podman rm -f energi-fe-dev || true

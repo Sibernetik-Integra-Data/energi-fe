@@ -1,0 +1,8 @@
+**
+!package.json
+!package-lock.json
+!.env.development
+!server.js
+!dist/
+!dist/**
+!dockerfile.development
