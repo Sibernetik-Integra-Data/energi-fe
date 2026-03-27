@@ -101,5 +101,5 @@ jobs:
           exit 1
 
       - name: Cleanup
-        if: always()
+        if: failure()
         run: podman rm -f energi-fe-dev || true
