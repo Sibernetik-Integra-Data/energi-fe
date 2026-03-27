@@ -81,14 +81,9 @@ jobs:
             podman rm -f energi-fe-dev
           fi
 
-      - name: Stop existing host forwarder
-        run: |
-          if [[ -f forwarder.pid ]]; then
-            kill "$(cat forwarder.pid)" || true
-            rm -f forwarder.pid
+          if podman ps -a --format '{{.Names}}' | grep -qx 'energi-fe-forwarder'; then
+            podman rm -f energi-fe-forwarder
           fi
-
-          pkill -f 'scripts/start-port-forward.sh --listen-port 10001 --target-port 11001' || true
 
       - name: Run container
         run: |
@@ -101,21 +96,19 @@ jobs:
             -e DIST_DIR=/app/dist \
             energi-fe:dev
 
-      - name: Start host forwarder
+      - name: Start Node forwarder
         run: |
-          if ! command -v socat >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y socat
-          fi
-
-          nohup bash scripts/start-port-forward.sh \
-            --listen-host 0.0.0.0 \
-            --listen-port 10001 \
-            --target-host 127.0.0.1 \
-            --target-port 11001 \
-            > forwarder.log 2>&1 &
-
-          echo $! > forwarder.pid
+          podman run -d \
+            --name energi-fe-forwarder \
+            --network host \
+            -v "${{ github.workspace }}:/workspace" \
+            -w /workspace \
+            node:22-alpine \
+            node scripts/start-port-forward.js \
+              --listen-host 0.0.0.0 \
+              --listen-port 10001 \
+              --target-host 127.0.0.1 \
+              --target-port 11001
 
       - name: Smoke test
         run: |
@@ -141,10 +134,4 @@ jobs:
 
       - name: Cleanup
         if: failure()
-        run: |
-          if [[ -f forwarder.pid ]]; then
-            kill "$(cat forwarder.pid)" || true
-            rm -f forwarder.pid
-          fi
-
-          podman rm -f energi-fe-dev || true
+        run: podman rm -f energi-fe-forwarder energi-fe-dev || true
