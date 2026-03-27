@@ -75,6 +75,12 @@ jobs:
       - name: Build container image
         run: podman build -f dockerfile.development -t energi-fe:dev .
 
+      - name: Remove existing container
+        run: |
+          if podman ps -a --format '{{.Names}}' | grep -qx 'energi-fe-dev'; then
+            podman rm -f energi-fe-dev
+          fi
+
       - name: Run container
         run: |
           podman run -d \
