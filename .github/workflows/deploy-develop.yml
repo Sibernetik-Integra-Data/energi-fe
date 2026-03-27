@@ -79,7 +79,7 @@ jobs:
         run: |
           podman run -d \
             --name energi-fe-dev \
-            -p 127.0.0.1:11001:10001 \
+            -p 0.0.0.0:10001:10001 \
             -e NODE_ENV=development \
             -e PORT=10001 \
             -e HOST=0.0.0.0 \
