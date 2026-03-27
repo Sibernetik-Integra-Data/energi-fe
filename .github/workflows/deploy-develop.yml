@@ -81,34 +81,16 @@ jobs:
             podman rm -f energi-fe-dev
           fi
 
-          if podman ps -a --format '{{.Names}}' | grep -qx 'energi-fe-forwarder'; then
-            podman rm -f energi-fe-forwarder
-          fi
-
       - name: Run container
         run: |
           podman run -d \
             --name energi-fe-dev \
-            -p 127.0.0.1:11001:10001 \
+            -p 0.0.0.0:10001:10001 \
             -e NODE_ENV=development \
             -e PORT=10001 \
             -e HOST=0.0.0.0 \
             -e DIST_DIR=/app/dist \
             energi-fe:dev
-
-      - name: Start Node forwarder
-        run: |
-          podman run -d \
-            --name energi-fe-forwarder \
-            --network host \
-            -v "${{ github.workspace }}:/workspace" \
-            -w /workspace \
-            node:22-alpine \
-            node scripts/start-port-forward.js \
-              --listen-host 0.0.0.0 \
-              --listen-port 10001 \
-              --target-host 127.0.0.1 \
-              --target-port 11001
 
       - name: Smoke test
         run: |
@@ -134,4 +116,4 @@ jobs:
 
       - name: Cleanup
         if: failure()
-        run: podman rm -f energi-fe-forwarder energi-fe-dev || true
+        run: podman rm -f energi-fe-dev || true
