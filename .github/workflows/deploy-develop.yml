@@ -81,21 +81,54 @@ jobs:
             podman rm -f energi-fe-dev
           fi
 
+      - name: Stop existing host forwarder
+        run: |
+          if [[ -f forwarder.pid ]]; then
+            kill "$(cat forwarder.pid)" || true
+            rm -f forwarder.pid
+          fi
+
+          pkill -f 'scripts/start-port-forward.sh --listen-port 10001 --target-port 11001' || true
+
       - name: Run container
         run: |
           podman run -d \
             --name energi-fe-dev \
-            -p 0.0.0.0:10001:10001 \
+            -p 127.0.0.1:11001:10001 \
             -e NODE_ENV=development \
             -e PORT=10001 \
             -e HOST=0.0.0.0 \
             -e DIST_DIR=/app/dist \
             energi-fe:dev
 
+      - name: Start host forwarder
+        run: |
+          if ! command -v socat >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y socat
+          fi
+
+          nohup bash scripts/start-port-forward.sh \
+            --listen-host 0.0.0.0 \
+            --listen-port 10001 \
+            --target-host 127.0.0.1 \
+            --target-port 11001 \
+            > forwarder.log 2>&1 &
+
+          echo $! > forwarder.pid
+
       - name: Smoke test
         run: |
           for i in $(seq 1 20); do
-            if podman exec energi-fe-dev node -e 'const http = require("node:http"); const req = http.get("http://127.0.0.1:10001/", (res) => { res.resume(); res.statusCode < 400 ? process.exit(0) : process.exit(1); }); req.on("error", () => process.exit(1));' ; then
+            response="$(
+              {
+                exec 3<>/dev/tcp/127.0.0.1/10001
+                printf 'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3
+                head -n 1 <&3
+              } 2>/dev/null
+            )"
+
+            if [[ "$response" == HTTP/*200* ]]; then
               exit 0
             fi
 
@@ -108,4 +141,10 @@ jobs:
 
       - name: Cleanup
         if: failure()
-        run: podman rm -f energi-fe-dev || true
+        run: |
+          if [[ -f forwarder.pid ]]; then
+            kill "$(cat forwarder.pid)" || true
+            rm -f forwarder.pid
+          fi
+
+          podman rm -f energi-fe-dev || true
