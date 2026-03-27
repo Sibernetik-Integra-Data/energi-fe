@@ -89,7 +89,7 @@ jobs:
       - name: Smoke test
         run: |
           for i in $(seq 1 20); do
-            if curl -fsS http://127.0.0.1:11001/ >/dev/null; then
+            if podman exec energi-fe-dev node -e 'const http = require("node:http"); const req = http.get("http://127.0.0.1:10001/", (res) => { res.resume(); res.statusCode < 400 ? process.exit(0) : process.exit(1); }); req.on("error", () => process.exit(1));' ; then
               exit 0
             fi
 
