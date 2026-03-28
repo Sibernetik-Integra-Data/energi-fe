@@ -32,12 +32,6 @@ jobs:
       - name: Build frontend dist
         run: npm run build
 
-      - name: Upload dist artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-dist
-          path: dist
-
   deploy:
     runs-on: energi-fe
     needs: build
@@ -49,11 +43,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download dist artifact
-        uses: actions/download-artifact@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          name: frontend-dist
-          path: dist
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend dist
+        run: npm run build
 
       - name: Prune old Podman images
         run: podman image prune -f --filter until=24h
