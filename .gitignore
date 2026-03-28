@@ -136,3 +136,6 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Local Figma MCP config
+.mcp-figma/

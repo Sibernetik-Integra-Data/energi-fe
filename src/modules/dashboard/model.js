@@ -1,13 +1,7 @@
+import { navigation as sharedNavigation } from '../shared/navigation'
+
 export function createDashboardModel() {
-  const navigation = [
-    { label: 'Dashboard', icon: 'dashboard', active: true },
-    { label: 'Sensus', icon: 'sensus' },
-    { label: 'Pembersihan', icon: 'cleaning' },
-    { label: 'Pemupukan', icon: 'fertilize' },
-    { label: 'Panen', icon: 'harvest' },
-    { label: 'Notifications', icon: 'notifications', badge: '5' },
-    { label: 'Settings', icon: 'settings' }
-  ]
+  const navigation = sharedNavigation.map((i) => ({ ...i }))
 
   const header = {
     title: 'Dashboard',
