@@ -57,18 +57,28 @@ jobs:
       - name: Prune old Podman images
         run: podman image prune -f --filter until=24h
 
-      - name: Backup current Podman image or container
+      - name: Backup current Podman container
         run: |
           set -euo pipefail
 
-          backup_image='energi-fe:backup'
+          backup_container='energi-fe-dev-backup'
 
-          if podman ps -a --format '{{.Names}}' | grep -qx 'energi-fe-dev'; then
-            podman image exists "$backup_image" && podman rmi -f "$backup_image"
-            podman commit energi-fe-dev "$backup_image"
-          elif podman image exists 'energi-fe:dev'; then
-            podman image exists "$backup_image" && podman rmi -f "$backup_image"
-            podman tag 'energi-fe:dev' "$backup_image"
+          if podman container exists 'energi-fe-dev'; then
+            if podman container exists "$backup_container"; then
+              echo "Removing existing backup container $backup_container before creating a fresh one"
+              podman rm -f "$backup_container" || true
+            fi
+
+            echo "Creating backup container $backup_container from current image"
+            current_image_id=$(podman inspect --format '{{.Image}}' energi-fe-dev 2>/dev/null || true)
+            if [ -n "$current_image_id" ]; then
+              podman create --name "$backup_container" "$current_image_id" || true
+              echo "Backup created: $backup_container (status should be 'Created')"
+            else
+              echo "Unable to determine current image id for energi-fe-dev; skipping backup creation"
+            fi
+          else
+            echo "No existing container to backup."
           fi
 
       - name: Build container image
