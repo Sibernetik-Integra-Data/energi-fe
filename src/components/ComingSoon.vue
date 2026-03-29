@@ -26,10 +26,51 @@ const user = { name: 'User Name', role: 'Role Title', initials: 'UN' }
 </script>
 
 <style scoped>
-.coming-soon-shell { display:flex; min-height:100vh }
-.coming-soon-main { flex:1; display:flex; flex-direction:column }
-.coming-soon-content { padding:24px }
-.coming-soon-card { max-width:760px; width:100%; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:28px }
-.coming-soon-card h2 { margin:0 0 8px; font-size:22px }
-.coming-soon-card .muted { color:var(--text-muted); margin-bottom:12px }
+.coming-soon-shell {
+  min-height: 100vh;
+  display: flex;
+  background: transparent;
+}
+
+.coming-soon-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.coming-soon-content {
+  flex: 1;
+  min-width: 0;
+  padding: 24px;
+}
+
+.coming-soon-card {
+  max-width: 760px;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+}
+
+.coming-soon-card h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+}
+
+.coming-soon-card .muted {
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+@media (max-width: 920px) {
+  .coming-soon-shell {
+    flex-direction: column;
+  }
+
+  .coming-soon-content {
+    padding: 18px;
+  }
+}
 </style>

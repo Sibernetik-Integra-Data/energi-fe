@@ -24,7 +24,32 @@ const list = computed(() => props.controller.getList())
 </script>
 
 <style scoped>
-.sensus-shell { display:flex; min-height:100vh }
-.sensus-main { flex:1; display:flex; flex-direction:column }
-.sensus-content { padding:24px }
+.sensus-shell {
+  min-height: 100vh;
+  display: flex;
+  background: transparent;
+}
+
+.sensus-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sensus-content {
+  flex: 1;
+  min-width: 0;
+  padding: 24px;
+}
+
+@media (max-width: 920px) {
+  .sensus-shell {
+    flex-direction: column;
+  }
+
+  .sensus-content {
+    padding: 18px;
+  }
+}
 </style>

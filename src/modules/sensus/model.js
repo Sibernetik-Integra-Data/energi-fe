@@ -1,7 +1,10 @@
 import { navigation as sharedNavigation } from '../shared/navigation'
 
 export function createSensusModel() {
-  const navigation = sharedNavigation.map((i) => ({ ...i, active: i.to === '/sensus' }))
+  const navigation = sharedNavigation.map((item) => ({
+    ...item,
+    active: item.to === '/sensus'
+  }))
 
   const header = { title: 'Sensus', notifications: 0, user: { name: 'Kepala Kebun', role: 'Manager', initials: 'KK' } }
 
