@@ -7,7 +7,8 @@
         eyebrow="Dashboard"
         :title="header.title"
         :notifications="header.notifications"
-        :user="header.user"
+        :user="user"
+        :on-logout="logoutFromKeycloak"
       />
 
       <main class="dashboard-content">
@@ -44,6 +45,8 @@ import DashboardMetricCard from './components/DashboardMetricCard.vue'
 import BaseSidebar from '../shared/sidebar'
 import PendingVerificationsSection from './components/PendingVerificationsSection.vue'
 import RecentVerifiedSection from './components/RecentVerifiedSection.vue'
+import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
+import { useAppStore } from '../../stores'
 
 const props = defineProps({
   controller: {
@@ -52,12 +55,15 @@ const props = defineProps({
   }
 })
 
+const appStore = useAppStore()
+
 const navigation = computed(() => props.controller.getNavigation())
 const header = computed(() => props.controller.getHeader())
 const intro = computed(() => props.controller.getIntro())
 const pendingVerification = computed(() => props.controller.getPendingVerification())
 const recentVerified = computed(() => props.controller.getRecentVerified())
 const metrics = computed(() => props.controller.getMetrics())
+const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 </script>
 
 <style scoped>

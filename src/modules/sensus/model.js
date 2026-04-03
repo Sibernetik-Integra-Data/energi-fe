@@ -1,3 +1,4 @@
+import { getAuthenticatedUser } from '../../auth/keycloak'
 import { navigation as sharedNavigation } from '../shared/navigation'
 
 export function createSensusModel() {
@@ -6,7 +7,7 @@ export function createSensusModel() {
     active: item.to === '/sensus'
   }))
 
-  const header = { title: 'Sensus', notifications: 0, user: { name: 'Kepala Kebun', role: 'Manager', initials: 'KK' } }
+  const header = { title: 'Sensus', notifications: 0 }
 
   const list = {
     title: 'Daftar Sensus',
@@ -24,7 +25,7 @@ export function createSensusModel() {
 
   return {
     getNavigation() { return navigation.map(i => ({ ...i })) },
-    getHeader() { return { ...header, notifications: list.rows.filter(r => r.status==='Open').length, user: { ...header.user } } },
+    getHeader() { return { ...header, notifications: list.rows.filter(r => r.status==='Open').length, user: { ...getAuthenticatedUser() } } },
     getList() { return { ...list, rows: list.rows.map(r => ({ ...r })) } },
     getStats() { return { ...stats } }
   }

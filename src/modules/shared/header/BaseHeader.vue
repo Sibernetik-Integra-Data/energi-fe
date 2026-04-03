@@ -15,24 +15,36 @@
 
       <span class="header__divider" aria-hidden="true"></span>
 
-      <div class="header__user">
-        <div class="header__avatar">{{ user.initials }}</div>
-        <div class="header__user-copy">
-          <strong>{{ user.name }}</strong>
-          <span>{{ user.role }}</span>
-        </div>
-        <button class="header__chevron" type="button" aria-label="Open user menu">
-          <BaseIcon name="chevron-down" size="14" />
+      <div ref="userMenuRef" class="header__user-menu" :class="{ 'is-open': isUserMenuOpen }">
+        <button class="header__user-trigger" type="button" @click="toggleUserMenu" :aria-expanded="isUserMenuOpen" aria-haspopup="menu">
+          <div class="header__avatar">{{ user.initials }}</div>
+          <div class="header__user-copy">
+            <strong>{{ user.name }}</strong>
+            <span v-if="user.jobs">{{ user.jobs }}</span>
+          </div>
+          <span class="header__user-chevron">
+            <BaseIcon name="chevron-down" :size="14" />
+          </span>
         </button>
+
+        <div v-if="isUserMenuOpen" class="header__user-menu-panel" role="menu" aria-label="User actions">
+          <button v-if="onLogout" class="header__user-menu-item" type="button" role="menuitem" @click="handleLogout">
+            <span class="header__user-menu-item-icon">
+              <BaseIcon name="logout" :size="16" />
+            </span>
+            Logout
+          </button>
+        </div>
       </div>
     </div>
   </header>
 </template>
 
 <script setup>
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import BaseIcon from '../icon'
 
-defineProps({
+const props = defineProps({
   eyebrow: {
     type: String,
     default: 'Dashboard'
@@ -48,7 +60,45 @@ defineProps({
   user: {
     type: Object,
     required: true
+  },
+  onLogout: {
+    type: Function,
+    default: null
   }
+})
+
+const isUserMenuOpen = ref(false)
+const userMenuRef = ref(null)
+
+function closeUserMenu() {
+  isUserMenuOpen.value = false
+}
+
+function toggleUserMenu() {
+  isUserMenuOpen.value = !isUserMenuOpen.value
+}
+
+function handleLogout() {
+  closeUserMenu()
+  if (typeof props.onLogout === 'function') {
+    void props.onLogout()
+  }
+}
+
+function handleDocumentClick(event) {
+  if (!isUserMenuOpen.value) return
+  const menu = userMenuRef.value
+  if (menu && !menu.contains(event.target)) {
+    closeUserMenu()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleDocumentClick)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleDocumentClick)
 })
 </script>
 
@@ -131,9 +181,31 @@ defineProps({
 }
 
 .header__user {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.header__user-menu {
+  position: relative;
+}
+
+.header__user-trigger {
+  appearance: none;
+  border: 0;
+  background: transparent;
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 4px 6px;
+  border-radius: 14px;
+  cursor: pointer;
+  color: inherit;
+}
+
+.header__user-trigger:hover,
+.header__user-menu.is-open .header__user-trigger {
+  background: var(--surface-muted);
 }
 
 .header__avatar {
@@ -152,8 +224,8 @@ defineProps({
 .header__user-copy {
   display: grid;
   gap: 1px;
-  justify-items: center;
-  text-align: center;
+  justify-items: start;
+  text-align: left;
 }
 
 .header__user-copy strong {
@@ -168,22 +240,51 @@ defineProps({
   color: var(--text-muted);
 }
 
-.header__chevron {
+.header__user-chevron {
+  display: inline-grid;
+  place-items: center;
+  color: var(--text-muted);
+}
+
+.header__user-menu-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  z-index: 20;
+}
+
+.header__user-menu-item {
+  width: 100%;
   appearance: none;
   border: 0;
   background: transparent;
-  padding: 0;
-  margin-left: 2px;
-  width: 14px;
-  height: 14px;
   color: var(--text);
-  display: inline-grid;
-  place-items: center;
+  border-radius: 12px;
+  height: 38px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
 }
 
-.header__chevron svg {
-  stroke-width: 1.9;
+.header__user-menu-item:hover {
+  background: var(--surface-muted);
+}
+
+.header__user-menu-item-icon {
+  display: inline-grid;
+  place-items: center;
+  color: var(--text-muted);
 }
 
 @media (max-width: 720px) {
@@ -197,6 +298,10 @@ defineProps({
   .header__actions {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .header__user {
+    margin-left: auto;
   }
 }
 </style>

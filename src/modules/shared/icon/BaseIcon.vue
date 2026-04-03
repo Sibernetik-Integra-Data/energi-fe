@@ -83,6 +83,12 @@
       <path d="M5.75 8.5L10 12.5L14.25 8.5" />
     </template>
 
+    <template v-else-if="name === 'logout'">
+      <path d="M9.2 4.8H6.8C6.14 4.8 5.6 5.34 5.6 6V14C5.6 14.66 6.14 15.2 6.8 15.2H9.2" />
+      <path d="M11 7.4L14.4 10L11 12.6" />
+      <path d="M14.2 10H8.4" />
+    </template>
+
     <template v-else-if="name === 'sidebar-collapse'">
       <path d="M12.8 5.5H15.2C15.87 5.5 16.4 6.03 16.4 6.7V13.3C16.4 13.97 15.87 14.5 15.2 14.5H12.8" />
       <path d="M8.2 6.5L4.8 10L8.2 13.5" />

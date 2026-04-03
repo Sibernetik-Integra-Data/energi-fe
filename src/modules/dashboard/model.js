@@ -1,3 +1,4 @@
+import { getAuthenticatedUser } from '../../auth/keycloak'
 import { navigation as sharedNavigation } from '../shared/navigation'
 
 export function createDashboardModel() {
@@ -5,12 +6,7 @@ export function createDashboardModel() {
 
   const header = {
     title: 'Dashboard',
-    notifications: 5,
-    user: {
-      name: 'Kepala Kebun',
-      role: 'Pusat kendali aktivitas',
-      initials: 'KK'
-    }
+    notifications: 5
   }
 
   const intro = {
@@ -147,7 +143,7 @@ export function createDashboardModel() {
       return navigation.map((item) => ({ ...item }))
     },
     getHeader() {
-      return { ...header, user: { ...header.user } }
+      return { ...header, user: { ...getAuthenticatedUser() } }
     },
     getIntro() {
       return { ...intro }

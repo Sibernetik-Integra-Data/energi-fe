@@ -2,7 +2,7 @@
   <div class="coming-soon-shell">
     <BaseSidebar :items="navigation" />
     <div class="coming-soon-main">
-      <BaseHeader :title="title" eyebrow="" :notifications="0" :user="user" />
+      <BaseHeader :title="title" eyebrow="" :notifications="0" :user="user" :on-logout="logoutFromKeycloak" />
       <main class="coming-soon-content">
         <div class="coming-soon-card">
           <h2>{{ title }}</h2>
@@ -15,14 +15,18 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import BaseSidebar from '../modules/shared/sidebar'
 import BaseHeader from '../modules/shared/header'
 import { navigation as defaultNavigation } from '../modules/shared/navigation'
+import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../auth/keycloak'
+import { useAppStore } from '../stores'
 
 const props = defineProps({ title: { type: String, default: 'Coming Soon' } })
 
 const navigation = defaultNavigation
-const user = { name: 'User Name', role: 'Role Title', initials: 'UN' }
+const appStore = useAppStore()
+const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 </script>
 
 <style scoped>
