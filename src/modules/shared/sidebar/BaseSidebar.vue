@@ -26,9 +26,9 @@
         :key="item.label"
         type="button"
         class="sidebar__item"
-        :class="{ 'sidebar__item--active': isActive(item) }"
+        :class="{ 'sidebar__item--active': item.active }"
         :title="isCollapsed ? item.label : ''"
-        @click="onClick(item)"
+        @click="onNavigate(item)"
       >
         <span class="sidebar__icon">
           <BaseIcon :name="item.icon" />
@@ -42,27 +42,16 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import BaseIcon from '../icon'
-import { useRouter, useRoute } from 'vue-router'
 
 const isCollapsed = ref(false)
-
 const router = useRouter()
-const route = useRoute()
 
-function onClick(item) {
-  if (item && item.to) {
+function onNavigate(item) {
+  if (item?.to) {
     router.push(item.to)
   }
-}
-
-function isActive(item) {
-  if (item && item.to) {
-    // Consider exact match or nested routes (e.g. /sensus/detail)
-    const itemPath = item.to
-    return route.path === itemPath || route.path.startsWith(itemPath + '/')
-  }
-  return !!(item && item.active)
 }
 
 defineProps({
