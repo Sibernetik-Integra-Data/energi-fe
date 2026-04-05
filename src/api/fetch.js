@@ -1,3 +1,5 @@
+import CryptoJS from 'crypto-js'
+
 const API_PREFIX = import.meta.env.VITE_API_PREFIX || ''
 const SIGNING_SECRET = import.meta.env.VITE_SIGNING_SECRET || ''
 const ACCESS_TOKEN_KEY = 'energi.access_token'
@@ -15,6 +17,10 @@ function base64UrlEncode(bytes) {
     binary += String.fromCodePoint(byte)
   }
   return globalThis.btoa(binary).replaceAll('=', '').replaceAll('+', '-').replaceAll('/', '_')
+}
+
+function base64ToBase64Url(base64Value) {
+  return base64Value.replaceAll('=', '').replaceAll('+', '-').replaceAll('/', '_')
 }
 
 function makeSigningString(method, url, timestamp, uuid) {
@@ -43,24 +49,38 @@ export async function createSignature(url, method, timestamp = Date.now()) {
     throw new Error('VITE_SIGNING_SECRET is not configured')
   }
 
-  if (!signingKeyPromise) {
-    signingKeyPromise = globalThis.crypto.subtle.importKey(
-      'raw',
-      textEncoder.encode(SIGNING_SECRET),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign']
-    )
+  const cryptoSubtle = globalThis.crypto?.subtle
+  const canUseWebCrypto = Boolean(cryptoSubtle?.importKey && cryptoSubtle?.sign)
+
+  if (canUseWebCrypto) {
+    if (!signingKeyPromise) {
+      signingKeyPromise = cryptoSubtle.importKey(
+        'raw',
+        textEncoder.encode(SIGNING_SECRET),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      )
+    }
+
+    const uuid = typeof globalThis.crypto.randomUUID === 'function'
+      ? globalThis.crypto.randomUUID()
+      : `${timestamp}-${Math.random().toString(16).slice(2)}`
+    const signingString = makeSigningString(method, url, timestamp, uuid)
+    const key = await signingKeyPromise
+    const signatureBuffer = await cryptoSubtle.sign('HMAC', key, textEncoder.encode(signingString))
+    const signatureBytes = new Uint8Array(signatureBuffer)
+    const signature = base64UrlEncode(signatureBytes)
+
+    return { signature, timestamp, uuid }
   }
 
-  const uuid = typeof globalThis.crypto.randomUUID === 'function'
+  const uuid = typeof globalThis.crypto?.randomUUID === 'function'
     ? globalThis.crypto.randomUUID()
     : `${timestamp}-${Math.random().toString(16).slice(2)}`
   const signingString = makeSigningString(method, url, timestamp, uuid)
-  const key = await signingKeyPromise
-  const signatureBuffer = await globalThis.crypto.subtle.sign('HMAC', key, textEncoder.encode(signingString))
-  const signatureBytes = new Uint8Array(signatureBuffer)
-  const signature = base64UrlEncode(signatureBytes)
+  const signatureValue = CryptoJS.HmacSHA256(signingString, SIGNING_SECRET).toString(CryptoJS.enc.Base64)
+  const signature = base64ToBase64Url(signatureValue)
 
   return { signature, timestamp, uuid }
 }
