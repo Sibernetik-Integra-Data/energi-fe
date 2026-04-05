@@ -30,7 +30,9 @@ jobs:
         run: npm ci
 
       - name: Build frontend dist
-        run: npm run build
+        run: |
+          rm -rf dist
+          npm run build
 
   deploy:
     runs-on: energi-fe
@@ -52,7 +54,9 @@ jobs:
         run: npm ci
 
       - name: Build frontend dist
-        run: npm run build
+        run: |
+          rm -rf dist
+          npm run build
 
       - name: Prune old Podman images
         run: podman image prune -f --filter until=24h
