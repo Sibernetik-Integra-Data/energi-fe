@@ -31,7 +31,7 @@ const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedU
 
 <style scoped>
 .coming-soon-shell {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   background: transparent;
 }
@@ -41,6 +41,7 @@ const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedU
   min-width: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .coming-soon-content {

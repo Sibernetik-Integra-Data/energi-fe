@@ -114,6 +114,14 @@
       <path d="M7.8 10H15.2" />
     </template>
 
+    <template v-else-if="name === 'chevron-left'">
+      <path d="M12.5 5.5L7.5 10L12.5 14.5" />
+    </template>
+
+    <template v-else-if="name === 'chevron-right'">
+      <path d="M7.5 5.5L12.5 10L7.5 14.5" />
+    </template>
+
     <template v-else>
       <circle cx="10" cy="10" r="6" />
     </template>
