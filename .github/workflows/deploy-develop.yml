@@ -35,7 +35,7 @@ jobs:
           npm run build -- --mode development
 
   deploy:
-    runs-on: colo-energi-fe
+    runs-on: energi-fe
     needs: build
 
     permissions:
