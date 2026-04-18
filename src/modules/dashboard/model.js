@@ -1,8 +1,15 @@
 import { getAuthenticatedUser } from '../../auth/keycloak'
 import { navigation as sharedNavigation } from '../shared/navigation'
 
+function cloneNavigation(items) {
+  return items.map((item) => ({
+    ...item,
+    children: Array.isArray(item.children) ? cloneNavigation(item.children) : undefined
+  }))
+}
+
 export function createDashboardModel() {
-  const navigation = sharedNavigation.map((i) => ({ ...i }))
+  const navigation = cloneNavigation(sharedNavigation)
 
   const header = {
     title: 'Dashboard',
@@ -140,7 +147,7 @@ export function createDashboardModel() {
 
   return {
     getNavigation() {
-      return navigation.map((item) => ({ ...item }))
+      return cloneNavigation(navigation)
     },
     getHeader() {
       return { ...header, user: { ...getAuthenticatedUser() } }

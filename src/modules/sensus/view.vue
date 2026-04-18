@@ -1,6 +1,6 @@
 <template>
   <div class="sensus-shell">
-    <BaseSidebar :items="navigation" />
+    <BaseSidebar :items="navigation" :user="user" />
     <div class="sensus-main">
       <BaseHeader
         eyebrow="Sensus"

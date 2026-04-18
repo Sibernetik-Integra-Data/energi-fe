@@ -21,19 +21,34 @@ const routes = [
   }))
 ]
 
+function collectNavigationRoutes(items) {
+  const collected = []
+
+  items.forEach((item) => {
+    if (item?.to) {
+      collected.push({ path: item.to, name: item.label })
+    }
+
+    if (Array.isArray(item?.children) && item.children.length > 0) {
+      collected.push(...collectNavigationRoutes(item.children))
+    }
+  })
+
+  return collected
+}
+
 // Add placeholder routes for navigation items without modules
 const existingPaths = new Set(routes.map(r => r.path))
-navigation.forEach(item => {
-  if (!item.to) return
-  if (!existingPaths.has(item.to)) {
+collectNavigationRoutes(navigation).forEach((item) => {
+  if (!existingPaths.has(item.path)) {
     routes.push({
-      path: item.to,
-      name: item.label,
+      path: item.path,
+      name: item.name,
       component: ComingSoon,
-      props: { title: item.label },
+      props: { title: item.name },
       meta: { requiresAuth: true }
     })
-    existingPaths.add(item.to)
+    existingPaths.add(item.path)
   }
 })
 

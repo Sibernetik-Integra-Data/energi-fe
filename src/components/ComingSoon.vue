@@ -1,6 +1,6 @@
 <template>
   <div class="coming-soon-shell">
-    <BaseSidebar :items="navigation" />
+    <BaseSidebar :items="navigation" :user="user" />
     <div class="coming-soon-main">
       <BaseHeader :title="title" eyebrow="" :notifications="0" :user="user" :on-logout="logoutFromKeycloak" />
       <main class="coming-soon-content">

@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard-shell">
-    <BaseSidebar :items="navigation" />
+    <BaseSidebar :items="navigation" :user="user" />
 
     <div class="dashboard-main">
       <BaseHeader

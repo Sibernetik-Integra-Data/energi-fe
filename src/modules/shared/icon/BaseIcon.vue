@@ -54,6 +54,19 @@
       <circle cx="10" cy="9" r="1.9" />
     </template>
 
+    <template v-else-if="name === 'database'">
+      <ellipse cx="10" cy="6.2" rx="4.8" ry="2.2" />
+      <path d="M5.2 6.2V10.8C5.2 12 7.3 13.1 10 13.1C12.7 13.1 14.8 12 14.8 10.8V6.2" />
+      <path d="M5.2 10.8V15.4C5.2 16.6 7.3 17.7 10 17.7C12.7 17.7 14.8 16.6 14.8 15.4V10.8" />
+    </template>
+
+    <template v-else-if="name === 'users'">
+      <circle cx="7.5" cy="7" r="2.1" />
+      <circle cx="12.8" cy="8" r="1.7" />
+      <path d="M4.8 14.3C4.8 12.3 6.4 10.7 8.4 10.7C10.4 10.7 12 12.3 12 14.3" />
+      <path d="M10.7 14.1C10.9 12.8 11.9 11.7 13.3 11.7C14.7 11.7 15.8 12.8 15.8 14.1" />
+    </template>
+
     <template v-else-if="name === 'logo'">
       <path d="M10 4.8V14.2" stroke="#fff" />
       <path d="M10 10.2C10 8.2 11.6 6.6 13.6 6.6C12.9 8.7 11.5 9.8 10 10.2Z" stroke="#fff" />
