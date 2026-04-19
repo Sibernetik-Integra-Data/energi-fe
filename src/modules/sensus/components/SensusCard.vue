@@ -1,7 +1,7 @@
 <template>
-  <div class="sensus-card">
-    <div class="title">{{ title }}</div>
-    <div class="value">{{ value }}</div>
+  <div class="bg-white py-3 px-4 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.04)] min-w-35">
+    <div class="text-xs text-(--text-muted) mb-1.5">{{ title }}</div>
+    <div class="text-xl font-bold">{{ value }}</div>
   </div>
 </template>
 
@@ -11,9 +11,3 @@ const props = defineProps({
   value: { type: [String, Number], default: '' }
 })
 </script>
-
-<style scoped>
-.sensus-card { background:#fff; padding:12px 16px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.04); min-width:140px }
-.sensus-card .title { font-size:12px; color:var(--text-muted); margin-bottom:6px }
-.sensus-card .value { font-size:20px; font-weight:700 }
-</style>

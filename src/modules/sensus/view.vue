@@ -1,7 +1,7 @@
 <template>
-  <div class="sensus-shell">
+  <div class="h-screen flex bg-transparent max-[920px]:flex-col">
     <BaseSidebar :items="navigation" :user="user" />
-    <div class="sensus-main">
+    <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
       <BaseHeader
         eyebrow="Sensus"
         :title="header.title"
@@ -9,15 +9,15 @@
         :user="user"
         :on-logout="logoutFromKeycloak"
       />
-      <main class="sensus-content">
-        <SensusList :rows="list.rows" :title="list.title" :subtitle="list.subtitle" />
+      <main class="flex-1 min-w-0 p-6 max-[920px]:p-4.5">
+        <SensusList :rows="rows" :title="list.title" :subtitle="list.subtitle" :loading="loading" :error="fetchError" />
       </main>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import BaseHeader from '../shared/header'
 import BaseSidebar from '../shared/sidebar'
 import SensusList from './components/SensusList.vue'
@@ -32,36 +32,21 @@ const navigation = computed(() => props.controller.getNavigation())
 const header = computed(() => props.controller.getHeader())
 const list = computed(() => props.controller.getList())
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
+
+const rows = ref([])
+const loading = ref(false)
+const fetchError = ref(null)
+
+onMounted(async () => {
+  loading.value = true
+  fetchError.value = null
+  try {
+    rows.value = await props.controller.loadRows()
+  } catch (err) {
+    console.error('[Sensus] Failed to load rows:', err)
+    fetchError.value = err?.message || 'Gagal memuat data sensus.'
+  } finally {
+    loading.value = false
+  }
+})
 </script>
-
-<style scoped>
-.sensus-shell {
-  height: 100vh;
-  display: flex;
-  background: transparent;
-}
-
-.sensus-main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.sensus-content {
-  flex: 1;
-  min-width: 0;
-  padding: 24px;
-}
-
-@media (max-width: 920px) {
-  .sensus-shell {
-    flex-direction: column;
-  }
-
-  .sensus-content {
-    padding: 18px;
-  }
-}
-</style>

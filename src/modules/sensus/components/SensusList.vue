@@ -1,76 +1,107 @@
 <template>
-  <div class="sensus-list">
-    <div class="sensus-header">
+  <div>
+    <!-- Title + Tabs (space-between) -->
+    <div class="flex justify-between items-center gap-4 mb-3">
       <div>
-        <h2>{{ title }}</h2>
-        <p class="muted">{{ subtitle }}</p>
+        <h2 class="text-2xl font-extrabold tracking-tight text-(--text) m-0 mb-1.5">{{ title }}</h2>
+        <p class="text-sm text-(--text-muted) m-0">{{ subtitle }}</p>
       </div>
-        <div class="tabs" role="tablist" aria-label="Sensus filters">
-          <button class="tab active" role="tab" aria-selected="true">All Reports ({{ rows.length }})</button>
-          <button class="tab" role="tab">Open ({{ rows.filter(r=>r.status==='Open').length }})</button>
-          <button class="tab" role="tab">Verified ({{ rows.filter(r=>r.status==='Verified').length }})</button>
-        </div>
+      <div class="flex gap-2 bg-gray-100 p-1.5 rounded-full items-center shrink-0" role="tablist" aria-label="Sensus filters">
+        <button
+          class="bg-white text-(--text) shadow-sm border border-black/5 py-2 px-3.5 rounded-full text-sm font-semibold cursor-pointer"
+          role="tab" aria-selected="true"
+        >All Reports ({{ rows.length }})</button>
+        <button
+          class="bg-transparent border-0 py-2 px-3.5 rounded-full text-(--text-muted) text-sm font-semibold cursor-pointer hover:text-(--text) transition-colors"
+          role="tab"
+        >Open ({{ rows.filter(r => r.status === 'Open').length }})</button>
+        <button
+          class="bg-transparent border-0 py-2 px-3.5 rounded-full text-(--text-muted) text-sm font-semibold cursor-pointer hover:text-(--text) transition-colors"
+          role="tab"
+        >Verified ({{ rows.filter(r => r.status === 'Verified').length }})</button>
+      </div>
     </div>
 
-    <div class="table-wrap">
-      <table class="sensus-table">
+    <!-- Loading state -->
+    <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">
+      Memuat data&hellip;
+    </div>
+
+    <!-- Error state -->
+    <div v-else-if="error" class="flex justify-center items-center py-16 text-sm text-red-600">
+      {{ error }}
+    </div>
+
+    <!-- Table desktop -->
+    <template v-else>
+    <div class="bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm max-[920px]:hidden">
+      <table class="w-full border-collapse">
         <thead>
-          <tr>
-            <th>SENSUS ID</th>
-            <th>REPORTER</th>
-            <th>DATE & TIME</th>
-            <th>JOB TYPES</th>
-            <th>STATUS</th>
-            <th>ACTION</th>
+          <tr class="border-b border-slate-100 bg-slate-50">
+            <th class="text-left text-xs font-extrabold text-slate-500 py-4 px-6 uppercase tracking-widest">SENSUS ID</th>
+            <th class="text-left text-xs font-extrabold text-slate-500 py-4 px-6 uppercase tracking-widest">REPORTER</th>
+            <th class="text-left text-xs font-extrabold text-slate-500 py-4 px-6 uppercase tracking-widest">DATE & TIME</th>
+            <th class="text-left text-xs font-extrabold text-slate-500 py-4 px-6 uppercase tracking-widest">JOB TYPES</th>
+            <th class="text-left text-xs font-extrabold text-slate-500 py-4 px-6 uppercase tracking-widest">STATUS</th>
+            <th class="text-left text-xs font-extrabold text-slate-500 py-4 px-6 uppercase tracking-widest">ACTION</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in rows" :key="row.id">
-            <td class="sensus-id">{{ row.id }}</td>
-            <td>{{ row.worker }}</td>
-            <td class="meta-line--date">{{ row.date }}, {{ row.time }}</td>
-            <td>
-              <div class="job-chips">
-                <span v-for="(j,idx) in row.jobTypes" :key="idx" class="chip">{{ j }}</span>
+          <tr
+            v-for="row in rows" :key="row.id"
+            class="border-b border-slate-50 last:border-b-0 hover:bg-slate-50 transition-colors"
+          >
+            <td class="py-5 px-6 align-middle text-sm font-bold text-(--text)">{{ row.id }}</td>
+            <td class="py-5 px-6 align-middle text-sm text-(--text)">{{ row.worker }}</td>
+            <td class="py-5 px-6 align-middle text-sm text-(--text)">{{ row.date }}{{ row.time ? ', ' + row.time : '' }}</td>
+            <td class="py-5 px-6 align-middle">
+              <div class="flex gap-2 flex-wrap">
+                <span
+                  v-for="(j, idx) in row.jobTypes" :key="idx"
+                  class="inline-block bg-slate-100 text-gray-700 py-1.5 px-3 rounded-full text-xs"
+                >{{ j }}</span>
               </div>
             </td>
-            <td>
-              <span :class="['status-chip', row.status && row.status.toLowerCase()]">{{ row.status || 'Open' }}</span>
+            <td class="py-5 px-6 align-middle">
+              <span :class="statusChipClass(row.status)">{{ row.status || 'Open' }}</span>
             </td>
-            <td>
-              <div class="actions">
-                <button class="btn btn-ghost">View</button>
-                <button class="btn btn-primary">Verify</button>
+            <td class="py-5 px-6 align-middle">
+              <div class="flex gap-2.5 items-center">
+                <button class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border-0 hover:bg-slate-100 transition-colors cursor-pointer">View</button>
+                <button class="text-sm py-1.5 px-4 rounded-lg border-0 bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors cursor-pointer">Verify</button>
               </div>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
-    
-    <!-- Responsive cards for small screens -->
-    <div class="card-list">
-      <div class="sensus-card" v-for="row in rows" :key="row.id">
-        <div class="card-top">
+
+    <!-- Mobile cards -->
+    <div class="hidden gap-3 mt-3 max-[920px]:flex max-[920px]:flex-col">
+      <div
+        v-for="row in rows" :key="row.id"
+        class="bg-white border border-slate-100 rounded-xl p-4 shadow-sm flex flex-col gap-3"
+      >
+        <div class="flex justify-between items-start gap-3">
           <div>
-            <div class="sensus-id">{{ row.id }}</div>
-            <div class="small muted">{{ row.worker }} • {{ row.date }}, {{ row.time }}</div>
+            <div class="font-bold text-sm text-(--text)">{{ row.id }}</div>
+            <div class="text-xs text-(--text-muted) mt-0.5">{{ row.worker }} • {{ row.date }}{{ row.time ? ', ' + row.time : '' }}</div>
           </div>
-          <div>
-            <span :class="['status-chip', row.status && row.status.toLowerCase()]">{{ row.status || 'Open' }}</span>
-          </div>
+          <span :class="statusChipClass(row.status)">{{ row.status || 'Open' }}</span>
         </div>
-        <div class="card-body">
-          <div class="job-chips">
-            <span v-for="(j,idx) in row.jobTypes" :key="idx" class="chip">{{ j }}</span>
-          </div>
+        <div class="flex gap-2 flex-wrap">
+          <span
+            v-for="(j, idx) in row.jobTypes" :key="idx"
+            class="inline-block bg-slate-100 text-gray-700 py-1.5 px-3 rounded-full text-xs"
+          >{{ j }}</span>
         </div>
-        <div class="card-actions">
-          <button class="btn btn-ghost">View</button>
-          <button class="btn btn-primary">Verify</button>
+        <div class="flex justify-end gap-2">
+          <button class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-slate-200 bg-white hover:bg-slate-50 transition-colors cursor-pointer">View</button>
+          <button class="text-sm py-1.5 px-4 rounded-lg border-0 bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors cursor-pointer">Verify</button>
         </div>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
@@ -78,65 +109,16 @@
 const props = defineProps({
   rows: { type: Array, default: () => [] },
   title: { type: String, default: '' },
-  subtitle: { type: String, default: '' }
+  subtitle: { type: String, default: '' },
+  loading: { type: Boolean, default: false },
+  error: { type: String, default: null }
 })
-</script>
 
-<style scoped>
-.sensus-list { }
-.sensus-header { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:12px }
-.sensus-list h2 { font-size:24px; margin:0 0 6px; font-weight:800; letter-spacing:-0.01em; color:var(--text) }
-.sensus-list .muted { margin:0 0 12px; color:var(--text-muted); font-size:14px }
-.tabs { display:flex; gap:8px; background: #f3f4f6; padding:6px; border-radius:999px; align-items:center }
-.tab { background:transparent; border:0; padding:8px 14px; border-radius:999px; color:var(--text-muted); font-weight:600; cursor:pointer; transition:all .15s ease }
-.tab:hover { color:var(--text); transform:translateY(-1px) }
-.tab.active { background:#ffffff; color:var(--text); box-shadow:0 6px 14px rgba(15,23,42,0.06); border:1px solid rgba(0,0,0,0.04) }
-.table-wrap { background:transparent }
-.sensus-table { width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden }
-.sensus-table thead th { text-align:left; font-size:12px; font-weight:800; color:#475569; padding:18px 26px; text-transform:uppercase; letter-spacing:0.08em; background:linear-gradient(180deg,#fbfdff,#f7f8fa); border-bottom:1px solid rgba(15,23,42,0.04); box-shadow: inset 0 -1px 0 rgba(15,23,42,0.02) }
-.sensus-table thead th:first-child { border-top-left-radius:12px }
-.sensus-table thead th:last-child { border-top-right-radius:12px }
-.sensus-table tbody td { padding:20px 24px; vertical-align:middle; border-bottom:1px solid rgba(0,0,0,0.04) }
-.sensus-id { font-weight:700 }
-.job-chips { display:flex; gap:8px; flex-wrap:wrap }
-.chip { background:#f1f5f9; padding:8px 12px; border-radius:999px; font-size:13px; color:#374151 }
-.status-chip { display:inline-block; padding:6px 10px; border-radius:999px; font-size:13px; font-weight:700; letter-spacing:0.01em; transition:transform .12s ease, box-shadow .12s ease }
-.status-chip.open { background: linear-gradient(180deg,#fff8f0,#fff6f0); color:#b45309; border:1px solid rgba(180,83,9,0.12); box-shadow:0 2px 6px rgba(180,83,9,0.06) }
-.status-chip.verified { background: linear-gradient(180deg,#f0fdf6,#ecfff4); color:#065f46; border:1px solid rgba(6,95,70,0.08); box-shadow:0 2px 6px rgba(6,95,70,0.04) }
-.status-chip:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(15,23,42,0.08) }
-.actions { display:flex; gap:10px; align-items:center }
-.btn { padding:8px 12px; border-radius:10px; border:1px solid rgba(15,23,42,0.06); background:#fff; font-weight:700; color:var(--text); box-shadow:0 2px 6px rgba(15,23,42,0.04); transition:transform .12s ease, box-shadow .12s ease }
-.btn:hover { transform:translateY(-2px); box-shadow:0 10px 30px rgba(15,23,42,0.08) }
-.btn-ghost { background:#fff; color:var(--text); border:1px solid rgba(15,23,42,0.06) }
-.btn-ghost:hover { background:#fff } 
-.btn-primary { background: linear-gradient(180deg,#0ea37a,#0b8d5f); color:#fff; border:0; box-shadow:0 8px 20px rgba(6,95,70,0.12) }
-.btn-primary:hover { filter:brightness(.95); transform:translateY(-2px) }
-
-/* Ensure card actions use the same modern styles */
-.card-actions .btn { padding:8px 12px; border-radius:10px }
-.card-actions .btn-primary { box-shadow:0 8px 20px rgba(6,95,70,0.10) }
-
-/* Smaller controls inside table rows */
-.sensus-table .status-chip { padding:6px 10px; font-size:12px }
-.sensus-table .actions .btn { padding:6px 10px; font-size:13px; border-radius:8px }
-
-
-/* Card list (hidden on desktop) */
-.card-list { display:none; gap:12px; margin-top:12px }
-.sensus-card { background:#fff; border:1px solid var(--border); border-radius:12px; padding:16px; box-shadow:0 6px 16px rgba(15,23,42,0.03); display:flex; flex-direction:column; gap:12px }
-.card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px }
-.card-body { display:flex; gap:8px; flex-wrap:wrap }
-.card-actions { display:flex; justify-content:flex-end; gap:8px }
-
-/* Spacing and typography tweaks to better match Figma */
-.sensus-table tbody td { padding:22px 28px }
-.sensus-table thead th { padding:20px 28px }
-.sensus-list h2 { /* already styled above */ }
-
-@media (max-width: 920px) {
-  .table-wrap { display:none }
-  .card-list { display:flex; flex-direction:column }
-  .sensus-content { padding:12px }
+function statusChipClass(status) {
+  const base = 'inline-block py-1.5 px-3 rounded-full text-xs font-semibold border'
+  if (status && status.toLowerCase() === 'verified') {
+    return base + ' bg-green-50 text-green-700 border-green-200'
+  }
+  return base + ' bg-orange-50 text-orange-700 border-orange-200'
 }
-
-</style>
+</script>

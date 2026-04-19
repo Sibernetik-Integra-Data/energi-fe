@@ -1,11 +1,31 @@
-import { getAuthenticatedUser } from '../../auth/keycloak'
+import { getAuthenticatedUser, getAccessToken } from '../../auth/keycloak'
 import { navigation as sharedNavigation } from '../shared/navigation'
+import { apiFetch } from '../../api/fetch'
 
 function cloneNavigation(items) {
   return items.map((item) => ({
     ...item,
     children: Array.isArray(item.children) ? cloneNavigation(item.children) : undefined
   }))
+}
+
+function mapRow(r) {
+  let time = ''
+  if (r.created_at) {
+    const d = new Date(r.created_at)
+    if (!Number.isNaN(d.getTime())) {
+      time = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
+    }
+  }
+  return {
+    id: r.id_sensus || '',
+    worker: r.created_by || '',
+    block: (r.blocks && r.blocks[0] && r.blocks[0].name) || '',
+    date: r.sensus_date || '',
+    time,
+    jobTypes: r.type_of_work ? [r.type_of_work.name] : [],
+    status: r.status || 'Open'
+  }
 }
 
 export function createSensusModel() {
@@ -15,22 +35,34 @@ export function createSensusModel() {
 
   const list = {
     title: 'Daftar Sensus',
-    subtitle: 'Laporan terbaru',
-    rows: [
-      { id: 'SEN-2024-005', worker: 'Eko Prasetyo', block: 'Block A-1', date: '2026-02-18', time: '09:00', jobTypes: ['Rawat jalan','Pemupukan NPK TBM','Panen'], status: 'Open' },
-      { id: 'SEN-2024-006', worker: 'Eko Prasetyo', block: 'Block B-3', date: '2026-02-18', time: '09:00', jobTypes: ['Rawat jalan','Pemupukan NPK TBM','Semprot lalang'], status: 'Open' },
-      { id: 'SEN-2024-007', worker: 'Eko Prasetyo', block: 'Block C-2', date: '2026-02-18', time: '09:00', jobTypes: ['Rawat jalan','Pemupukan NPK TBM','Semprot lalang'], status: 'Open' },
-      { id: 'SEN-2024-008', worker: 'Eko Prasetyo', block: 'Block D-4', date: '2026-02-18', time: '09:00', jobTypes: ['Rawat jalan','Pemupukan NPK TBM','Semprot lalang'], status: 'Open' },
-      { id: 'SEN-2024-009', worker: 'Eko Prasetyo', block: 'Block E-5', date: '2026-02-18', time: '09:00', jobTypes: ['Rawat jalan','Pemupukan NPK TBM','Semprot lalang'], status: 'Verified' }
-    ]
+    subtitle: 'Laporan terbaru'
   }
 
-  const stats = { total: 128, today: 12, pending: 3 }
+  const stats = { total: 0, today: 0, pending: 0 }
+
+  async function loadRows() {
+    const path = '/sensus?page=1&limit=50'
+    const sigResp = await apiFetch('/signature/create', {
+      method: 'POST',
+      body: JSON.stringify({ url: `/api${path}`, method: 'GET' })
+    })
+    const { signature, uuid, timestamp } = sigResp.data
+    const token = getAccessToken()
+    const headers = {
+      'X-Signature': signature,
+      'X-Signature-Timestamp': String(timestamp),
+      'X-Signature-UUID': uuid,
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    }
+    const resp = await apiFetch(path, { method: 'GET', headers })
+    return (resp.data || []).map(mapRow)
+  }
 
   return {
     getNavigation() { return cloneNavigation(navigation) },
-    getHeader() { return { ...header, notifications: list.rows.filter(r => r.status==='Open').length, user: { ...getAuthenticatedUser() } } },
-    getList() { return { ...list, rows: list.rows.map(r => ({ ...r })) } },
-    getStats() { return { ...stats } }
+    getHeader() { return { ...header, user: { ...getAuthenticatedUser() } } },
+    getList() { return { ...list } },
+    getStats() { return { ...stats } },
+    loadRows
   }
 }

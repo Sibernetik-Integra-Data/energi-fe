@@ -7,6 +7,7 @@ export function createSensusController() {
     getNavigation: () => model.getNavigation(),
     getHeader: () => model.getHeader(),
     getList: () => model.getList(),
-    getStats: () => model.getStats()
+    getStats: () => model.getStats(),
+    loadRows: () => model.loadRows()
   }
 }
