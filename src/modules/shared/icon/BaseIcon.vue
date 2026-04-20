@@ -122,6 +122,22 @@
       <path d="M7.5 5.5L12.5 10L7.5 14.5" />
     </template>
 
+    <template v-else-if="name === 'moon'">
+      <path d="M16 11.9A6.5 6.5 0 0 1 8.1 4 6.5 6.5 0 1 0 16 11.9Z" />
+    </template>
+
+    <template v-else-if="name === 'sun'">
+      <circle cx="10" cy="10" r="3" />
+      <path d="M10 4.5V3.2" />
+      <path d="M10 16.8V15.5" />
+      <path d="M4.5 10H3.2" />
+      <path d="M16.8 10H15.5" />
+      <path d="M6.1 6.1L5.2 5.2" />
+      <path d="M14.8 14.8L13.9 13.9" />
+      <path d="M13.9 6.1L14.8 5.2" />
+      <path d="M5.2 14.8L6.1 13.9" />
+    </template>
+
     <template v-else>
       <circle cx="10" cy="10" r="6" />
     </template>

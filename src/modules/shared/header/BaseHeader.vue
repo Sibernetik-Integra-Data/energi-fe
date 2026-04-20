@@ -28,6 +28,24 @@
         </button>
 
         <div v-if="isUserMenuOpen" class="header__user-menu-panel" role="menu" aria-label="User actions">
+          <button
+            class="header__user-menu-item"
+            type="button"
+            role="menuitem"
+            :aria-pressed="isDarkMode"
+            @click="handleToggleTheme"
+          >
+            <span class="header__user-menu-item-icon">
+              <BaseIcon :name="isDarkMode ? 'sun' : 'moon'" :size="16" />
+            </span>
+            <span class="header__user-menu-item-label">{{ isDarkMode ? 'Light mode' : 'Dark mode' }}</span>
+            <span class="header__theme-pill" :class="isDarkMode ? 'is-dark' : 'is-light'">
+              {{ isDarkMode ? 'ON' : 'OFF' }}
+            </span>
+          </button>
+
+          <div v-if="onLogout" class="header__user-menu-divider" role="separator"></div>
+
           <button v-if="onLogout" class="header__user-menu-item" type="button" role="menuitem" @click="handleLogout">
             <span class="header__user-menu-item-icon">
               <BaseIcon name="logout" :size="16" />
@@ -43,6 +61,7 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import BaseIcon from '../icon'
+import { isDark as isDarkFn, toggleTheme } from '../../../utils/theme'
 
 const props = defineProps({
   eyebrow: {
@@ -69,6 +88,7 @@ const props = defineProps({
 
 const isUserMenuOpen = ref(false)
 const userMenuRef = ref(null)
+const isDarkMode = ref(isDarkFn())
 
 function closeUserMenu() {
   isUserMenuOpen.value = false
@@ -76,6 +96,10 @@ function closeUserMenu() {
 
 function toggleUserMenu() {
   isUserMenuOpen.value = !isUserMenuOpen.value
+}
+
+function handleToggleTheme() {
+  isDarkMode.value = toggleTheme()
 }
 
 function handleLogout() {
@@ -275,6 +299,34 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 8px;
   cursor: pointer;
+}
+
+.header__user-menu-item-label {
+  flex: 1;
+}
+
+.header__theme-pill {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.header__theme-pill.is-dark {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.header__theme-pill.is-light {
+  background: var(--surface-muted);
+  color: var(--text-soft);
+}
+
+.header__user-menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 0;
 }
 
 .header__user-menu-item:hover {

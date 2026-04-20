@@ -151,19 +151,19 @@ defineProps({
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #6b7280;
-  background: linear-gradient(180deg, rgba(248, 249, 251, 0.9), rgba(248, 249, 251, 0.7));
+  color: var(--text-muted);
+  background: var(--surface-muted);
 }
 
 .pending-card__table tbody td {
   font-size: 15px;
   line-height: 1.25;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .pending-card__sensus-id {
   font-weight: 700;
-  color: #2f2f2f;
+  color: var(--text);
   letter-spacing: -0.02em;
 }
 
@@ -171,7 +171,7 @@ defineProps({
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #2f2f2f;
+  color: var(--text);
 }
 
 .pending-card__meta--stacked {
@@ -190,7 +190,7 @@ defineProps({
 }
 
 .pending-card__meta-line--muted {
-  color: #8a8f98;
+  color: var(--text-muted);
 }
 
 .pending-card__meta-icon {
@@ -198,7 +198,7 @@ defineProps({
   height: 18px;
   display: inline-grid;
   place-items: center;
-  color: #a3a3a3;
+  color: var(--text-soft);
   flex: 0 0 auto;
 }
 
@@ -214,8 +214,8 @@ defineProps({
   min-height: 26px;
   padding: 0 10px;
   border-radius: 999px;
-  background: #e9ecf2;
-  color: #111827;
+  background: var(--border-strong);
+  color: var(--text);
   font-size: 11px;
   line-height: 1;
   font-weight: 500;
@@ -228,8 +228,8 @@ defineProps({
   padding: 0 10px;
   border-radius: 999px;
   border: 1px solid #fb923c;
-  color: #9a3412;
-  background: #fff7ed;
+  color: var(--warning);
+  background: var(--warning-soft);
   font-size: 11px;
   line-height: 1;
   font-weight: 500;

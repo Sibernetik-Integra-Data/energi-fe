@@ -152,26 +152,27 @@
       </div>
     </footer>
 
-    <!-- Collapse toggle -->
+    <!-- Collapse toggle (modern floating circular button) -->
     <button
       type="button"
-      class="absolute top-1/2 -right-7 z-30 -translate-y-1/2 flex items-center justify-end pr-1.5 h-18 w-7 bg-(--surface) border border-l-0 border-(--border) rounded-r-[40px] shadow-[4px_0_12px_rgba(15,23,42,0.07)] text-(--text-muted) transition-colors hover:bg-orange-50 hover:text-(--brand) focus-visible:outline-none cursor-pointer"
+      class="absolute top-1/2 -right-7 z-40 -translate-y-1/2 flex items-center justify-center h-10 w-10 rounded-full bg-(--surface-muted) border border-(--border) shadow-[0_8px_24px_rgba(2,6,23,0.16)] text-(--text) transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--brand) cursor-pointer"
       :aria-label="isCollapsed ? 'Tampilkan sidebar' : 'Sembunyikan sidebar'"
       :aria-pressed="isCollapsed"
       @click="isCollapsed = !isCollapsed"
+      :title="isCollapsed ? 'Tampilkan sidebar' : 'Sembunyikan sidebar'"
     >
-      <span class="absolute left-0 top-0 bottom-0 w-0.5 bg-(--surface)" aria-hidden="true"></span>
       <svg
-        :class="['transition-transform duration-200', isCollapsed ? 'rotate-0' : 'rotate-180']"
+        :class="['transform transition-transform duration-300', isCollapsed ? 'rotate-180' : 'rotate-0']"
         xmlns="http://www.w3.org/2000/svg"
-        width="13"
-        height="13"
+        width="16"
+        height="16"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        stroke-width="2.5"
+        stroke-width="2.2"
         stroke-linecap="round"
         stroke-linejoin="round"
+        aria-hidden="true"
       >
         <polyline points="9 18 15 12 9 6" />
       </svg>

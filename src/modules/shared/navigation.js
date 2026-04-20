@@ -11,7 +11,7 @@ export const navigation = [
     key: 'settings',
     defaultExpanded: true,
     children: [
-      { label: 'Blocks', icon: 'database', to: '/settings/master-data' },
+      { label: 'Blocks', icon: 'database', to: '/master-data/blocks' },
       { label: 'Driver', icon: 'users', to: '/settings/admin-master-akun' }
     ]
   }
