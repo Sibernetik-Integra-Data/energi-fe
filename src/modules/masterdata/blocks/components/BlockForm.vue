@@ -1,16 +1,16 @@
 <template>
   <Teleport to="body">
-    <div
+      <div
       v-if="visible"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
       @mousedown.self="onCancel"
     >
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 flex flex-col gap-5">
+      <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 flex flex-col gap-5">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Edit Block' : 'Add Block' }}</h3>
           <button
             type="button"
-            class="border-0 bg-transparent cursor-pointer text-slate-400 hover:text-slate-700 text-xl leading-none transition-colors"
+            class="border-0 bg-transparent cursor-pointer text-(--text-soft) hover:text-(--text) text-xl leading-none transition-colors"
             aria-label="Close"
             @click="onCancel"
           >&times;</button>
@@ -28,7 +28,7 @@
               type="text"
               placeholder="e.g. Block A"
               class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
-              :class="errors.name ? 'border-red-400 bg-red-50 focus:border-red-500' : 'border-slate-200 bg-slate-50 focus:border-green-500'"
+              :class="errors.name ? 'border-red-400 bg-red-50 focus:border-red-500' : 'border-(--border) bg-(--surface-muted) focus:border-green-500'"
               autocomplete="off"
             />
             <span v-if="errors.name" class="text-xs text-red-500">{{ errors.name }}</span>
@@ -43,7 +43,7 @@
               type="number"
               min="0"
               placeholder="0"
-              class="border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-slate-50 outline-none focus:border-green-500 transition-colors"
+              class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors"
             />
           </div>
 
@@ -57,7 +57,7 @@
               min="0"
               step="0.01"
               placeholder="0.00"
-              class="border border-slate-200 rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-slate-50 outline-none focus:border-green-500 transition-colors"
+              class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors"
             />
           </div>
 
@@ -65,7 +65,7 @@
           <div class="flex justify-end gap-3 pt-1">
             <button
               type="button"
-              class="border border-slate-200 bg-white text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
+              class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
               :disabled="submitting"
               @click="onCancel"
             >Cancel</button>

@@ -12,7 +12,7 @@ export const navigation = [
     defaultExpanded: true,
     children: [
       { label: 'Blocks', icon: 'database', to: '/master-data/blocks' },
-      { label: 'Driver', icon: 'users', to: '/settings/admin-master-akun' }
+      { label: 'Driver', icon: 'users', to: '/master-data/driver' }
     ]
   }
 ]

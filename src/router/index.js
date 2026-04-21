@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import DashboardModule from '../modules/dashboard'
 import SensusModule from '../modules/sensus'
 import BlocksModule from '../modules/masterdata/blocks'
+import DriverModule from '../modules/masterdata/driver'
 import navigation from '../modules/shared/navigation'
 import ComingSoon from '../components/ComingSoon.vue'
 import { isAuthenticated, redirectToKeycloakLogin } from '../auth/keycloak'
@@ -21,6 +22,12 @@ const routes = [
       : { requiresAuth: true }
   })),
   ...BlocksModule.routes.map(route => ({
+    ...route,
+    meta: route.meta
+      ? { ...route.meta, requiresAuth: true }
+      : { requiresAuth: true }
+  })),
+  ...DriverModule.routes.map(route => ({
     ...route,
     meta: route.meta
       ? { ...route.meta, requiresAuth: true }
