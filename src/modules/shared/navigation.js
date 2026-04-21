@@ -12,7 +12,9 @@ export const navigation = [
     defaultExpanded: true,
     children: [
       { label: 'Blocks', icon: 'database', to: '/master-data/blocks' },
-      { label: 'Driver', icon: 'users', to: '/master-data/driver' }
+      { label: 'Driver', icon: 'users', to: '/master-data/driver' },
+      { label: 'Aktifitas Kebun', icon: 'calendar', to: '/master-data/aktifitas-kebun' },
+      { label: 'Nomor Petak', icon: 'location-pin', to: '/master-data/petak' }
     ]
   }
 ]
