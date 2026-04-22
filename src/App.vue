@@ -11,6 +11,7 @@
       </button>
     </section>
   </main>
+  <AppToast />
 </template>
 
 <script setup>
@@ -18,6 +19,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { clearSessionTokens, exchangeAuthorizationCode, fetchUserProfile, redirectToKeycloakLogin, isAuthenticated, setAppStore } from './auth/keycloak'
 import { useAppStore } from './stores'
+import AppToast from './components/AppToast.vue'
 
 const route = useRoute()
 const router = useRouter()

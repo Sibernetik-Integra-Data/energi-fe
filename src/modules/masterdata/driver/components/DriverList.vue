@@ -160,6 +160,9 @@
 import { ref, computed, onMounted } from 'vue'
 import DriverForm from './DriverForm.vue'
 import { listDrivers, createDriver, updateDriver, deleteDriver } from '../model'
+import { useToast } from '../../../../utils/toast'
+
+const { show: showToast } = useToast()
 
 const rows = ref([])
 const loading = ref(false)
@@ -230,9 +233,11 @@ async function onFormSubmit(formData) {
             const updated = await updateDriver(editingDriver.value.id, formData)
             const idx = rows.value.findIndex(r => r.id === editingDriver.value.id)
             if (idx !== -1) rows.value[idx] = updated || { ...rows.value[idx], ...formData }
+            showToast('Driver updated successfully.')
         } else {
             const created = await createDriver(formData)
             if (created) rows.value.unshift(created)
+            showToast('Driver created successfully.')
         }
         closeForm()
     } catch (err) {
@@ -258,6 +263,7 @@ async function onDeleteConfirm() {
         rows.value = rows.value.filter(r => r.id !== deletingDriver.value.id)
         showDeleteConfirm.value = false
         deletingDriver.value = null
+        showToast('Driver deleted successfully.')
     } catch (err) {
         console.error('[Drivers] Delete failed:', err)
         actionError.value = err?.message || 'Failed to delete driver.'

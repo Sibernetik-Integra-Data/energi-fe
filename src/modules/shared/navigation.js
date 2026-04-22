@@ -13,7 +13,9 @@ export const navigation = [
     children: [
       { label: 'Blocks', icon: 'database', to: '/master-data/blocks' },
       { label: 'Driver', icon: 'users', to: '/master-data/driver' },
+      { label: 'Vehicle', icon: 'database', to: '/master-data/vehicle' },
       { label: 'Aktifitas Kebun', icon: 'calendar', to: '/master-data/aktifitas-kebun' },
+      { label: 'Group of Work', icon: 'calendar', to: '/master-data/group-of-work' },
       { label: 'Nomor Petak', icon: 'location-pin', to: '/master-data/petak' }
     ]
   }

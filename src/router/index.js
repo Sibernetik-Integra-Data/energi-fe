@@ -3,7 +3,9 @@ import DashboardModule from '../modules/dashboard'
 import SensusModule from '../modules/sensus'
 import BlocksModule from '../modules/masterdata/blocks'
 import DriverModule from '../modules/masterdata/driver'
+import VehicleModule from '../modules/masterdata/vehicle'
 import AktifitasKebunModule from '../modules/masterdata/aktifitas-kebun'
+import GroupOfWorkModule from '../modules/masterdata/group-of-work'
 import navigation from '../modules/shared/navigation'
 import ComingSoon from '../components/ComingSoon.vue'
 import { isAuthenticated, redirectToKeycloakLogin } from '../auth/keycloak'
@@ -34,7 +36,19 @@ const routes = [
       ? { ...route.meta, requiresAuth: true }
       : { requiresAuth: true }
   })),
+  ...VehicleModule.routes.map(route => ({
+    ...route,
+    meta: route.meta
+      ? { ...route.meta, requiresAuth: true }
+      : { requiresAuth: true }
+  })),
   ...AktifitasKebunModule.routes.map(route => ({
+    ...route,
+    meta: route.meta
+      ? { ...route.meta, requiresAuth: true }
+      : { requiresAuth: true }
+  })),
+  ...GroupOfWorkModule.routes.map(route => ({
     ...route,
     meta: route.meta
       ? { ...route.meta, requiresAuth: true }

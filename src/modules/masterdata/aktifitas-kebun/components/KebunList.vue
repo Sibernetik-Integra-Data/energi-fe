@@ -174,6 +174,9 @@
 import { ref, computed, onMounted } from 'vue'
 import KebunForm from './KebunForm.vue'
 import { listTypeOfWork, createTypeOfWork, updateTypeOfWork, deleteTypeOfWork, listGroupOfWork } from '../model'
+import { useToast } from '../../../../utils/toast'
+
+const { show: showToast } = useToast()
 
 const rows = ref([])
 const groups = ref([])
@@ -265,9 +268,11 @@ async function onFormSubmit(formData) {
                 const merged = updated || { ...rows.value[idx], ...formData }
                 rows.value[idx] = enrichWithGroupName(merged)
             }
+            showToast('Activity updated successfully.')
         } else {
             const created = await createTypeOfWork(formData)
             if (created) rows.value.unshift(enrichWithGroupName(created))
+            showToast('Activity created successfully.')
         }
         closeForm()
     } catch (err) {
@@ -293,6 +298,7 @@ async function onDeleteConfirm() {
         rows.value = rows.value.filter(r => r.id !== deletingActivity.value.id)
         showDeleteConfirm.value = false
         deletingActivity.value = null
+        showToast('Activity deleted successfully.')
     } catch (err) {
         console.error('[AktifitasKebun] Delete failed:', err)
         actionError.value = err?.message || 'Failed to delete activity.'
