@@ -98,7 +98,7 @@ jobs:
         run: |
           podman run -d \
             --name energi-fe-dev \
-            -p 0.0.0.0:10001:10001 \
+            --network host \
             -e PORT=10001 \
             -e HOST=0.0.0.0 \
             energi-fe:dev
