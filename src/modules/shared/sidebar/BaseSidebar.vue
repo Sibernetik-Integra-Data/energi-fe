@@ -161,7 +161,7 @@
       @click="isCollapsed = !isCollapsed"
       :title="isCollapsed ? 'Tampilkan sidebar' : 'Sembunyikan sidebar'"
     >
-      <svg
+      <!-- <svg
         :class="['transform transition-transform duration-300', isCollapsed ? 'rotate-180' : 'rotate-0']"
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -175,7 +175,12 @@
         aria-hidden="true"
       >
         <polyline points="9 18 15 12 9 6" />
-      </svg>
+      </svg> -->
+      <BaseIcon
+        :name="isCollapsed ? 'chevron-right' : 'chevron-left'"
+        :size="16"
+        class="transition-transform duration-200 text-(--text)"
+      />
     </button>
   </aside>
 </template>
