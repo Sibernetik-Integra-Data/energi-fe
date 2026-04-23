@@ -28,6 +28,38 @@
         </button>
 
         <div v-if="isUserMenuOpen" class="header__user-menu-panel" role="menu" aria-label="User actions">
+          <!-- Compact profile card -->
+          <div class="header__profile-card">
+            <div class="header__profile-avatar-wrap">
+              <img
+                v-if="user.avatarUrl"
+                :src="user.avatarUrl"
+                :alt="user.name"
+                class="header__profile-avatar-img"
+              />
+              <div v-else class="header__profile-avatar-initials">{{ user.initials }}</div>
+            </div>
+            <p class="header__profile-name">{{ user.name }}</p>
+            <p v-if="user.jobs" class="header__profile-job">{{ user.jobs }}</p>
+            <p v-if="user.userId" class="header__profile-id">ID{{ user.userId }}</p>
+          </div>
+
+          <div class="header__user-menu-divider" role="separator"></div>
+
+          <button class="header__user-menu-item" type="button" role="menuitem" @click="handleProfile">
+            <span class="header__user-menu-item-icon">
+              <BaseIcon name="profile" :size="16" />
+            </span>
+            Profile
+          </button>
+
+          <button class="header__user-menu-item" type="button" role="menuitem" @click="handleChangePassword">
+            <span class="header__user-menu-item-icon">
+              <BaseIcon name="key" :size="16" />
+            </span>
+            Ubah Kata Sandi
+          </button>
+
           <button
             class="header__user-menu-item"
             type="button"
@@ -60,6 +92,7 @@
 
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import BaseIcon from '../icon'
 import { isDark as isDarkFn, toggleTheme } from '../../../utils/theme'
 
@@ -84,11 +117,17 @@ const props = defineProps({
     type: Function,
     default: null
   }
+  ,
+  onProfile: {
+    type: Function,
+    default: null
+  }
 })
 
 const isUserMenuOpen = ref(false)
 const userMenuRef = ref(null)
 const isDarkMode = ref(isDarkFn())
+const router = useRouter()
 
 function closeUserMenu() {
   isUserMenuOpen.value = false
@@ -106,6 +145,28 @@ function handleLogout() {
   closeUserMenu()
   if (typeof props.onLogout === 'function') {
     void props.onLogout()
+  }
+}
+
+function handleProfile() {
+  closeUserMenu()
+  if (typeof props.onProfile === 'function') {
+    void props.onProfile()
+    return
+  }
+  try {
+    router.push('/profile')
+  } catch (e) {
+    // ignore navigation errors
+  }
+}
+
+function handleChangePassword() {
+  closeUserMenu()
+  try {
+    router.push('/profile/change-password')
+  } catch (e) {
+    // ignore navigation errors
   }
 }
 
@@ -274,13 +335,74 @@ onBeforeUnmount(() => {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  min-width: 180px;
+  min-width: 210px;
   padding: 8px;
   border: 1px solid var(--border);
   border-radius: 16px;
   background: var(--surface);
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
   z-index: 20;
+}
+
+/* Compact profile card inside dropdown */
+.header__profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 14px 12px 12px;
+}
+
+.header__profile-avatar-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.header__profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.header__profile-avatar-initials {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #15803d;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.header__profile-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+}
+
+.header__profile-job {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.header__profile-id {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-soft);
+  text-align: center;
 }
 
 .header__user-menu-item {

@@ -138,6 +138,28 @@
       <path d="M5.2 14.8L6.1 13.9" />
     </template>
 
+    <template v-else-if="name === 'profile'">
+      <circle cx="10" cy="7" r="2.2" />
+      <path d="M4.5 15.5c0-2.6 2.9-4.7 5.5-4.7s5.5 2.1 5.5 4.7" />
+    </template>
+
+    <template v-else-if="name === 'key'">
+      <circle cx="8" cy="11" r="3" />
+      <path d="M10.6 8.4L16 3" />
+      <path d="M14.5 4.5L16 6" />
+      <path d="M13 6L14.5 7.5" />
+    </template>
+
+    <template v-else-if="name === 'camera'">
+      <path d="M3.5 7.5C3.5 6.67 4.17 6 5 6h1.5l1-1.5h5l1 1.5H15c.83 0 1.5.67 1.5 1.5v7c0 .83-.67 1.5-1.5 1.5H5c-.83 0-1.5-.67-1.5-1.5v-7Z" />
+      <circle cx="10" cy="11" r="2.2" />
+    </template>
+
+    <template v-else-if="name === 'edit'">
+      <path d="M13.5 3.5L16.5 6.5L7 16H4V13L13.5 3.5Z" />
+      <path d="M11.5 5.5L14.5 8.5" />
+    </template>
+
     <template v-else>
       <circle cx="10" cy="10" r="6" />
     </template>

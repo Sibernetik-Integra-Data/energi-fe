@@ -127,7 +127,9 @@ export function getAuthenticatedUser() {
     role,
     email,
     jobs: '',
-    initials
+    initials,
+    userId: '',
+    avatarUrl: ''
   }
 }
 
@@ -152,19 +154,25 @@ export function profileToUser(profile) {
   const name = getProfileName(profile)
   const role = getRoleFromClaims(profile)
   const email = typeof profile?.email === 'string' ? profile.email.trim() : ''
-  const jobs = typeof profile?.jobs === 'string'
-    ? profile.jobs.trim()
-    : Array.isArray(profile?.jobs)
-      ? profile.jobs.filter(Boolean).join(', ')
-      : ''
+  const jobs = typeof profile?.jobTitle === 'string' && profile.jobTitle.trim()
+    ? profile.jobTitle.trim()
+    : typeof profile?.jobs === 'string'
+      ? profile.jobs.trim()
+      : Array.isArray(profile?.jobs)
+        ? profile.jobs.filter(Boolean).join(', ')
+        : ''
   const initials = getInitialsFromName(name)
+  const userId = typeof profile?.id === 'string' ? profile.id : ''
+  const avatarUrl = typeof profile?.avatarUrl === 'string' ? profile.avatarUrl : ''
 
   return {
     name,
     role,
     email,
     jobs,
-    initials
+    initials,
+    userId,
+    avatarUrl
   }
 }
 
