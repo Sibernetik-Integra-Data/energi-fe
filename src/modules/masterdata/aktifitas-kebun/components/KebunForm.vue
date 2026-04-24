@@ -164,7 +164,11 @@ function validate() {
 
 function onSubmit() {
     if (!validate()) return
-    emit('submit', { ...form.value })
+    const selectedGroup = groups.value.find(g => String(g.id) === String(form.value.group_of_work))
+    emit('submit', {
+        ...form.value,
+        group_of_work_name: selectedGroup?.name ?? null
+    })
 }
 
 function onCancel() {
