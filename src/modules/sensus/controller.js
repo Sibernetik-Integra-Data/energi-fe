@@ -8,6 +8,7 @@ export function createSensusController() {
     getHeader: () => model.getHeader(),
     getList: () => model.getList(),
     getStats: () => model.getStats(),
-    loadRows: () => model.loadRows()
+    loadRows: () => model.loadRows(),
+    loadSensusDetail: (numericId) => model.loadSensusDetail(numericId)
   }
 }

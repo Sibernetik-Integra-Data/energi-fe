@@ -248,15 +248,23 @@ function hasChildren(item) {
   return Array.isArray(item?.children) && item.children.length > 0;
 }
 
+function pathMatches(base, p) {
+  if (!base || typeof base !== 'string') return false;
+  const normalizedBase = base.endsWith('/') ? base.slice(0, -1) : base;
+  const normalizedPath = p || '';
+  return normalizedPath === normalizedBase || normalizedPath.startsWith(normalizedBase + '/');
+}
+
 function isChildActive(child) {
-  return Boolean(child?.to) && route.path === child.to;
+  return Boolean(child?.to) && pathMatches(child.to, route.path);
 }
 
 function isItemActive(item) {
   if (hasChildren(item)) {
+    if (item?.to && pathMatches(item.to, route.path)) return true;
     return item.children.some(isChildActive);
   }
-  return Boolean(item?.to) && route.path === item.to;
+  return Boolean(item?.to) && pathMatches(item.to, route.path);
 }
 
 function isExpanded(item) {
