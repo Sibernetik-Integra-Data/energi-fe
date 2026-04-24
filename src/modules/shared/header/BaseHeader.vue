@@ -154,20 +154,12 @@ function handleProfile() {
     void props.onProfile()
     return
   }
-  try {
-    router.push('/profile')
-  } catch (e) {
-    // ignore navigation errors
-  }
+  void router.push('/profile').catch(() => {})
 }
 
 function handleChangePassword() {
   closeUserMenu()
-  try {
-    router.push('/profile/change-password')
-  } catch (e) {
-    // ignore navigation errors
-  }
+  void router.push('/profile/change-password').catch(() => {})
 }
 
 function handleDocumentClick(event) {

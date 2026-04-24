@@ -236,7 +236,7 @@ const props = defineProps({
 
 function onNavigate(item) {
   if (item?.to) {
-    router.push(item.to);
+    void router.push(item.to).catch(() => {});
   }
 }
 

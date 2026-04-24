@@ -95,7 +95,7 @@ collectNavigationRoutes(navigation).forEach((item) => {
 })
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes
 })
 
