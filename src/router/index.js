@@ -6,6 +6,7 @@ import DriverModule from '../modules/masterdata/driver'
 import VehicleModule from '../modules/masterdata/vehicle'
 import AktifitasKebunModule from '../modules/masterdata/aktifitas-kebun'
 import GroupOfWorkModule from '../modules/masterdata/group-of-work'
+import SensusProgressStatusModule from '../modules/masterdata/sensus-progress-status'
 import ProfileModule from '../modules/profile'
 import navigation from '../modules/shared/navigation'
 import ComingSoon from '../components/ComingSoon.vue'
@@ -50,6 +51,12 @@ const routes = [
       : { requiresAuth: true }
   })),
   ...GroupOfWorkModule.routes.map(route => ({
+    ...route,
+    meta: route.meta
+      ? { ...route.meta, requiresAuth: true }
+      : { requiresAuth: true }
+  })),
+  ...SensusProgressStatusModule.routes.map(route => ({
     ...route,
     meta: route.meta
       ? { ...route.meta, requiresAuth: true }

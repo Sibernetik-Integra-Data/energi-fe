@@ -16,7 +16,8 @@ export const navigation = [
       { label: 'Vehicle', icon: 'database', to: '/master-data/vehicle' },
       { label: 'Aktifitas Kebun', icon: 'calendar', to: '/master-data/aktifitas-kebun' },
       { label: 'Group of Work', icon: 'calendar', to: '/master-data/group-of-work' },
-      { label: 'Nomor Petak', icon: 'location-pin', to: '/master-data/petak' }
+      { label: 'Nomor Petak', icon: 'location-pin', to: '/master-data/petak' },
+      { label: 'Sensus Progress Status', icon: 'database', to: '/master-data/sensus-progress-status' }
     ]
   }
 ]
