@@ -1,25 +1,23 @@
 <template>
-  <!-- Backdrop -->
   <Teleport to="body">
-    <Transition name="modal-fade">
+    <Transition name="panel">
       <div
         v-if="modelValue"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4"
-        @click.self="close"
+        class="fixed inset-0 z-50 flex justify-end"
       >
-        <!-- Overlay -->
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="close"></div>
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="close"></div>
 
-        <!-- Dialog -->
+        <!-- Side Panel -->
         <div
-          class="relative z-10 w-full max-w-md bg-(--surface) rounded-2xl shadow-2xl border border-(--border) overflow-hidden"
+          class="panel-content relative z-10 w-96 max-w-[90vw] h-full bg-(--surface) border-l border-(--border) shadow-2xl flex flex-col"
           role="dialog"
           aria-modal="true"
-          aria-labelledby="plan-modal-title"
+          aria-labelledby="plan-panel-title"
         >
           <!-- Header -->
-          <div class="flex items-center justify-between px-6 py-4 border-b border-(--border)">
-            <h3 id="plan-modal-title" class="text-base font-bold text-(--text) m-0">Tambah Rencana</h3>
+          <div class="flex items-center justify-between px-6 py-5 border-b border-(--border)">
+            <h3 id="plan-panel-title" class="text-base font-bold text-(--text) m-0">Rencana Baru</h3>
             <button
               @click="close"
               class="w-8 h-8 flex items-center justify-center rounded-lg text-(--text-muted) hover:text-(--text) hover:bg-(--surface-muted) transition-colors cursor-pointer border-0 bg-transparent"
@@ -31,78 +29,94 @@
             </button>
           </div>
 
-          <!-- Body -->
-          <form @submit.prevent="submit" class="px-6 py-5 flex flex-col gap-4">
+          <!-- Form wraps scrollable body + footer -->
+          <form @submit.prevent="submit" class="flex-1 flex flex-col min-h-0">
 
-            <!-- Job Type -->
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Jenis Pekerjaan</label>
-              <select
-                v-model="form.jobType"
-                required
-                class="w-full bg-(--surface-muted) border border-(--border) rounded-lg px-3 py-2.5 text-sm text-(--text) outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all cursor-pointer appearance-none"
-              >
-                <option value="" disabled>Pilih jenis pekerjaan...</option>
-                <option v-for="jt in jobTypes" :key="jt" :value="jt">{{ jt }}</option>
-              </select>
-            </div>
+            <!-- Scrollable body -->
+            <div class="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
 
-            <!-- Blocks -->
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Blok</label>
-              <div
-                v-if="availableBlocks.length === 0"
-                class="text-xs text-(--text-muted) italic py-1"
-              >Pilih jenis pekerjaan terlebih dahulu.</div>
-              <div v-else class="flex flex-wrap gap-2">
-                <button
-                  v-for="b in availableBlocks"
-                  :key="b"
-                  type="button"
-                  @click="toggleBlock(b)"
-                  :class="form.blocks.includes(b)
-                    ? 'bg-green-600 text-white border-green-600'
-                    : 'bg-(--surface-muted) text-(--text) border-(--border) hover:border-green-400'"
-                  class="text-xs font-semibold px-3 py-1.5 rounded-full border transition-all cursor-pointer"
-                >{{ b }}</button>
-              </div>
-              <p v-if="blockError" class="text-xs text-red-500 mt-0.5">{{ blockError }}</p>
-            </div>
-
-            <!-- Date range -->
-            <div class="grid grid-cols-2 gap-3">
+              <!-- ID Sensus -->
               <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Tanggal Mulai</label>
-                <input
-                  v-model="form.startDate"
-                  type="date"
-                  required
-                  class="bg-(--surface-muted) border border-(--border) rounded-lg px-3 py-2.5 text-sm text-(--text) outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
-                />
+                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">ID Sensus</label>
+                <div class="w-full bg-(--surface-muted) border border-(--border) rounded-xl px-4 py-2.5 text-sm text-(--text) flex items-center justify-between">
+                  <span>{{ sensusId || '—' }}</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-(--text-muted) shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
-              <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Tanggal Selesai</label>
-                <input
-                  v-model="form.endDate"
-                  type="date"
-                  required
-                  :min="form.startDate"
-                  class="bg-(--surface-muted) border border-(--border) rounded-lg px-3 py-2.5 text-sm text-(--text) outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
-                />
-              </div>
-            </div>
-            <p v-if="dateError" class="text-xs text-red-500 -mt-2">{{ dateError }}</p>
 
-            <!-- Actions -->
-            <div class="flex gap-3 pt-1">
-              <button
-                type="button"
-                @click="close"
-                class="flex-1 py-2.5 rounded-lg border border-(--border) bg-(--surface-muted) text-(--text) text-sm font-semibold hover:bg-(--border) transition-colors cursor-pointer"
-              >Batal</button>
+              <!-- Aktivitas Kebun (Job Type) -->
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Aktivitas Kebun</label>
+                <div class="relative">
+                  <select
+                    v-model="form.jobType"
+                    required
+                    class="w-full bg-(--surface-muted) border border-(--border) rounded-xl px-4 py-2.5 text-sm text-(--text) outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all cursor-pointer appearance-none pr-10"
+                  >
+                    <option value="" disabled>Pilih aktivitas...</option>
+                    <option v-for="jt in jobTypes" :key="jt" :value="jt">{{ jt }}</option>
+                  </select>
+                  <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--text-muted)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Date range -->
+              <div class="grid grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Start Date</label>
+                  <input
+                    v-model="form.startDate"
+                    type="date"
+                    required
+                    class="bg-(--surface-muted) border border-(--border) rounded-xl px-3 py-2.5 text-sm text-(--text) outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+                  />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">End date</label>
+                  <input
+                    v-model="form.endDate"
+                    type="date"
+                    required
+                    :min="form.startDate"
+                    class="bg-(--surface-muted) border border-(--border) rounded-xl px-3 py-2.5 text-sm text-(--text) outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+                  />
+                </div>
+              </div>
+              <p v-if="dateError" class="text-xs text-red-500 -mt-3">{{ dateError }}</p>
+
+              <!-- Nomor Petak (Blocks) -->
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Nomor Petak</label>
+                <div
+                  v-if="availableBlocks.length === 0"
+                  class="text-xs text-(--text-muted) italic py-1"
+                >Pilih aktivitas kebun terlebih dahulu.</div>
+                <div v-else class="flex flex-wrap gap-2">
+                  <button
+                    v-for="b in availableBlocks"
+                    :key="b"
+                    type="button"
+                    @click="toggleBlock(b)"
+                    :class="form.blocks.includes(b)
+                      ? 'bg-green-600 text-white border-green-600'
+                      : 'bg-(--surface-muted) text-(--text) border-(--border) hover:border-green-400'"
+                    class="text-xs font-semibold px-3 py-1.5 rounded-full border transition-all cursor-pointer"
+                  >{{ b }}</button>
+                </div>
+                <p v-if="blockError" class="text-xs text-red-500 mt-0.5">{{ blockError }}</p>
+              </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 border-t border-(--border)">
               <button
                 type="submit"
-                class="flex-1 py-2.5 rounded-lg border-0 bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-colors cursor-pointer"
+                class="w-full py-3 rounded-2xl border-0 bg-(--text) text-(--surface) text-sm font-semibold hover:opacity-80 transition-opacity cursor-pointer"
               >Simpan</button>
             </div>
           </form>
@@ -117,7 +131,8 @@ import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
-  items: { type: Array, default: () => [] }   // sensus detail items to populate dropdowns
+  items: { type: Array, default: () => [] },
+  sensusId: { type: String, default: '' }
 })
 
 const emit = defineEmits(['update:modelValue', 'save'])
@@ -213,20 +228,23 @@ function submit() {
 </script>
 
 <style scoped>
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.18s ease;
+.panel-enter-active,
+.panel-leave-active {
+  transition: opacity 0.2s ease;
 }
-.modal-fade-enter-from,
-.modal-fade-leave-to {
+.panel-enter-from,
+.panel-leave-to {
   opacity: 0;
 }
-.modal-fade-enter-active .relative,
-.modal-fade-leave-active .relative {
-  transition: transform 0.18s ease;
+.panel-enter-active .panel-content,
+.panel-leave-active .panel-content {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.modal-fade-enter-from .relative {
-  transform: scale(0.96) translateY(8px);
+.panel-enter-from .panel-content {
+  transform: translateX(100%);
+}
+.panel-leave-to .panel-content {
+  transform: translateX(100%);
 }
 .modal-fade-leave-to .relative {
   transform: scale(0.96) translateY(8px);

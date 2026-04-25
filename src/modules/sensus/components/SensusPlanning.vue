@@ -42,8 +42,9 @@
             <div
               v-for="plan in plans"
               :key="plan.id"
-              class="flex items-center px-4 gap-3 group"
+              class="flex items-center px-4 gap-3 group cursor-pointer hover:bg-(--surface-muted) transition-colors"
               style="height: 70px"
+              @click="$emit('view-plan', plan)"
             >
               <!-- Color bar -->
               <div class="shrink-0 w-1 rounded-full self-stretch my-3" :style="{ backgroundColor: jobColor(plan.jobType).bar }"></div>
@@ -67,7 +68,7 @@
               </div>
               <!-- Delete -->
               <button
-                @click="$emit('remove-plan', plan.id)"
+                @click.stop="$emit('remove-plan', plan.id)"
                 class="shrink-0 opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center rounded text-(--text-muted) hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer border-0 bg-transparent"
                 aria-label="Hapus rencana"
               >
@@ -168,7 +169,7 @@ const props = defineProps({
   plans: { type: Array, default: () => [] }
 })
 
-const emit = defineEmits(['add-plan', 'remove-plan'])
+const emit = defineEmits(['add-plan', 'remove-plan', 'view-plan'])
 
 // ─── Date range filter ────────────────────────────────────────────────────
 const dateRange = ref({ start: null, end: null })
@@ -304,14 +305,10 @@ const PALETTE = [
   { bar: '#4fa8a0', chipBg: 'rgba(79,168,160,0.15)',  chipText: '#1e5e5a' },
 ]
 
-const colorMap = {}
-let colorIdx = 0
-
 function jobColor(jobType) {
-  if (!colorMap[jobType]) {
-    colorMap[jobType] = PALETTE[colorIdx % PALETTE.length]
-    colorIdx++
-  }
-  return colorMap[jobType]
+  if (!jobType) return PALETTE[0]
+  let hash = 0
+  for (const ch of jobType) hash = (hash * 31 + ch.charCodeAt(0)) & 0xffffffff
+  return PALETTE[Math.abs(hash) % PALETTE.length]
 }
 </script>

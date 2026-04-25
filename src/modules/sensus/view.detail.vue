@@ -109,14 +109,24 @@
               :plans="plans"
               @add-plan="showPlanModal = true"
               @remove-plan="removePlan"
+              @view-plan="openPlanDetail"
             />
           </div>
 
-          <!-- Add Plan Modal -->
+          <!-- Add Plan Panel -->
           <SensusPlanningModal
             v-model="showPlanModal"
             :items="items"
+            :sensus-id="sensus.id_sensus"
             @save="addPlan"
+          />
+
+          <!-- Plan Detail Panel -->
+          <SensusPlanningDetailPanel
+            v-model="showDetailPanel"
+            :plan="selectedPlan"
+            :plan-index="selectedPlanIndex"
+            @edit="handleEditPlan"
           />
         </template>
 
@@ -134,6 +144,7 @@ import SensusDetailInfo from './components/SensusDetailInfo.vue'
 import SensusJobCard from './components/SensusJobCard.vue'
 import SensusPlanning from './components/SensusPlanning.vue'
 import SensusPlanningModal from './components/SensusPlanningModal.vue'
+import SensusPlanningDetailPanel from './components/SensusPlanningDetailPanel.vue'
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
 import { useAppStore } from '../../stores'
 
@@ -153,6 +164,9 @@ const items = ref([])
 const activeTab = ref('pekerjaan')
 const plans = ref([])
 const showPlanModal = ref(false)
+const showDetailPanel = ref(false)
+const selectedPlan = ref(null)
+const selectedPlanIndex = ref(1)
 
 function addPlan(plan) {
   plans.value.push(plan)
@@ -160,6 +174,18 @@ function addPlan(plan) {
 
 function removePlan(id) {
   plans.value = plans.value.filter(p => p.id !== id)
+}
+
+function openPlanDetail(plan) {
+  selectedPlan.value = plan
+  selectedPlanIndex.value = plans.value.findIndex(p => p.id === plan.id) + 1
+  showDetailPanel.value = true
+}
+
+function handleEditPlan(plan) {
+  showDetailPanel.value = false
+  // Future: pre-fill form with plan data for editing
+  console.log('[SensusDetail] edit plan', plan.id)
 }
 
 const TABS = [

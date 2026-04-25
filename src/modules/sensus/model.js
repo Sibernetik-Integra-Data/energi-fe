@@ -27,14 +27,14 @@ function cloneNavigation(items) {
 }
 
 // ─── Map a t_sensus_detail row to a UI-friendly shape ──────────────────────
-function mapDetailItem(d) {
-  const sensusData = d.sensus || {}
+function mapDetailItem(d, parentSensus = {}) {
+  const sensusData = d.sensus || parentSensus || {}
   return {
     id: d.id,
     sensusId: d.id_sensus || sensusData.id_sensus || '',
-    jobType: sensusData.type_of_work?.name || sensusData.description || '',
-    date: sensusData.sensus_date || '',
-    blocks: (sensusData.blocks || d.blocks || []).map(b => b.name || `Block ${b.id}`),
+    jobType: d.type_of_work?.name || sensusData.type_of_work?.name || sensusData.description || '',
+    date: d.sensus_date || sensusData.sensus_date || '',
+    blocks: (d.blocks || sensusData.blocks || []).map(b => b.name || `Block ${b.id}`),
     photo: d.photo1 || '',
     extraPhotos: 0,
     progressStatus: d.progress_status || '',
@@ -52,15 +52,16 @@ function mapRow(r) {
       time = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
     }
   }
+  const firstDetail = Array.isArray(r.details) && r.details.length > 0 ? r.details[0] : null
   return {
     id: r.id_sensus || '',
     numericId: r.id || null,
     worker: r.created_by || '',
-    block: (r.blocks && r.blocks[0] && r.blocks[0].name) || '',
-    date: r.sensus_date || '',
+    block: (firstDetail && firstDetail.blocks && firstDetail.blocks[0] && firstDetail.blocks[0].name) || '',
+    date: r.sensus_date || (firstDetail && firstDetail.sensus_date) || '',
     time,
-    jobTypes: r.type_of_work ? [r.type_of_work.name] : [],
-    status: r.status || 'Open'
+    jobTypes: firstDetail && firstDetail.type_of_work ? [firstDetail.type_of_work.name] : [],
+    status: (firstDetail && firstDetail.progress_status) || r.status || 'Open'
   }
 }
 
@@ -99,12 +100,22 @@ export function createSensusModel() {
     const sensusResp = await signedGet(`/sensus/${numericId}`)
     const sensusData = sensusResp.data || {}
 
-    // 2. Fetch all detail items linked to this sensus (using id_sensus string key)
-    const idSensus = sensusData.id_sensus
+    // Prefer details embedded in the sensus payload (new backend shape)
     let items = []
-    if (idSensus) {
-      const detailResp = await signedGet(`/sensus/detail?id_sensus=${encodeURIComponent(idSensus)}`)
-      items = (detailResp.data || []).map(mapDetailItem)
+    if (Array.isArray(sensusData.details) && sensusData.details.length > 0) {
+      items = sensusData.details.map((d) => mapDetailItem(d, sensusData))
+    } else {
+      // Fallback: request detail endpoint (older response shapes)
+      const idSensus = sensusData.id_sensus
+      if (idSensus) {
+        const detailResp = await signedGet(`/sensus/detail?id_sensus=${encodeURIComponent(idSensus)}`)
+        const groups = detailResp.data || []
+        if (Array.isArray(groups) && groups.length > 0 && Array.isArray(groups[0].details)) {
+          items = groups[0].details.map((d) => mapDetailItem(d, groups[0]))
+        } else {
+          items = (detailResp.data || []).map((d) => mapDetailItem(d))
+        }
+      }
     }
 
     return { sensus: sensusData, items }
