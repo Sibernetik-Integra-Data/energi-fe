@@ -8,16 +8,22 @@
       </div>
       <div class="mt-3 flex gap-2 bg-(--surface-muted) border border-(--border) p-1.5 rounded-full items-center shrink-0" role="tablist" aria-label="Sensus filters">
         <button
-          class="bg-(--surface) text-(--text) shadow-sm border border-(--border) py-2 px-3.5 rounded-full text-sm font-semibold cursor-pointer"
-          role="tab" aria-selected="true"
+          @click="setFilter('all')"
+          :class="activeFilter === 'all' ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)' : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'"
+          class="py-2 px-3.5 rounded-full text-sm font-semibold cursor-pointer transition-colors"
+          role="tab" :aria-selected="activeFilter === 'all'"
         >All Reports ({{ rows.length }})</button>
         <button
-          class="bg-transparent border-0 py-2 px-3.5 rounded-full text-(--text-muted) text-sm font-semibold cursor-pointer hover:text-(--text) transition-colors"
-          role="tab"
+          @click="setFilter('open')"
+          :class="activeFilter === 'open' ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)' : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'"
+          class="py-2 px-3.5 rounded-full text-sm font-semibold cursor-pointer transition-colors"
+          role="tab" :aria-selected="activeFilter === 'open'"
         >Open ({{ rows.filter(r => (r.status || 'Open') === 'Open').length }})</button>
         <button
-          class="bg-transparent border-0 py-2 px-3.5 rounded-full text-(--text-muted) text-sm font-semibold cursor-pointer hover:text-(--text) transition-colors"
-          role="tab"
+          @click="setFilter('verified')"
+          :class="activeFilter === 'verified' ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)' : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'"
+          class="py-2 px-3.5 rounded-full text-sm font-semibold cursor-pointer transition-colors"
+          role="tab" :aria-selected="activeFilter === 'verified'"
         >Verified ({{ rows.filter(r => r.status === 'Verified').length }})</button>
       </div>
     </div>
@@ -50,7 +56,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="row in rows" :key="row.id"
+            v-for="row in paginatedRows" :key="row.id"
             class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted) transition-colors"
           >
             <td class="py-5 px-6 align-middle text-sm font-bold text-(--text)">{{ row.id }}</td>
@@ -81,7 +87,7 @@
     <!-- Mobile cards -->
     <div class="hidden gap-3 mt-3 max-[920px]:flex max-[920px]:flex-col">
       <div
-        v-for="row in rows" :key="row.id"
+        v-for="row in paginatedRows" :key="row.id"
         class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-3"
       >
         <div class="flex justify-between items-start gap-3">
@@ -103,12 +109,54 @@
         </div>
       </div>
     </div>
+
+    <!-- Pagination -->
+    <div v-if="totalPages > 1" class="flex items-center justify-between mt-5 gap-4 flex-wrap">
+      <p class="text-xs text-(--text-muted) font-medium">
+        Showing {{ (currentPage - 1) * 10 + 1 }}–{{ Math.min(currentPage * 10, filteredRows.length) }} of {{ filteredRows.length }} records
+      </p>
+      <nav class="flex items-center gap-1" aria-label="Pagination">
+        <!-- Prev -->
+        <button
+          @click="currentPage--"
+          :disabled="currentPage === 1"
+          class="flex items-center justify-center w-9 h-9 rounded-lg border border-(--border) bg-(--surface) text-(--text) hover:bg-(--surface-muted) disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 cursor-pointer"
+          aria-label="Previous page"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+        </button>
+
+        <!-- Page numbers -->
+        <template v-for="(p, i) in visiblePages" :key="i">
+          <span v-if="p === '...'" class="flex items-center justify-center w-9 h-9 text-(--text-muted) text-sm select-none">…</span>
+          <button
+            v-else
+            @click="currentPage = p"
+            :aria-current="currentPage === p ? 'page' : undefined"
+            :class="currentPage === p
+              ? 'bg-green-600 text-white border-green-600 shadow-sm shadow-green-200 scale-105'
+              : 'bg-(--surface) text-(--text) border-(--border) hover:bg-(--surface-muted)'"
+            class="flex items-center justify-center w-9 h-9 rounded-lg border text-sm font-semibold transition-all duration-150 cursor-pointer"
+          >{{ p }}</button>
+        </template>
+
+        <!-- Next -->
+        <button
+          @click="currentPage++"
+          :disabled="currentPage === totalPages"
+          class="flex items-center justify-center w-9 h-9 rounded-lg border border-(--border) bg-(--surface) text-(--text) hover:bg-(--surface-muted) disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 cursor-pointer"
+          aria-label="Next page"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+        </button>
+      </nav>
+    </div>
     </template>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -121,7 +169,45 @@ const props = defineProps({
   error: { type: String, default: null }
 })
 
+const PAGE_SIZE = 10
+const currentPage = ref(1)
+const activeFilter = ref('all')
+
 const openCount = computed(() => (props.rows || []).filter(r => ((r && r.status) || 'Open') === 'Open').length)
+
+const filteredRows = computed(() => {
+  const all = props.rows || []
+  if (activeFilter.value === 'open') return all.filter(r => (r.status || 'Open') === 'Open')
+  if (activeFilter.value === 'verified') return all.filter(r => r.status === 'Verified')
+  return all
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredRows.value.length / PAGE_SIZE)))
+
+const paginatedRows = computed(() => {
+  const start = (currentPage.value - 1) * PAGE_SIZE
+  return filteredRows.value.slice(start, start + PAGE_SIZE)
+})
+
+const visiblePages = computed(() => {
+  const total = totalPages.value
+  const cur = currentPage.value
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const pages = []
+  pages.push(1)
+  if (cur > 3) pages.push('...')
+  for (let i = Math.max(2, cur - 1); i <= Math.min(total - 1, cur + 1); i++) pages.push(i)
+  if (cur < total - 2) pages.push('...')
+  pages.push(total)
+  return pages
+})
+
+function setFilter(f) {
+  activeFilter.value = f
+  currentPage.value = 1
+}
+
+watch(() => props.rows, () => { currentPage.value = 1 })
 
 function navigateToDetail(row) {
   if (row.numericId) {

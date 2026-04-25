@@ -9,7 +9,7 @@
         :user="user"
         :on-logout="logoutFromKeycloak"
       />
-      <main class="flex-1 min-w-0 p-6 max-[920px]:p-4.5">
+      <main class="flex-1 min-w-0 p-6 max-[920px]:p-4.5 overflow-y-auto">
         <SensusList :rows="rows" :title="list.title" :subtitle="list.subtitle" :loading="loading" :error="fetchError" />
       </main>
     </div>

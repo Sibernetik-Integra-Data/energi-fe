@@ -48,7 +48,7 @@
 
           <!-- Tabs -->
           <div
-            class="flex gap-2 bg-(--surface-muted) border border-(--border) p-1.5 rounded-full items-center mb-6 w-fit"
+            class="flex gap-2 bg-(--surface-muted) border border-(--border) p-1.5 rounded-full items-center mb-6"
             role="tablist"
             aria-label="Sensus detail tabs"
           >
@@ -59,7 +59,7 @@
               :aria-selected="activeTab === tab.key"
               @click="activeTab = tab.key"
               :class="[
-                'flex items-center gap-2 py-2 px-4 rounded-full text-sm font-semibold transition-colors cursor-pointer',
+                'flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-full text-sm font-semibold transition-colors cursor-pointer',
                 activeTab === tab.key
                   ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)'
                   : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'
@@ -105,11 +105,19 @@
 
           <!-- Tab: Perencanaan -->
           <div v-show="activeTab === 'perencanaan'" role="tabpanel">
-            <div class="flex flex-col items-center justify-center py-20 gap-3 text-(--text-muted)">
-              <span class="text-4xl">📅</span>
-              <p class="text-sm font-medium">Fitur perencanaan akan segera tersedia.</p>
-            </div>
+            <SensusPlanning
+              :plans="plans"
+              @add-plan="showPlanModal = true"
+              @remove-plan="removePlan"
+            />
           </div>
+
+          <!-- Add Plan Modal -->
+          <SensusPlanningModal
+            v-model="showPlanModal"
+            :items="items"
+            @save="addPlan"
+          />
         </template>
 
       </main>
@@ -124,6 +132,8 @@ import BaseHeader from '../shared/header'
 import BaseSidebar from '../shared/sidebar'
 import SensusDetailInfo from './components/SensusDetailInfo.vue'
 import SensusJobCard from './components/SensusJobCard.vue'
+import SensusPlanning from './components/SensusPlanning.vue'
+import SensusPlanningModal from './components/SensusPlanningModal.vue'
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
 import { useAppStore } from '../../stores'
 
@@ -141,6 +151,16 @@ const error = ref(null)
 const sensus = ref({})
 const items = ref([])
 const activeTab = ref('pekerjaan')
+const plans = ref([])
+const showPlanModal = ref(false)
+
+function addPlan(plan) {
+  plans.value.push(plan)
+}
+
+function removePlan(id) {
+  plans.value = plans.value.filter(p => p.id !== id)
+}
 
 const TABS = [
   { key: 'pekerjaan',   label: 'List Pekerjaan', icon: '📋' },
