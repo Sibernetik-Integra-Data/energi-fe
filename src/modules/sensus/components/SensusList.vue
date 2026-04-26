@@ -6,25 +6,37 @@
         <h2 class="text-2xl font-extrabold tracking-tight text-(--text) m-0 mb-1.5">{{ title }}</h2>
         <p class="text-sm text-(--text-muted) m-0">{{ subtitle }}</p>
       </div>
-      <div class="mt-3 flex gap-2 bg-(--surface-muted) border border-(--border) p-1.5 rounded-full items-center shrink-0" role="tablist" aria-label="Sensus filters">
+      <div class="mt-3 flex gap-2 flex-wrap bg-(--surface-muted) border border-(--border) p-1.5 rounded-full items-center shrink-0" role="tablist" aria-label="Sensus filters">
         <button
           @click="setFilter('all')"
           :class="activeFilter === 'all' ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)' : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'"
           class="py-2 px-3.5 rounded-full text-sm font-semibold cursor-pointer transition-colors"
           role="tab" :aria-selected="activeFilter === 'all'"
-        >All Reports ({{ rows.length }})</button>
+        >Semua ({{ rows.length }})</button>
         <button
-          @click="setFilter('open')"
-          :class="activeFilter === 'open' ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)' : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'"
+          @click="setFilter('done')"
+          :class="activeFilter === 'done' ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)' : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'"
           class="py-2 px-3.5 rounded-full text-sm font-semibold cursor-pointer transition-colors"
-          role="tab" :aria-selected="activeFilter === 'open'"
-        >Open ({{ rows.filter(r => (r.status || 'Open') === 'Open').length }})</button>
+          role="tab" :aria-selected="activeFilter === 'done'"
+        >Done ({{ rows.filter(r => r.status === 'done').length }})</button>
         <button
-          @click="setFilter('verified')"
-          :class="activeFilter === 'verified' ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)' : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'"
+          @click="setFilter('wip')"
+          :class="activeFilter === 'wip' ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)' : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'"
           class="py-2 px-3.5 rounded-full text-sm font-semibold cursor-pointer transition-colors"
-          role="tab" :aria-selected="activeFilter === 'verified'"
-        >Verified ({{ rows.filter(r => r.status === 'Verified').length }})</button>
+          role="tab" :aria-selected="activeFilter === 'wip'"
+        >WIP ({{ rows.filter(r => r.status === 'wip').length }})</button>
+        <button
+          @click="setFilter('draft')"
+          :class="activeFilter === 'draft' ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)' : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'"
+          class="py-2 px-3.5 rounded-full text-sm font-semibold cursor-pointer transition-colors"
+          role="tab" :aria-selected="activeFilter === 'draft'"
+        >Draft ({{ rows.filter(r => r.status === 'draft').length }})</button>
+        <button
+          @click="setFilter('submitted')"
+          :class="activeFilter === 'submitted' ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)' : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'"
+          class="py-2 px-3.5 rounded-full text-sm font-semibold cursor-pointer transition-colors"
+          role="tab" :aria-selected="activeFilter === 'submitted'"
+        >Submitted ({{ rows.filter(r => r.status === 'submitted').length }})</button>
       </div>
     </div>
 
@@ -41,17 +53,18 @@
     <!-- Table desktop -->
     <template v-else>
     <!-- Floating open badge (right side) -->
-    <div v-if="openCount > 0" class="sensus-open-badge">{{ openCount }} Open</div>
+    <div v-if="wipCount > 0" class="sensus-open-badge">{{ wipCount }} WIP</div>
     <div class="bg-(--surface) rounded-xl overflow-hidden border border-(--border) shadow-sm max-[920px]:hidden">
       <table class="w-full border-collapse">
         <thead>
           <tr class="border-b border-(--border) bg-(--surface-muted)">
             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">SENSUS ID</th>
             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">REPORTER</th>
-            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">DATE & TIME</th>
-            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">JOB TYPES</th>
+            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">TANGGAL</th>
+            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">BLOK</th>
+            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">JENIS PEKERJAAN</th>
             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">STATUS</th>
-            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">ACTION</th>
+            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">AKSI</th>
           </tr>
         </thead>
         <tbody>
@@ -61,17 +74,30 @@
           >
             <td class="py-5 px-6 align-middle text-sm font-bold text-(--text)">{{ row.id }}</td>
             <td class="py-5 px-6 align-middle text-sm text-(--text)">{{ row.worker }}</td>
-            <td class="py-5 px-6 align-middle text-sm text-(--text)">{{ row.date }}{{ row.time ? ', ' + row.time : '' }}</td>
+            <td class="py-5 px-6 align-middle text-sm text-(--text) whitespace-nowrap">{{ row.date }}{{ row.time ? ', ' + row.time : '' }}</td>
+            <td class="py-5 px-6 align-middle">
+              <div class="flex gap-1.5 flex-wrap">
+                <span
+                  v-for="(b, idx) in (row.blocks || []).slice(0, 3)" :key="idx"
+                  class="inline-block bg-(--surface-muted) border border-(--border) text-(--text) py-0.5 px-2 rounded-full text-xs"
+                >{{ b }}</span>
+                <span
+                  v-if="(row.blocks || []).length > 3"
+                  class="inline-block bg-(--surface-muted) border border-(--border) text-(--text-muted) py-0.5 px-2 rounded-full text-xs"
+                >+{{ row.blocks.length - 3 }}</span>
+              </div>
+            </td>
             <td class="py-5 px-6 align-middle">
               <div class="flex gap-2 flex-wrap">
                 <span
                   v-for="(j, idx) in row.jobTypes" :key="idx"
                   class="inline-block bg-(--border-strong) text-(--text) py-1.5 px-3 rounded-full text-xs"
                 >{{ j }}</span>
+                <span v-if="!row.jobTypes || row.jobTypes.length === 0" class="text-xs text-(--text-muted)">—</span>
               </div>
             </td>
             <td class="py-5 px-6 align-middle">
-              <span :class="statusChipClass(row.status)">{{ row.status || 'Open' }}</span>
+              <span :class="statusChipClass(row.status)">{{ statusLabel(row.status) }}</span>
             </td>
             <td class="py-5 px-6 align-middle">
               <div class="flex gap-2.5 items-center">
@@ -95,13 +121,26 @@
             <div class="font-bold text-sm text-(--text)">{{ row.id }}</div>
             <div class="text-xs text-(--text-muted) mt-0.5">{{ row.worker }} • {{ row.date }}{{ row.time ? ', ' + row.time : '' }}</div>
           </div>
-          <span :class="statusChipClass(row.status)">{{ row.status || 'Open' }}</span>
+          <span :class="statusChipClass(row.status)">{{ statusLabel(row.status) }}</span>
         </div>
+        <!-- Blocks -->
+        <div v-if="row.blocks && row.blocks.length" class="flex gap-1.5 flex-wrap">
+          <span
+            v-for="(b, idx) in row.blocks.slice(0, 4)" :key="'b'+idx"
+            class="inline-block bg-(--surface-muted) border border-(--border) text-(--text) py-0.5 px-2 rounded-full text-xs"
+          >{{ b }}</span>
+          <span
+            v-if="row.blocks.length > 4"
+            class="inline-block bg-(--surface-muted) border border-(--border) text-(--text-muted) py-0.5 px-2 rounded-full text-xs"
+          >+{{ row.blocks.length - 4 }}</span>
+        </div>
+        <!-- Job types -->
         <div class="flex gap-2 flex-wrap">
           <span
             v-for="(j, idx) in row.jobTypes" :key="idx"
             class="inline-block bg-(--border-strong) text-(--text) py-1.5 px-3 rounded-full text-xs"
           >{{ j }}</span>
+          <span v-if="!row.jobTypes || row.jobTypes.length === 0" class="text-xs text-(--text-muted)">—</span>
         </div>
         <div class="flex justify-end gap-2">
           <button @click="navigateToDetail(row)" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-gray-300 bg-(--surface) hover:bg-(--surface-muted) transition-colors cursor-pointer">View</button>
@@ -173,12 +212,11 @@ const PAGE_SIZE = 10
 const currentPage = ref(1)
 const activeFilter = ref('all')
 
-const openCount = computed(() => (props.rows || []).filter(r => ((r && r.status) || 'Open') === 'Open').length)
+const wipCount = computed(() => (props.rows || []).filter(r => r?.status === 'wip').length)
 
 const filteredRows = computed(() => {
   const all = props.rows || []
-  if (activeFilter.value === 'open') return all.filter(r => (r.status || 'Open') === 'Open')
-  if (activeFilter.value === 'verified') return all.filter(r => r.status === 'Verified')
+  if (activeFilter.value !== 'all') return all.filter(r => r.status === activeFilter.value)
   return all
 })
 
@@ -215,11 +253,27 @@ function navigateToDetail(row) {
   }
 }
 
+const STATUS_LABEL = {
+  done:      'Done',
+  wip:       'WIP',
+  draft:     'Draft',
+  submitted: 'Submitted',
+  verified:  'Verified',
+  open:      'Open'
+}
+
+function statusLabel(status) {
+  return STATUS_LABEL[(status || '').toLowerCase()] || status || 'Draft'
+}
+
 function statusChipClass(status) {
   const base = 'inline-block py-1.5 px-3 rounded-full text-xs font-semibold border'
-  if (status && status.toLowerCase() === 'verified') {
-    return base + ' bg-green-50 text-green-700 border-green-200'
-  }
+  const s = (status || '').toLowerCase()
+  if (s === 'done')      return base + ' bg-green-50 text-green-700 border-green-200'
+  if (s === 'verified')  return base + ' bg-emerald-50 text-emerald-700 border-emerald-200'
+  if (s === 'submitted') return base + ' bg-blue-50 text-blue-700 border-blue-200'
+  if (s === 'wip')       return base + ' bg-yellow-50 text-yellow-700 border-yellow-200'
+  // draft or unknown
   return base + ' bg-orange-50 text-orange-700 border-orange-200'
 }
 </script>

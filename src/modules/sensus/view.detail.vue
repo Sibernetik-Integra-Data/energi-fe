@@ -40,9 +40,9 @@
           <!-- Sensus info card -->
           <SensusDetailInfo
             :sensus-id="sensus.id_sensus"
-            :date="sensus.sensus_date"
+            :date="sensus.sensus_date_formatted || sensus.sensus_date"
             :reporter="sensus.created_by"
-            :status="sensus.status || 'Open'"
+            :status="sensus.status || 'draft'"
             class="mb-5"
           />
 

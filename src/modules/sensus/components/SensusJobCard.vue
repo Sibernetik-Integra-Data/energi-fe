@@ -119,8 +119,13 @@ const iconStyle = computed(() => {
 
 const progressStatusClass = computed(() => {
   const s = (props.progressStatus || '').toLowerCase()
-  if (s.includes('selesai') || s.includes('done') || s.includes('complete')) return 'text-green-700'
-  if (s.includes('proses') || s.includes('progress')) return 'text-blue-700'
+  if (s === 'done')                          return 'text-green-700'
+  if (s === 'submitted')                     return 'text-blue-700'
+  if (s === 'wip')                           return 'text-yellow-700'
+  if (s === 'draft')                         return 'text-orange-700'
+  // legacy / English fallbacks
+  if (s.includes('selesai') || s.includes('complete')) return 'text-green-700'
+  if (s.includes('proses')  || s.includes('progress')) return 'text-blue-700'
   return 'text-orange-700'
 })
 </script>

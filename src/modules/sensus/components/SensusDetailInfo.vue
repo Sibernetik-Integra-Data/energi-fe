@@ -37,9 +37,12 @@ const displayId = computed(() => {
 
 function statusChipClass(status) {
   const base = 'inline-block py-1.5 px-4 rounded-full text-xs font-semibold border'
-  if (status && status.toLowerCase() === 'verified') {
-    return base + ' bg-green-50 text-green-700 border-green-200'
-  }
+  const s = (status || '').toLowerCase()
+  if (s === 'done')      return base + ' bg-green-50 text-green-700 border-green-200'
+  if (s === 'verified')  return base + ' bg-emerald-50 text-emerald-700 border-emerald-200'
+  if (s === 'submitted') return base + ' bg-blue-50 text-blue-700 border-blue-200'
+  if (s === 'wip')       return base + ' bg-yellow-50 text-yellow-700 border-yellow-200'
+  // draft or unknown
   return base + ' bg-orange-50 text-orange-700 border-orange-200'
 }
 </script>
