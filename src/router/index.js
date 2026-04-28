@@ -10,7 +10,7 @@ import SensusProgressStatusModule from '../modules/masterdata/sensus-progress-st
 import ProfileModule from '../modules/profile'
 import navigation from '../modules/shared/navigation'
 import ComingSoon from '../components/ComingSoon.vue'
-import { isAuthenticated, redirectToKeycloakLogin } from '../auth/keycloak'
+import { isAuthenticated, redirectToKeycloakLogin, tryRestoreSession } from '../auth/keycloak'
 
 const routes = [
   { path: '/', redirect: '/dashboard', meta: { requiresAuth: true } },
@@ -106,7 +106,7 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   if (to.query?.code) {
     return true
   }
@@ -117,6 +117,13 @@ router.beforeEach((to) => {
   }
 
   if (isAuthenticated()) {
+    return true
+  }
+
+  // Try to silently restore session via httpOnly refresh-token cookie.
+  // On page reload the in-memory access token is gone, but the cookie may still be valid.
+  const restored = await tryRestoreSession()
+  if (restored) {
     return true
   }
 

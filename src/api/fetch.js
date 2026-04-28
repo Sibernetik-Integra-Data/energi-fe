@@ -1,6 +1,7 @@
+import { getAccessToken } from '../auth/tokenMemory'
+
 const API_PREFIX = import.meta.env.VITE_API_PREFIX || ''
 const SIGNING_SECRET = import.meta.env.VITE_SIGNING_SECRET || ''
-const ACCESS_TOKEN_KEY = 'energi.access_token'
 const textEncoder = new TextEncoder()
 
 const SHA256_K = Uint32Array.from([
@@ -34,10 +35,6 @@ const SHA256_H = [
 ]
 
 let signingKeyPromise = null
-
-function getAccessToken() {
-  return globalThis.localStorage?.getItem(ACCESS_TOKEN_KEY) || ''
-}
 
 function base64UrlEncode(bytes) {
   let binary = ''
@@ -246,6 +243,7 @@ export async function apiFetch(path, opts = {}) {
   }
   const res = await fetch(url, {
     cache: 'no-store',
+    credentials: 'include',
     headers,
     ...opts
   })
@@ -281,6 +279,7 @@ export async function signedApiFetch(path, opts = {}) {
     ...opts,
     method,
     cache: 'no-store',
+    credentials: 'include',
     headers
   })
 
