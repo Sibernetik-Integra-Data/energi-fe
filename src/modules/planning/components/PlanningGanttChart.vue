@@ -17,7 +17,7 @@
 
                     <div class="px-4 py-3 border-b border-(--border)">
                         <button
-                            @click="$emit('add-plan')"
+                            @click="$emit('add')"
                             class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-(--text) text-(--surface) text-sm font-semibold hover:opacity-80 transition-opacity cursor-pointer border-0"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -40,7 +40,7 @@
                             :key="plan.id"
                             class="flex items-center px-4 gap-3 group cursor-pointer hover:bg-(--surface-muted) transition-colors"
                             style="height: 70px"
-                            @click="$emit('view-plan', plan)"
+                            @click="$emit('editItem', plan)"
                         >
                             <div class="shrink-0 w-1 rounded-full self-stretch my-3" :style="{ backgroundColor: jobColor(plan.jobType).bar }"></div>
                             <div class="flex-1 min-w-0">
@@ -130,15 +130,16 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
-import PlanningDateRangePicker from '../../planning/components/PlanningDateRangePicker.vue';
+import PlanningDateRangePicker from "./PlanningDateRangePicker.vue";
 
 const props = defineProps({
-    plans: { type: Array, default: () => [] },
+    items: { type: Array, default: () => [] },
+    /** ISO date string for the first visible day; defaults to 10 days before today */
     startDate: { type: String, default: null },
     daysCount: { type: Number, default: 28 },
 });
 
-const emit = defineEmits(["add-plan", "remove-plan", "view-plan"]);
+defineEmits(["add", "editItem"]);
 
 // ─── Date range filter ─────────────────────────────────────────────────────
 const dateRange = ref({ start: null, end: null });
@@ -165,9 +166,6 @@ function isoDate(date) {
     const d = String(date.getDate()).padStart(2, "0");
     return `${y}-${m}-${d}`;
 }
-
-// expose items alias for compatibility with Planning template
-const items = computed(() => props.plans || []);
 
 // ─── Effective days count (overridden by dateRange picker) ─────────────────
 const effectiveDaysCount = computed(() => {
@@ -223,6 +221,7 @@ watch(days, () => nextTick(measureContainer))
 
 const timelineWidth = computed(() => effectiveDaysCount.value * COL_WIDTH)
 const dayWidthComputed = computed(() => {
+    // if container is wider than the natural timeline, expand columns to fill it exactly
     const avail = containerWidth.value || 0
     if (avail > timelineWidth.value) return Math.max(COL_WIDTH, avail / Math.max(1, days.value.length))
     return COL_WIDTH

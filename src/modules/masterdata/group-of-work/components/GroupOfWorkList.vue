@@ -79,16 +79,16 @@
                                 <div class="flex gap-2 items-center justify-center">
                                     <button
                                         type="button"
-                                        class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border-0 hover:bg-(--surface-muted) transition-colors cursor-pointer"
+                                        class="text-sm py-1.5 px-5 rounded-lg font-semibold text-(--text) bg-blue-500 border-0 hover:bg-blue-300 transition-colors cursor-pointer"
                                         @click="openEdit(row)">
                                         Edit
                                     </button>
-                                    <button
+                                    <!-- <button
                                         type="button"
                                         class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
                                         @click="confirmDelete(row)">
                                         Delete
-                                    </button>
+                                    </button> -->
                                 </div>
                             </td>
                         </tr>

@@ -160,6 +160,52 @@
       <path d="M11.5 5.5L14.5 8.5" />
     </template>
 
+    <template v-else-if="name === 'plus'">
+      <path d="M10 4.5V15.5" />
+      <path d="M4.5 10H15.5" />
+    </template>
+
+    <template v-else-if="name === 'x'">
+      <path d="M5 5L15 15" />
+      <path d="M15 5L5 15" />
+    </template>
+
+    <template v-else-if="name === 'filter'">
+      <path d="M3.5 5.5H16.5" />
+      <path d="M6 10H14" />
+      <path d="M8.5 14.5H11.5" />
+    </template>
+
+    <template v-else-if="name === 'search'">
+      <circle cx="9" cy="9" r="4.5" />
+      <path d="M12.5 12.5L16.5 16.5" />
+    </template>
+
+    <template v-else-if="name === 'grip'">
+      <circle cx="7.5" cy="7" r="1" fill="currentColor" />
+      <circle cx="12.5" cy="7" r="1" fill="currentColor" />
+      <circle cx="7.5" cy="10" r="1" fill="currentColor" />
+      <circle cx="12.5" cy="10" r="1" fill="currentColor" />
+      <circle cx="7.5" cy="13" r="1" fill="currentColor" />
+      <circle cx="12.5" cy="13" r="1" fill="currentColor" />
+    </template>
+
+    <template v-else-if="name === 'gantt'">
+      <rect x="3.5" y="5.5" width="7" height="2" rx="1" />
+      <rect x="8" y="9.5" width="8.5" height="2" rx="1" />
+      <rect x="5" y="13.5" width="6" height="2" rx="1" />
+      <path d="M3.5 4.5V16.5" />
+    </template>
+
+    <template v-else-if="name === 'list-check'">
+      <path d="M9 5.5H16.5" />
+      <path d="M9 10H16.5" />
+      <path d="M9 14.5H16.5" />
+      <polyline points="3.5,5.5 5,7 7.5,4" />
+      <polyline points="3.5,10 5,11.5 7.5,8.5" />
+      <polyline points="3.5,14.5 5,16 7.5,13" />
+    </template>
+
     <template v-else>
       <circle cx="10" cy="10" r="6" />
     </template>
