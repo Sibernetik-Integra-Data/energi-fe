@@ -38,7 +38,7 @@
                         <span v-if="errors.name" class="text-xs text-red-500">{{ errors.name }}</span>
                     </div>
 
-                    <!-- Nomor (disabled — fallback to 1 on submit) -->
+                    <!-- Nomor -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="loc-nomor">Nomor</label>
                         <input
@@ -46,9 +46,9 @@
                             v-model.number="form.nomor"
                             type="number"
                             placeholder="1"
-                            disabled
-                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none opacity-50 cursor-not-allowed" />
-                        <span class="text-xs text-(--text-muted)">Auto-assigned by server.</span>
+                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors"
+                        />
+                        <span class="text-xs text-(--text-muted)">Enter a numeric identifier for this location.</span>
                     </div>
 
                     <!-- Location -->
@@ -224,8 +224,9 @@ function onSubmit() {
         notes: form.value.notes
     }
 
-    if (!isEdit.value) {
-        payload.nomor = form.value.nomor || 1
+    // include nomor only when user provided a value
+    if (form.value.nomor !== null && form.value.nomor !== undefined && form.value.nomor !== '') {
+        payload.nomor = form.value.nomor
     }
 
     // Strip undefined keys for partial update on edit

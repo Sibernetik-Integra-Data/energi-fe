@@ -47,6 +47,19 @@
                         <span v-if="errors.name" id="gow-name-error" role="alert" class="text-xs text-red-500">{{ errors.name }}</span>
                     </div>
 
+                    <!-- Detail -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-sm font-semibold text-(--text)" for="gow-detail">Detail</label>
+                        <textarea
+                            id="gow-detail"
+                            v-model="form.detail"
+                            rows="4"
+                            placeholder="Optional detail or description"
+                            maxlength="2000"
+                            class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
+                        ></textarea>
+                    </div>
+
                     <!-- Actions -->
                     <div class="flex justify-end gap-3 pt-1">
                         <button
@@ -86,7 +99,7 @@ const nameInput = ref(null)
 
 const isEdit = computed(() => Boolean(props.group?.id))
 
-const emptyForm = () => ({ name: '' })
+const emptyForm = () => ({ name: '', detail: '' })
 
 const form = ref(emptyForm())
 const errors = ref({})
@@ -94,8 +107,8 @@ const errors = ref({})
 watch(
     () => [props.visible, props.group],
     ([visible, group]) => {
-        if (visible) {
-            form.value = group ? { name: group.name || '' } : emptyForm()
+            if (visible) {
+                form.value = group ? { name: group.name || '', detail: group.detail || '' } : emptyForm()
             errors.value = {}
             nextTick(() => nameInput.value?.focus())
         }
@@ -116,7 +129,7 @@ function validate() {
 
 function onSubmit() {
     if (!validate()) return
-    emit('submit', { name: form.value.name })
+    emit('submit', { name: form.value.name, detail: form.value.detail })
 }
 
 function onCancel() {

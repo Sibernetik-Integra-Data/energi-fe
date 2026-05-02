@@ -15,7 +15,6 @@ export async function getLocation(id) {
 
 export async function createLocation(payload) {
 	const body = { ...payload }
-	if (!body.nomor) body.nomor = 1
 	const resp = await signedApiFetch(BASE, {
 		method: 'POST',
 		body: JSON.stringify(body)

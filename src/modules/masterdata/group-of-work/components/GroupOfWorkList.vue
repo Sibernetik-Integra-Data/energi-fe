@@ -83,12 +83,12 @@
                                         @click="openEdit(row)">
                                         Edit
                                     </button>
-                                    <!-- <button
+                                    <button
                                         type="button"
                                         class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
                                         @click="confirmDelete(row)">
                                         Delete
-                                    </button> -->
+                                    </button>
                                 </div>
                             </td>
                         </tr>

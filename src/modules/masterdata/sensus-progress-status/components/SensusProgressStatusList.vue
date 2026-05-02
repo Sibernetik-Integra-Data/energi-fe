@@ -39,28 +39,31 @@
             <div class="bg-(--surface) rounded-xl overflow-hidden border border-(--border) shadow-sm max-[920px]:hidden">
                 <table class="w-full border-collapse table-fixed">
                     <colgroup>
-                        <col class="w-20" />
-                        <col />
-                        <col class="w-40" />
+                        <col style="width:25%" />
+                        <col style="width:25%" />
+                        <col style="width:25%" />
+                        <col style="width:25%" />
                     </colgroup>
                     <thead>
                         <tr class="border-b border-(--border) bg-(--surface-muted)">
-                            <th class="text-xs font-extrabold text-(--text-muted) py-4 px-8 uppercase tracking-widest">#</th>
-                            <th class="text-xs font-extrabold text-(--text-muted) py-4 px-8 uppercase tracking-widest">Name</th>
-                            <th class="text-xs font-extrabold text-(--text-muted) py-4 px-8 uppercase tracking-widest">Actions</th>
+                            <th class="text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest text-center">#</th>
+                            <th class="text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest text-left">Name</th>
+                            <th class="text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest text-left">Detail</th>
+                            <th class="text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="filteredRows.length === 0">
-                            <td colspan="3" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
+                            <td colspan="4" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
                         </tr>
                         <tr
                             v-for="(row, index) in filteredRows"
                             :key="row.id"
                             class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted) transition-colors">
-                            <td class="py-5 px-8 align-middle text-sm text-(--text-muted) text-center">{{ index + 1 }}</td>
-                            <td class="py-5 px-8 align-middle text-sm font-semibold text-(--text) text-center">{{ row.name }}</td>
-                            <td class="py-5 px-8 align-middle text-center">
+                            <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-center">{{ index + 1 }}</td>
+                            <td class="py-4 px-4 align-middle text-sm font-semibold text-(--text) text-left">{{ row.name }}</td>
+                            <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-left whitespace-normal wrap-break-word">{{ row.detail || '-' }}</td>
+                            <td class="py-4 px-4 align-middle text-center">
                                 <div class="flex gap-3 items-center justify-center">
                                     <button
                                         type="button"
