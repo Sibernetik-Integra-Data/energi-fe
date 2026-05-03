@@ -5,7 +5,7 @@ import { getAccessToken, setAccessToken, clearAccessToken } from './tokenMemory'
 // Constants
 // ---------------------------------------------------------------------------
 const ID_TOKEN_KEY = 'energi.id_token'
-const API_PREFIX = import.meta.env.VITE_API_PREFIX || ''
+const API_PREFIX = import.meta.env.VITE_API_PREFIX || '/api'
 
 // Keycloak OAuth2 config (Authorization Code flow)
 const KEYCLOAK_AUTH_URL = import.meta.env.VITE_KEYCLOAK_AUTH_URL
@@ -239,8 +239,17 @@ export async function tryRestoreSession() {
         access_token: data.access_token,
         expires_in: data.expires_in || 0,
         server_time: data.server_time || 0,
-        id_token: data.id_token || ''
+            id_token: data.id_token || ''
       })
+          // After restoring token, attempt to populate app store profile so UI shows user info
+          if (appStoreInstance) {
+            try {
+              const fetched = await fetchUserProfile()
+              appStoreInstance.setProfile(fetched)
+            } catch (e) {
+              // ignore profile fetch errors during restore
+            }
+          }
       return true
     } catch {
       return false
@@ -327,12 +336,32 @@ function getDisplayNameFromClaims(claims) {
 }
 
 function getRoleFromClaims(claims) {
+  if (!claims || typeof claims !== 'object') return 'Authenticated user'
+
+  // Prefer realm roles if present
   const realmRoles = Array.isArray(claims?.realm_access?.roles) ? claims.realm_access.roles : []
-  const clientRoles = claims?.resource_access && typeof claims.resource_access === 'object'
-    ? Object.values(claims.resource_access).flatMap((resource) => Array.isArray(resource?.roles) ? resource.roles : [])
+
+  // Determine client name: explicit config -> token 'azp' -> fallback 'mobile'
+  const clientName = (KEYCLOAK_CLIENT_ID && KEYCLOAK_CLIENT_ID.length) ? KEYCLOAK_CLIENT_ID : (typeof claims?.azp === 'string' && claims.azp) ? claims.azp : 'mobile'
+
+  // Roles for the primary client (most relevant for app-level roles)
+  const clientRolesForClient = Array.isArray(claims?.resource_access?.[clientName]?.roles)
+    ? claims.resource_access[clientName].roles
     : []
-  const role = realmRoles[0] || clientRoles[0] || ''
-  return typeof role === 'string' && role.length ? role : 'Authenticated user'
+
+  // Other client roles (flatten)
+  const otherClientRoles = claims?.resource_access && typeof claims.resource_access === 'object'
+    ? Object.entries(claims.resource_access).flatMap(([k, v]) => (k === clientName ? [] : (Array.isArray(v?.roles) ? v.roles : [])))
+    : []
+
+  // Choose best available set in order: client-specific roles, realm roles, other client roles
+  const chosen = clientRolesForClient.length ? clientRolesForClient : (realmRoles.length ? realmRoles : otherClientRoles)
+  if (chosen && chosen.length) {
+    // Return joined roles as human-readable string (preserve order)
+    return chosen.join(', ')
+  }
+
+  return 'Authenticated user'
 }
 
 function getInitialsFromName(name) {
@@ -372,7 +401,13 @@ function getProfileName(profile) {
 export function profileToUser(profile) {
   if (!profile) return null
   const name = getProfileName(profile)
-  const role = getRoleFromClaims(profile)
+  // Prefer explicit role in profile when present; otherwise fallback to token claims
+  let role = getRoleFromClaims(profile)
+  if ((!role || role === 'Authenticated user') && typeof getAccessToken === 'function') {
+    const tokenClaims = getTokenClaims()
+    const tokenRole = getRoleFromClaims(tokenClaims)
+    if (tokenRole && tokenRole !== 'Authenticated user') role = tokenRole
+  }
   const email = typeof profile?.email === 'string' ? profile.email.trim() : ''
   const jobs = typeof profile?.jobTitle === 'string' && profile.jobTitle.trim()
     ? profile.jobTitle.trim()

@@ -1,8 +1,8 @@
 <template>
-  <div class="profile-shell">
+  <div class="flex h-screen bg-transparent">
     <BaseSidebar :items="navigation" :user="user" />
 
-    <div class="profile-main">
+    <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
       <BaseHeader
         eyebrow="Profile"
         title="Profile"
@@ -11,54 +11,70 @@
         :on-logout="logoutFromKeycloak"
       />
 
-      <main class="profile-content">
-        <div class="profile-layout">
-          <!-- Left panel: identity card + nav -->
-          <aside class="profile-sidebar-card">
-            <div class="profile-id-card">
-              <div class="profile-id-avatar-wrap">
+      <main class="flex-1 overflow-y-auto p-7 pb-10">
+        <div class="flex gap-6 items-start">
+
+          <!-- ── Left sidebar card ─────────────────────────── -->
+          <aside class="w-55 shrink-0 border border-(--border) rounded-lg bg-(--surface) overflow-hidden">
+            <!-- Identity card -->
+            <div class="flex flex-col items-center gap-1 px-4 pt-7 pb-5 border-b border-(--border)">
+              <div class="w-22 h-22 rounded-full overflow-hidden mb-2.5">
                 <img
                   v-if="avatarUrl"
                   :src="avatarUrl"
                   :alt="fullName"
-                  class="profile-id-avatar-img"
+                  class="w-full h-full object-cover block"
                 />
-                <div v-else class="profile-id-avatar-initials">{{ initials }}</div>
+                <div
+                  v-else
+                  class="w-22 h-22 rounded-full bg-green-700 text-white flex items-center justify-center text-3xl font-bold"
+                >
+                  {{ initials }}
+                </div>
               </div>
-              <p class="profile-id-name">{{ fullName }}</p>
-              <p v-if="profile?.jobTitle" class="profile-id-job">{{ profile.jobTitle }}</p>
-              <p v-if="profile?.id" class="profile-id-uid">ID{{ profile.id }}</p>
+              <p class="m-0 text-[15px] font-bold text-(--text) text-center">{{ fullName }}</p>
+              <p v-if="profile?.jobTitle" class="m-0 text-xs text-(--text-muted) text-center">{{ profile.jobTitle }}</p>
+              <p v-if="profile?.id" class="m-0 text-[11px] text-(--text-soft) text-center break-all">ID{{ profile.id }}</p>
             </div>
 
-            <nav class="profile-nav" aria-label="Profile navigation">
+            <!-- Nav menu -->
+            <nav class="p-2 flex flex-col" aria-label="Profile navigation">
               <button
-                class="profile-nav-item"
-                :class="{ 'is-active': activeSection === 'profile' }"
+                class="flex items-center gap-2.5 w-full h-10 px-3 text-[13px] font-semibold rounded-xl text-left border-0 cursor-pointer transition-colors duration-150"
+                :class="activeSection === 'profile'
+                  ? 'bg-(--brand-soft) text-(--brand)'
+                  : 'bg-transparent text-(--text) hover:bg-(--surface-muted)'"
                 type="button"
                 @click="activeSection = 'profile'"
               >
-                <span class="profile-nav-item-icon">
+                <span class="inline-flex items-center justify-center shrink-0">
                   <BaseIcon name="profile" :size="16" />
                 </span>
                 Profile
               </button>
 
               <button
-                class="profile-nav-item"
-                :class="{ 'is-active': activeSection === 'password' }"
+                class="flex items-center gap-2.5 w-full h-10 px-3 text-[13px] font-semibold rounded-xl text-left border-0 cursor-pointer transition-colors duration-150"
+                :class="activeSection === 'password'
+                  ? 'bg-(--brand-soft) text-(--brand)'
+                  : 'bg-transparent text-(--text) hover:bg-(--surface-muted)'"
                 type="button"
                 @click="activeSection = 'password'"
               >
-                <span class="profile-nav-item-icon">
+                <span class="inline-flex items-center justify-center shrink-0">
                   <BaseIcon name="key" :size="16" />
                 </span>
                 Ubah Kata Sandi
               </button>
 
-              <div class="profile-nav-divider" aria-hidden="true"></div>
+              <div class="h-px bg-(--border) my-1.5" aria-hidden="true"></div>
 
-              <button class="profile-nav-item profile-nav-item--logout" type="button" @click="handleLogout">
-                <span class="profile-nav-item-icon">
+              <button
+                class="flex items-center gap-2.5 w-full h-10 px-3 text-[13px] font-semibold rounded-xl text-left border-0 bg-transparent text-(--text-muted) cursor-pointer hover:bg-(--surface-muted) transition-colors duration-150"
+                type="button"
+                @click="handleLogout"
+              >
+                <span class="inline-flex items-center justify-center shrink-0">
                   <BaseIcon name="logout" :size="16" />
                 </span>
                 Logout
@@ -66,32 +82,33 @@
             </nav>
           </aside>
 
-          <!-- Right panel: profile detail / change password -->
-          <section class="profile-detail-card" aria-label="Profile details">
+          <!-- ── Right detail card ─────────────────────────── -->
+          <section
+            class="flex-1 min-w-0 border border-(--border) rounded-lg bg-(--surface) p-7 flex flex-col gap-6"
+            aria-label="Profile details"
+          >
             <!-- Profile section -->
             <template v-if="activeSection === 'profile'">
               <!-- Photo upload row -->
-              <div class="profile-photo-row">
-                <div class="profile-photo-preview">
+              <div class="flex items-start gap-5 pb-6 border-b border-(--border)">
+                <div class="w-18 h-18 rounded-full border-2 border-(--border) bg-(--brand-soft) flex items-center justify-center overflow-hidden shrink-0 text-(--brand)">
                   <img
                     v-if="avatarUrl"
                     :src="avatarUrl"
                     :alt="fullName"
-                    class="profile-photo-preview-img"
+                    class="w-full h-full object-cover"
                   />
-                  <div v-else class="profile-photo-preview-placeholder">
-                    <BaseIcon name="profile" :size="32" />
-                  </div>
+                  <BaseIcon v-else name="profile" :size="32" />
                 </div>
-                <div class="profile-photo-info">
-                  <p class="profile-photo-label">Foto Profil</p>
-                  <p class="profile-photo-hint">Optimal size 300 x 300 pixels with file size: Maximum 10 MB.</p>
-                  <p class="profile-photo-hint">Allowed file extensions: JPG, JPEG, PNG.</p>
-                  <label class="profile-photo-btn" role="button" tabindex="0">
+                <div class="flex flex-col gap-0.75">
+                  <p class="m-0 text-sm font-bold text-(--text)">Foto Profil</p>
+                  <p class="m-0 text-xs text-(--text-soft) leading-relaxed">Optimal size 300 x 300 pixels with file size: Maximum 10 MB.</p>
+                  <p class="m-0 text-xs text-(--text-soft) leading-relaxed">Allowed file extensions: JPG, JPEG, PNG.</p>
+                  <label class="inline-flex items-center mt-2.5 px-4 py-1.75 border border-(--border-strong) rounded-[10px] bg-(--surface) text-[13px] font-semibold text-(--text) cursor-pointer select-none hover:bg-(--surface-muted) transition-colors duration-150" role="button" tabindex="0">
                     <input
                       type="file"
                       accept=".jpg,.jpeg,.png"
-                      class="profile-photo-input"
+                      class="hidden"
                       @change="handlePhotoChange"
                     />
                     Choose Photo
@@ -100,100 +117,121 @@
               </div>
 
               <!-- Fields grid -->
-              <div class="profile-fields-grid">
-                <div class="profile-field">
-                  <label class="profile-field-label">Nama Depan</label>
-                  <div class="profile-field-value">{{ profile?.firstName || '-' }}</div>
+              <div class="grid grid-cols-2 gap-4 gap-x-6">
+                <div class="flex flex-col">
+                  <label class="block mb-1.5 text-xs font-semibold text-(--text-muted) tracking-wide">Nama Depan</label>
+                  <div class="px-3.5 py-2.5 bg-(--surface-muted) border border-(--border) rounded-[10px] text-sm text-(--text) min-h-10">{{ profile?.firstName || '-' }}</div>
                 </div>
 
-                <div class="profile-field">
-                  <label class="profile-field-label">Nama Belakang</label>
-                  <div class="profile-field-value">{{ profile?.lastName || '-' }}</div>
+                <div class="flex flex-col">
+                  <label class="block mb-1.5 text-xs font-semibold text-(--text-muted) tracking-wide">Nama Belakang</label>
+                  <div class="px-3.5 py-2.5 bg-(--surface-muted) border border-(--border) rounded-[10px] text-sm text-(--text) min-h-10">{{ profile?.lastName || '-' }}</div>
                 </div>
 
-                <div class="profile-field">
-                  <label class="profile-field-label">Tanggal Lahir</label>
-                  <div class="profile-field-value">{{ profile?.birthDate || '-' }}</div>
+                <div class="flex flex-col">
+                  <label class="block mb-1.5 text-xs font-semibold text-(--text-muted) tracking-wide">Tanggal Lahir</label>
+                  <div class="px-3.5 py-2.5 bg-(--surface-muted) border border-(--border) rounded-[10px] text-sm text-(--text) min-h-10">{{ profile?.birthDate || '-' }}</div>
                 </div>
 
-                <div class="profile-field">
-                  <label class="profile-field-label">Marital Status</label>
-                  <div class="profile-field-value">{{ profile?.maritalStatus || '-' }}</div>
+                <div class="flex flex-col">
+                  <label class="block mb-1.5 text-xs font-semibold text-(--text-muted) tracking-wide">Marital Status</label>
+                  <div class="px-3.5 py-2.5 bg-(--surface-muted) border border-(--border) rounded-[10px] text-sm text-(--text) min-h-10">{{ profile?.maritalStatus || '-' }}</div>
                 </div>
 
-                <div class="profile-field">
-                  <label class="profile-field-label">Email</label>
-                  <div class="profile-field-value">{{ profile?.email || '-' }}</div>
+                <div class="flex flex-col">
+                  <label class="block mb-1.5 text-xs font-semibold text-(--text-muted) tracking-wide">Email</label>
+                  <div class="px-3.5 py-2.5 bg-(--surface-muted) border border-(--border) rounded-[10px] text-sm text-(--text) min-h-10">{{ profile?.email || '-' }}</div>
                 </div>
 
-                <div class="profile-field">
-                  <label class="profile-field-label">Gender</label>
-                  <div class="profile-field-value">{{ profile?.gender || '-' }}</div>
+                <div class="flex flex-col">
+                  <label class="block mb-1.5 text-xs font-semibold text-(--text-muted) tracking-wide">Role</label>
+                  <div class="px-3.5 py-2.5 bg-(--surface-muted) border border-(--border) rounded-[10px] text-sm text-(--text) min-h-10">{{ userRole || '-' }}</div>
                 </div>
 
-                <div class="profile-field profile-field--full">
-                  <label class="profile-field-label">Address 1</label>
-                  <div class="profile-field-value">{{ profile?.address1 || '-' }}</div>
+                <div class="flex flex-col">
+                  <label class="block mb-1.5 text-xs font-semibold text-(--text-muted) tracking-wide">Gender</label>
+                  <div class="px-3.5 py-2.5 bg-(--surface-muted) border border-(--border) rounded-[10px] text-sm text-(--text) min-h-10">{{ profile?.gender || '-' }}</div>
                 </div>
 
-                <div class="profile-field profile-field--full">
-                  <label class="profile-field-label">Address 2</label>
-                  <div class="profile-field-value">{{ profile?.address2 || '-' }}</div>
+                <div class="flex flex-col col-span-2">
+                  <label class="block mb-1.5 text-xs font-semibold text-(--text-muted) tracking-wide">Address 1</label>
+                  <div class="px-3.5 py-2.5 bg-(--surface-muted) border border-(--border) rounded-[10px] text-sm text-(--text) min-h-10">{{ profile?.address1 || '-' }}</div>
+                </div>
+
+                <div class="flex flex-col col-span-2">
+                  <label class="block mb-1.5 text-xs font-semibold text-(--text-muted) tracking-wide">Address 2</label>
+                  <div class="px-3.5 py-2.5 bg-(--surface-muted) border border-(--border) rounded-[10px] text-sm text-(--text) min-h-10">{{ profile?.address2 || '-' }}</div>
                 </div>
               </div>
 
-              <div class="profile-actions">
-                <button class="profile-btn-edit" type="button" @click="handleEditProfile">
+              <div class="flex justify-end gap-3">
+                <button
+                  class="px-7 py-2.5 rounded-full bg-(--text) text-(--surface) text-sm font-bold border-0 cursor-pointer hover:opacity-90 transition-opacity duration-150"
+                  type="button"
+                  @click="handleEditProfile"
+                >
                   Edit Profile
+                </button>
+                <button
+                  class="px-7 py-2.5 rounded-full bg-gray-500 text-white text-sm font-bold border-0 cursor-pointer hover:opacity-90 transition-opacity duration-150"
+                  type="button"
+                  @click="debugToken"
+                >
+                  Debug Token
                 </button>
               </div>
             </template>
 
             <!-- Change password section -->
             <template v-else-if="activeSection === 'password'">
-              <div class="profile-section-title">Ubah Kata Sandi</div>
-              <div class="profile-fields-grid">
-                <div class="profile-field profile-field--full">
-                  <label class="profile-field-label" for="cp-current">Kata Sandi Saat Ini</label>
+              <div class="text-base font-bold text-(--text) pb-4 border-b border-(--border)">Ubah Kata Sandi</div>
+              <div class="grid grid-cols-2 gap-4 gap-x-6">
+                <div class="flex flex-col col-span-2">
+                  <label class="block mb-1.5 text-xs font-semibold text-(--text-muted) tracking-wide" for="cp-current">Kata Sandi Saat Ini</label>
                   <input
                     id="cp-current"
                     v-model="passwordForm.current"
                     type="password"
-                    class="profile-field-input"
+                    class="w-full px-3.5 py-2.5 bg-(--surface-muted) border border-(--border) rounded-[10px] text-sm text-(--text) outline-none focus:border-(--brand) focus:bg-(--surface) transition-colors duration-150"
                     placeholder="Masukkan kata sandi saat ini"
                     autocomplete="current-password"
                   />
                 </div>
-                <div class="profile-field profile-field--full">
-                  <label class="profile-field-label" for="cp-new">Kata Sandi Baru</label>
+                <div class="flex flex-col col-span-2">
+                  <label class="block mb-1.5 text-xs font-semibold text-(--text-muted) tracking-wide" for="cp-new">Kata Sandi Baru</label>
                   <input
                     id="cp-new"
                     v-model="passwordForm.newPassword"
                     type="password"
-                    class="profile-field-input"
+                    class="w-full px-3.5 py-2.5 bg-(--surface-muted) border border-(--border) rounded-[10px] text-sm text-(--text) outline-none focus:border-(--brand) focus:bg-(--surface) transition-colors duration-150"
                     placeholder="Masukkan kata sandi baru"
                     autocomplete="new-password"
                   />
                 </div>
-                <div class="profile-field profile-field--full">
-                  <label class="profile-field-label" for="cp-confirm">Konfirmasi Kata Sandi Baru</label>
+                <div class="flex flex-col col-span-2">
+                  <label class="block mb-1.5 text-xs font-semibold text-(--text-muted) tracking-wide" for="cp-confirm">Konfirmasi Kata Sandi Baru</label>
                   <input
                     id="cp-confirm"
                     v-model="passwordForm.confirm"
                     type="password"
-                    class="profile-field-input"
+                    class="w-full px-3.5 py-2.5 bg-(--surface-muted) border border-(--border) rounded-[10px] text-sm text-(--text) outline-none focus:border-(--brand) focus:bg-(--surface) transition-colors duration-150"
                     placeholder="Ulangi kata sandi baru"
                     autocomplete="new-password"
                   />
                 </div>
               </div>
-              <div class="profile-actions">
-                <button class="profile-btn-edit" type="button" @click="handleChangePassword">
+              <div class="flex justify-end">
+                <button
+                  class="px-7 py-2.5 rounded-full bg-(--text) text-(--surface) text-sm font-bold border-0 cursor-pointer hover:opacity-90 transition-opacity duration-150"
+                  type="button"
+                  @click="handleChangePassword"
+                >
                   Simpan
                 </button>
               </div>
             </template>
           </section>
+
         </div>
       </main>
     </div>
@@ -205,7 +243,7 @@ import { computed, ref, watch } from 'vue'
 import BaseHeader from '../shared/header'
 import BaseSidebar from '../shared/sidebar'
 import BaseIcon from '../shared/icon'
-import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
+import { logoutFromKeycloak, profileToUser, getAuthenticatedUser, getTokenClaims } from '../../auth/keycloak'
 import { useAppStore } from '../../stores'
 import navigation from '../shared/navigation'
 
@@ -214,7 +252,6 @@ const appStore = useAppStore()
 const activeSection = ref('profile')
 const localAvatarUrl = ref('')
 
-// Initialize local avatar from store profile when it loads
 watch(
   () => appStore.profile?.avatarUrl,
   (val) => { if (val && !localAvatarUrl.value) localAvatarUrl.value = val },
@@ -232,6 +269,57 @@ const passwordForm = ref({
 const profile = computed(() => appStore.profile)
 
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
+
+/**
+ * Extracts the user role from the Keycloak token.
+ *
+ * Token structure:
+ *   resource_access -> [client_id (e.g. "mobile")] -> roles -> Array<string>
+ *
+ * Priority:
+ *   1. resource_access.<VITE_KEYCLOAK_CLIENT_ID>.roles
+ *   2. resource_access.<azp>.roles  (azp = authorized party, i.e. the client that issued the token)
+ *   3. resource_access.<any client>.roles (first match)
+ *   4. realm_access.roles
+ *   5. Empty string (role not found)
+ */
+const userRole = computed(() => {
+  try {
+    const claims = getTokenClaims()
+    if (!claims) return ''
+
+    const resourceAccess = claims.resource_access
+    if (resourceAccess && typeof resourceAccess === 'object') {
+      // 1. Try the configured client ID first
+      const configuredClient = import.meta.env.VITE_KEYCLOAK_CLIENT_ID
+      if (configuredClient) {
+        const roles = resourceAccess[configuredClient]?.roles
+        if (Array.isArray(roles) && roles.length) return roles.join(', ')
+      }
+
+      // 2. Try azp (the client that issued the token — usually the same as VITE_KEYCLOAK_CLIENT_ID)
+      const azp = claims.azp
+      if (azp && resourceAccess[azp]) {
+        const roles = resourceAccess[azp]?.roles
+        if (Array.isArray(roles) && roles.length) return roles.join(', ')
+      }
+
+      // 3. Fallback: iterate all clients and take the first non-empty roles array
+      for (const clientKey of Object.keys(resourceAccess)) {
+        const roles = resourceAccess[clientKey]?.roles
+        if (Array.isArray(roles) && roles.length) return roles.join(', ')
+      }
+    }
+
+    // 4. Last resort: realm-level roles
+    const realmRoles = claims.realm_access?.roles
+    if (Array.isArray(realmRoles) && realmRoles.length) return realmRoles.join(', ')
+
+    return ''
+  } catch {
+    return ''
+  }
+})
 
 const fullName = computed(() => {
   const p = profile.value
@@ -253,9 +341,7 @@ function handlePhotoChange(event) {
   const file = event.target?.files?.[0]
   if (!file) return
   const reader = new FileReader()
-  reader.onload = (e) => {
-    localAvatarUrl.value = e.target?.result || ''
-  }
+  reader.onload = (e) => { localAvatarUrl.value = e.target?.result || '' }
   reader.readAsDataURL(file)
 }
 
@@ -268,334 +354,19 @@ function handleChangePassword() {
   passwordForm.value = { current: '', newPassword: '', confirm: '' }
 }
 
+function debugToken() {
+  const claims = getTokenClaims()
+  console.log('Keycloak token claims:', claims)
+  if (!claims) {
+    console.warn('No token claims available')
+    return
+  }
+  console.log('resource_access:', claims.resource_access)
+  console.log('realm_access roles:', claims.realm_access?.roles)
+  console.log('Resolved userRole:', userRole.value)
+}
+
 function handleLogout() {
   void logoutFromKeycloak()
 }
 </script>
-
-<style scoped>
-.profile-shell {
-  height: 100vh;
-  display: flex;
-  background: transparent;
-}
-
-.profile-main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.profile-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 28px 28px 40px;
-}
-
-/* Two-column layout */
-.profile-layout {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-}
-
-/* ── Left sidebar card ─────────────────────────────────────── */
-.profile-sidebar-card {
-  width: 220px;
-  flex-shrink: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  overflow: hidden;
-}
-
-.profile-id-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 28px 16px 20px;
-  border-bottom: 1px solid var(--border);
-}
-
-.profile-id-avatar-wrap {
-  width: 88px;
-  height: 88px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-
-.profile-id-avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.profile-id-avatar-initials {
-  width: 88px;
-  height: 88px;
-  border-radius: 50%;
-  background: #15803d;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.profile-id-name {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
-  text-align: center;
-}
-
-.profile-id-job {
-  margin: 0;
-  font-size: 12px;
-  color: var(--text-muted);
-  text-align: center;
-}
-
-.profile-id-uid {
-  margin: 0;
-  font-size: 11px;
-  color: var(--text-soft);
-  text-align: center;
-  word-break: break-all;
-}
-
-/* Nav menu inside sidebar card */
-.profile-nav {
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-}
-
-.profile-nav-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 6px 0;
-}
-
-.profile-nav-item {
-  appearance: none;
-  border: 0;
-  background: transparent;
-  color: var(--text);
-  border-radius: 12px;
-  height: 40px;
-  padding: 0 12px;
-  font-size: 13px;
-  font-weight: 600;
-  text-align: left;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  width: 100%;
-}
-
-.profile-nav-item:hover {
-  background: var(--surface-muted);
-}
-
-.profile-nav-item.is-active {
-  background: var(--brand-soft);
-  color: var(--brand);
-}
-
-.profile-nav-item--logout {
-  color: var(--text-muted);
-}
-
-.profile-nav-item-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: inherit;
-  flex-shrink: 0;
-}
-
-/* ── Right detail card ─────────────────────────────────────── */
-.profile-detail-card {
-  flex: 1;
-  min-width: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  padding: 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.profile-section-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text);
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-/* Photo upload row */
-.profile-photo-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border);
-}
-
-.profile-photo-preview {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  border: 2px solid var(--border);
-  background: var(--brand-soft);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  flex-shrink: 0;
-  color: var(--brand);
-}
-
-.profile-photo-preview-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.profile-photo-info {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.profile-photo-label {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.profile-photo-hint {
-  margin: 0;
-  font-size: 12px;
-  color: var(--text-soft);
-  line-height: 1.5;
-}
-
-.profile-photo-btn {
-  display: inline-flex;
-  align-items: center;
-  margin-top: 10px;
-  padding: 7px 16px;
-  border: 1px solid var(--border-strong);
-  border-radius: 10px;
-  background: var(--surface);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  cursor: pointer;
-  user-select: none;
-  transition: background 140ms;
-}
-
-.profile-photo-btn:hover {
-  background: var(--surface-muted);
-}
-
-.profile-photo-input {
-  display: none;
-}
-
-/* Fields grid */
-.profile-fields-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px 24px;
-}
-
-.profile-field--full {
-  grid-column: 1 / -1;
-}
-
-.profile-field-label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-  letter-spacing: 0.02em;
-}
-
-.profile-field-value {
-  padding: 10px 14px;
-  background: var(--surface-muted);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  font-size: 14px;
-  color: var(--text);
-  min-height: 40px;
-}
-
-/* Password form */
-.profile-field-input {
-  width: 100%;
-  padding: 10px 14px;
-  background: var(--surface-muted);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  font-size: 14px;
-  color: var(--text);
-  outline: none;
-  transition: border-color 150ms;
-}
-
-.profile-field-input:focus {
-  border-color: var(--brand);
-  background: var(--surface);
-}
-
-/* Actions bar */
-.profile-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.profile-btn-edit {
-  appearance: none;
-  border: 0;
-  padding: 10px 28px;
-  border-radius: 999px;
-  background: var(--text);
-  color: var(--surface);
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 150ms;
-}
-
-.profile-btn-edit:hover {
-  opacity: 0.88;
-}
-
-/* Responsive */
-@media (max-width: 860px) {
-  .profile-layout {
-    flex-direction: column;
-  }
-
-  .profile-sidebar-card {
-    width: 100%;
-  }
-}
-</style>
