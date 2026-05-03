@@ -1,6 +1,6 @@
 import { getAuthenticatedUser, getAccessToken } from '../../auth/keycloak'
 import { navigation as sharedNavigation } from '../shared/navigation'
-import { apiFetch } from '../../api/fetch'
+import { apiFetch, signedApiFetch } from '../../api/fetch'
 
 // ─── signed GET helper ────────────────────────────────────────────────────────
 async function signedGet(path) {
@@ -112,6 +112,40 @@ function mapRow(r) {
   }
 }
 
+// ─── Map a planning API row to the shape expected by SensusPlanning ─────────
+function mapPlanningItem(p) {
+  return {
+    id: p.id,
+    sensusDetailId: p.sensus_detail_id,
+    sensusId: p.id_sensus || '',
+    jobType: p.sensus_detail?.type_of_work?.name || '',
+    blocks: Array.isArray(p.blocks) ? p.blocks.map(b => b.name || `Blok ${b.id}`) : [],
+    startDate: p.start_date ? p.start_date.slice(0, 10) : '',
+    endDate: p.end_date ? p.end_date.slice(0, 10) : '',
+    actualStartDate: p.actual_start_date ? p.actual_start_date.slice(0, 10) : '',
+    actualEndDate: p.actual_end_date ? p.actual_end_date.slice(0, 10) : '',
+    status: p.status || '',
+    notes: p.notes || ''
+  }
+}
+
+async function loadSensusPlanning(idSensus) {
+  const params = new URLSearchParams()
+  if (idSensus) params.set('idSensus', idSensus)
+  const query = params.toString() ? `?${params.toString()}` : ''
+  const resp = await signedApiFetch(`/planning${query}`, { method: 'GET' })
+  const rows = Array.isArray(resp.data) ? resp.data : []
+  return rows.map(mapPlanningItem)
+}
+
+async function saveSensusPlanning(payload) {
+  const resp = await signedApiFetch('/planning', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+  return resp.data ? mapPlanningItem(resp.data) : null
+}
+
 export function createSensusModel() {
   const navigation = cloneNavigation(sharedNavigation)
 
@@ -154,6 +188,7 @@ export function createSensusModel() {
 
     let sensusData = null
     let items = []
+    let loadedFrom = null
 
     // ── Strategy 1: fetch the detail list filtered by created_by ─────────────
     if (createdBy) {
@@ -170,6 +205,7 @@ export function createSensusModel() {
         if (matched) {
           sensusData = matched
           items = (matched.details || []).map(d => mapDetailItem(d, matched))
+          loadedFrom = '/sensus/detail (Strategy 1)'
         }
       } catch (e) {
         console.warn('[SensusModel] detail endpoint failed, falling back', e)
@@ -183,12 +219,39 @@ export function createSensusModel() {
         sensusData = sensusResp.data || {}
         if (Array.isArray(sensusData.details) && sensusData.details.length > 0) {
           items = sensusData.details.map(d => mapDetailItem(d, sensusData))
+          loadedFrom = `/sensus/${numericId} (Strategy 2 - Fallback)`
         }
       } catch (e) {
         console.warn('[SensusModel] single sensus fetch failed', e)
         sensusData = {}
       }
     }
+
+    // ── Defensive check: ensure all items have id field ─────────────────────
+    items = items.map((item, idx) => {
+      if (!item.id || item.id === undefined) {
+        console.warn(
+          `[SensusModel] Item ${idx} is missing id field. Data:`,
+          item,
+          'Loaded from:', loadedFrom
+        )
+        // Fallback: use sensusId + jobType as compound key for debugging
+        return {
+          ...item,
+          id: item.id || null  // Keep as is, but log warning
+        }
+      }
+      return item
+    })
+
+    console.log('[SensusModel] loadSensusDetail complete:', {
+      numericId,
+      loadedFrom,
+      itemsCount: items.length,
+      firstItemId: items[0]?.id,
+      firstItemJobType: items[0]?.jobType,
+      allItemsHaveId: items.every(i => i.id)
+    })
 
     return {
       sensus: {
@@ -210,6 +273,8 @@ export function createSensusModel() {
     getList()        { return { ...list } },
     getStats()       { return { ...stats } },
     loadRows,
-    loadSensusDetail
+    loadSensusDetail,
+    loadSensusPlanning,
+    saveSensusPlanning
   }
 }

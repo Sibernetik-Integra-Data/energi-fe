@@ -1,4 +1,4 @@
-import { createPlanningModel } from './model'
+import { createPlanningModel, loadPlannings, loadSensusOptions, loadSensusDetails, loadAktifitasOptions, createPlanning, updatePlanning, deletePlanning } from './model'
 
 export function createPlanningController() {
   const model = createPlanningModel()
@@ -15,29 +15,44 @@ export function createPlanningController() {
     return model.getIntro()
   }
 
-  function getPlannings() {
-    return model.getPlannings()
+  async function fetchPlannings(filters = {}) {
+    return loadPlannings(filters)
   }
 
-  function getSensusOptions() {
-    return model.getSensusOptions()
+  async function fetchSensusOptions() {
+    return loadSensusOptions()
   }
 
-  function getBlockOptions() {
-    return model.getBlockOptions()
+  async function fetchSensusDetails(idSensus) {
+    return loadSensusDetails(idSensus)
   }
 
-  function getAktifitasOptions() {
-    return model.getAktifitasOptions()
+  async function fetchAktifitasOptions() {
+    return loadAktifitasOptions()
+  }
+
+  async function savePlanning(payload) {
+    return createPlanning(payload)
+  }
+
+  async function editPlanning(id, payload) {
+    return updatePlanning(id, payload)
+  }
+
+  async function removePlanning(id) {
+    return deletePlanning(id)
   }
 
   return {
     getNavigation,
     getHeader,
     getIntro,
-    getPlannings,
-    getSensusOptions,
-    getBlockOptions,
-    getAktifitasOptions
+    fetchPlannings,
+    fetchSensusOptions,
+    fetchSensusDetails,
+    fetchAktifitasOptions,
+    savePlanning,
+    editPlanning,
+    removePlanning
   }
 }

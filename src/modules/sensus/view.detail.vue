@@ -107,17 +107,22 @@
           <div v-show="activeTab === 'perencanaan'" role="tabpanel">
             <SensusPlanning
               :plans="plans"
-              @add-plan="showPlanModal = true"
+              @add-plan="openPlanModal(null)"
               @remove-plan="removePlan"
               @view-plan="openPlanDetail"
             />
           </div>
 
-          <!-- Add Plan Panel -->
+          <!-- Add Plan Panel: v-if + :key ensure the component remounts fresh on
+               every open, so script setup re-runs and form.sensusDetailId is
+               initialized from the prop before the first render. -->
           <SensusPlanningModal
+            v-if="planItem !== null"
+            :key="planOpenKey"
             v-model="showPlanModal"
             :items="items"
             :sensus-id="sensus.id_sensus"
+            :prefill-sensus-detail-id="planItem.id ?? null"
             @save="addPlan"
           />
 
@@ -136,7 +141,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import BaseHeader from '../shared/header'
 import BaseSidebar from '../shared/sidebar'
@@ -148,6 +153,8 @@ import SensusPlanningDetailPanel from './components/SensusPlanningDetailPanel.vu
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
 import { useAppStore } from '../../stores'
 
+import { useToast } from '../../utils/toast'
+
 const props = defineProps({
   controller: { type: Object, required: true },
   id: { type: [String, Number], default: null }
@@ -156,6 +163,7 @@ const props = defineProps({
 const appStore = useAppStore()
 const navigation = computed(() => props.controller.getNavigation())
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
+const { show: showToast } = useToast()
 
 const loading = ref(false)
 const error = ref(null)
@@ -163,19 +171,52 @@ const sensus = ref({})
 const items = ref([])
 const activeTab = ref('pekerjaan')
 const plans = ref([])
+const plansLoading = ref(false)
+// planItem holds the item the user clicked; null = modal unmounted.
+// planOpenKey increments on every open so :key forces a fresh remount even if
+// the same card is clicked twice — ensuring script setup re-runs and form
+// initializes with the correct prefillSensusDetailId from props.
+const planItem = ref(null)
+const planOpenKey = ref(0)
 const showPlanModal = ref(false)
 const showDetailPanel = ref(false)
 const selectedPlan = ref(null)
 const selectedPlanIndex = ref(1)
 
-function addPlan(plan) {
-  plans.value.push(plan)
+async function loadPlans() {
+  const idSensus = sensus.value?.id_sensus
+  if (!idSensus) return
+  plansLoading.value = true
+  try {
+    plans.value = await props.controller.loadSensusPlanning(idSensus)
+  } catch (err) {
+    console.error('[SensusDetail] loadPlans error:', err)
+    showToast(err?.message || 'Gagal memuat data perencanaan.', 'error')
+  } finally {
+    plansLoading.value = false
+  }
+}
+
+watch(activeTab, (tab) => {
+  if (tab === 'perencanaan') loadPlans()
+})
+
+async function addPlan(payload) {
+  try {
+    console.log('[SensusDetail] addPlan payload before send:', payload)
+    await props.controller.saveSensusPlanning(payload)
+    showToast('Rencana berhasil dibuat.')
+    await loadPlans()
+  } catch (err) {
+    console.error('[SensusDetail] addPlan error:', err)
+    showToast(err?.message || 'Gagal membuat rencana.', 'error')
+    throw err
+  }
 }
 
 function removePlan(id) {
   plans.value = plans.value.filter(p => p.id !== id)
 }
-
 function openPlanDetail(plan) {
   selectedPlan.value = plan
   selectedPlanIndex.value = plans.value.findIndex(p => p.id === plan.id) + 1
@@ -213,12 +254,18 @@ onMounted(async () => {
 })
 
 function handleView(item) {
-  // Future: navigate to item detail
-  console.log('[SensusDetail] view item', item.id)
+  activeTab.value = 'perencanaan'
+}
+
+function openPlanModal(item) {
+  console.log('[SensusDetail] openPlanModal called:', { item, itemId: item?.id ?? null })
+  planItem.value = item ?? {}
+  planOpenKey.value++
+  showPlanModal.value = true
 }
 
 function handlePlan(item) {
-  // Future: add to planning workflow
-  console.log('[SensusDetail] plan item', item.id)
+  activeTab.value = 'perencanaan'
+  openPlanModal(item)
 }
 </script>

@@ -46,12 +46,21 @@
           </button>
         </div>
 
+        <!-- Error banner -->
+        <div v-if="fetchError" class="px-4 py-3 rounded-lg bg-red-50 text-red-600 text-sm border border-red-200">
+          {{ fetchError }}
+        </div>
+
         <!-- Perencanaan tab -->
         <div v-if="activeTab === 'perencanaan'" class="flex-1 min-h-0">
+
           <PlanningGanttChart
+            v-model:filterSensusId="filterSensusId"
+            :sensus-options="sensusOptions"
             :items="plannings"
             @add="openDrawer(null)"
             @editItem="openDrawer"
+            @remove-plan="handleRemove"
           />
         </div>
 
@@ -72,21 +81,25 @@
       :title="drawerTitle"
       :edit-item="drawerItem"
       :sensus-options="sensusOptions"
-      :aktifitas-options="aktifitasOptions"
-      :block-options="blockOptions"
-      @save="handleSave"
+      :prefill-sensus-id="prefillSensusId"
+      :prefill-sensus-detail-id="prefillSensusDetailId"
+      :on-fetch-sensus-details="handleFetchSensusDetails"
+      :on-save="handleSave"
+      @saved="refreshPlannings"
     />
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import BaseHeader from '../shared/header'
 import BaseSidebar from '../shared/sidebar'
 import PlanningGanttChart from './components/PlanningGanttChart.vue'
 import PlanningDrawer from './components/PlanningDrawer.vue'
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
 import { useAppStore } from '../../stores'
+import { useToast } from '../../utils/toast'
 
 const props = defineProps({
   controller: { type: Object, required: true }
@@ -94,13 +107,17 @@ const props = defineProps({
 
 const appStore = useAppStore()
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
+const { show: showToast } = useToast()
+const route = useRoute()
+const router = useRouter()
 const navigation = computed(() => props.controller.getNavigation())
 const header = computed(() => props.controller.getHeader())
 const intro = computed(() => props.controller.getIntro())
-const plannings = computed(() => props.controller.getPlannings())
-const sensusOptions = computed(() => props.controller.getSensusOptions())
-const aktifitasOptions = computed(() => props.controller.getAktifitasOptions())
-const blockOptions = computed(() => props.controller.getBlockOptions())
+
+const plannings = ref([])
+const sensusOptions = ref([])
+const fetchError = ref(null)
+const filterSensusId = ref('')
 
 const TABS = [
   { key: 'perencanaan', label: 'Perencanaan', icon: '📅' },
@@ -113,14 +130,82 @@ const activeTab = ref('perencanaan')
 const drawerOpen = ref(false)
 const drawerItem = ref(null)
 const drawerTitle = computed(() => drawerItem.value ? 'Edit Rencana' : 'Rencana Baru')
+const prefillSensusId = ref('')
+const prefillSensusDetailId = ref(null)
+
+async function refreshPlannings() {
+  try {
+    plannings.value = await props.controller.fetchPlannings(
+      filterSensusId.value ? { idSensus: filterSensusId.value } : {}
+    )
+  } catch (err) {
+    console.error('[Planning] Failed to load plannings:', err)
+    fetchError.value = err?.message || 'Gagal memuat data perencanaan.'
+  }
+}
+
+watch(filterSensusId, () => refreshPlannings())
+
+onMounted(async () => {
+  fetchError.value = null
+  try {
+    const [plans, sensus] = await Promise.all([
+      props.controller.fetchPlannings(filterSensusId.value ? { idSensus: filterSensusId.value } : {}),
+      props.controller.fetchSensusOptions()
+    ])
+    plannings.value = plans
+    sensusOptions.value = sensus
+  } catch (err) {
+    console.error('[Planning] Failed to initialise:', err)
+    fetchError.value = err?.message || 'Gagal memuat data.'
+  }
+
+  // Auto-open drawer if navigated from Sensus Detail
+  if (route.query.openDrawer === '1' && route.query.sensusId) {
+    prefillSensusId.value = String(route.query.sensusId)
+    prefillSensusDetailId.value = route.query.sensusDetailId ? Number(route.query.sensusDetailId) : null
+    if (route.query.sensusId) filterSensusId.value = String(route.query.sensusId)
+    openDrawer(null)
+    // Clear query params from URL without re-navigation
+    router.replace({ path: route.path })
+  }
+})
 
 function openDrawer(item) {
   drawerItem.value = item ?? null
   drawerOpen.value = true
 }
 
-function handleSave(formData) {
-  // TODO: integrate with API
-  console.info('Saved planning:', formData)
+watch(drawerOpen, (open) => {
+  if (!open) {
+    prefillSensusId.value = ''
+    prefillSensusDetailId.value = null
+  }
+})
+
+async function handleFetchSensusDetails(idSensus) {
+  return props.controller.fetchSensusDetails(idSensus)
+}
+
+async function handleSave(id, payload) {
+  if (id) {
+    await props.controller.editPlanning(id, payload)
+    showToast('Rencana berhasil diperbarui.')
+  } else {
+    await props.controller.savePlanning(payload)
+    showToast('Rencana berhasil dibuat.')
+  }
+  // errors propagate up — drawer will display inline and we add a toast too
+}
+
+async function handleRemove(id) {
+  try {
+    await props.controller.removePlanning(id)
+    await refreshPlannings()
+    showToast('Rencana berhasil dihapus.')
+  } catch (err) {
+    console.error('[Planning] Failed to remove planning:', err)
+    showToast(err?.message || 'Gagal menghapus rencana.', 'error')
+  }
 }
 </script>

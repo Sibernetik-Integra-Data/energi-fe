@@ -1,8 +1,29 @@
 <template>
     <div class="flex flex-col gap-4">
         <!-- Toolbar -->
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             <PlanningDateRangePicker v-model="dateRange" />
+
+            <!-- Sensus filter -->
+            <div class="flex items-center gap-2">
+                <!-- <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide whitespace-nowrap">ID Sensus</label> -->
+                <select
+                    v-model="localSensusId"
+                    class="h-9 pl-3 pr-8 border border-(--border) rounded-lg bg-(--surface) text-(--text) text-sm outline-none transition-colors focus:border-(--brand) cursor-pointer"
+                >
+                    <option value="">Semua Sensus</option>
+                    <option v-for="opt in sensusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                </select>
+            </div>
+
+            <button
+                v-if="hasActiveFilter"
+                type="button"
+                class="h-9 px-3 text-xs font-semibold rounded-lg border border-(--border) bg-(--surface-muted) text-(--text-muted) hover:text-(--text) hover:bg-(--surface) transition-colors cursor-pointer"
+                @click="resetFilters"
+            >
+                Reset Filter
+            </button>
         </div>
 
         <!-- Main panel -->
@@ -137,9 +158,27 @@ const props = defineProps({
     /** ISO date string for the first visible day; defaults to 10 days before today */
     startDate: { type: String, default: null },
     daysCount: { type: Number, default: 28 },
+    sensusOptions: { type: Array, default: () => [] },
+    filterSensusId: { type: String, default: '' },
 });
 
-defineEmits(["add", "editItem"]);
+const emit = defineEmits(["add", "editItem", "remove-plan", "update:filterSensusId"]);
+
+// Local two-way binding for the sensus filter (drives parent via v-model:filterSensusId)
+const localSensusId = computed({
+    get: () => props.filterSensusId,
+    set: (v) => emit('update:filterSensusId', v)
+});
+
+// Show Reset Filter button when any filter is active
+const hasActiveFilter = computed(() =>
+    !!props.filterSensusId || !!dateRange.value.start || !!dateRange.value.end
+);
+
+function resetFilters() {
+    dateRange.value = { start: null, end: null };
+    emit('update:filterSensusId', '');
+}
 
 // ─── Date range filter ─────────────────────────────────────────────────────
 const dateRange = ref({ start: null, end: null });

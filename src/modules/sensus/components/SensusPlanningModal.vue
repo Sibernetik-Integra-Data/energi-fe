@@ -46,22 +46,24 @@
                 </div>
               </div>
 
-              <!-- Aktivitas Kebun (Job Type) -->
+              <!-- Aktivitas (Sensus Detail) -->
               <div class="flex flex-col gap-1.5">
                 <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Aktivitas Kebun</label>
                 <div class="relative">
                   <select
-                    v-model="form.jobType"
+                    :value="form.sensusDetailId"
+                    @change="handleDetailChange"
                     required
                     class="w-full bg-(--surface-muted) border border-(--border) rounded-xl px-4 py-2.5 text-sm text-(--text) outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all cursor-pointer appearance-none pr-10"
                   >
-                    <option value="" disabled>Pilih aktivitas...</option>
-                    <option v-for="jt in jobTypes" :key="jt" :value="jt">{{ jt }}</option>
+                    <option :value="null" disabled>Pilih aktivitas...</option>
+                    <option v-for="opt in detailOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                   </select>
                   <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--text-muted)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
+                <p v-if="items.length === 0" class="text-xs text-(--text-muted) italic">Tidak ada aktivitas tersedia untuk sensus ini.</p>
               </div>
 
               <!-- Date range -->
@@ -76,7 +78,7 @@
                   />
                 </div>
                 <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">End date</label>
+                  <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">End Date</label>
                   <input
                     v-model="form.endDate"
                     type="date"
@@ -88,27 +90,39 @@
               </div>
               <p v-if="dateError" class="text-xs text-red-500 -mt-3">{{ dateError }}</p>
 
-              <!-- Nomor Petak (Blocks) -->
+              <!-- Status -->
               <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Nomor Petak</label>
-                <div
-                  v-if="availableBlocks.length === 0"
-                  class="text-xs text-(--text-muted) italic py-1"
-                >Pilih aktivitas kebun terlebih dahulu.</div>
-                <div v-else class="flex flex-wrap gap-2">
-                  <button
-                    v-for="b in availableBlocks"
-                    :key="b"
-                    type="button"
-                    @click="toggleBlock(b)"
-                    :class="form.blocks.includes(b)
-                      ? 'bg-green-600 text-white border-green-600'
-                      : 'bg-(--surface-muted) text-(--text) border-(--border) hover:border-green-400'"
-                    class="text-xs font-semibold px-3 py-1.5 rounded-full border transition-all cursor-pointer"
-                  >{{ b }}</button>
+                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Status</label>
+                <div class="relative">
+                  <select
+                    v-model="form.status"
+                    class="w-full bg-(--surface-muted) border border-(--border) rounded-xl px-4 py-2.5 text-sm text-(--text) outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all cursor-pointer appearance-none pr-10"
+                  >
+                    <option value="">— Opsional —</option>
+                    <option value="planned">Planned</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="done">Done</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                  <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--text-muted)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
-                <p v-if="blockError" class="text-xs text-red-500 mt-0.5">{{ blockError }}</p>
               </div>
+
+              <!-- Catatan -->
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Catatan</label>
+                <textarea
+                  v-model="form.notes"
+                  rows="3"
+                  placeholder="Opsional..."
+                  class="bg-(--surface-muted) border border-(--border) rounded-xl px-4 py-2.5 text-sm text-(--text) outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all resize-none"
+                ></textarea>
+              </div>
+
+              <!-- Save error -->
+              <p v-if="saveError" class="text-xs text-red-500">{{ saveError }}</p>
 
             </div>
 
@@ -116,8 +130,9 @@
             <div class="px-6 py-4 border-t border-(--border)">
               <button
                 type="submit"
-                class="w-full py-3 rounded-2xl border-0 bg-(--text) text-(--surface) text-sm font-semibold hover:opacity-80 transition-opacity cursor-pointer"
-              >Simpan</button>
+                :disabled="saving"
+                class="w-full py-3 rounded-2xl border-0 bg-(--text) text-(--surface) text-sm font-semibold hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >{{ saving ? 'Menyimpan...' : 'Simpan' }}</button>
             </div>
           </form>
         </div>
@@ -127,103 +142,119 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   items: { type: Array, default: () => [] },
-  sensusId: { type: String, default: '' }
+  sensusId: { type: String, default: '' },
+  prefillSensusDetailId: { type: Number, default: null }
 })
 
 const emit = defineEmits(['update:modelValue', 'save'])
 
-// Derive unique job types from the sensus items
-const jobTypes = computed(() => {
-  const seen = new Set()
-  const result = []
-  for (const item of props.items) {
-    if (item.jobType && !seen.has(item.jobType)) {
-      seen.add(item.jobType)
-      result.push(item.jobType)
-    }
-  }
-  return result
-})
-
-// Derive available blocks for the selected job type
-const availableBlocks = computed(() => {
-  if (!form.value.jobType) return []
-  const matched = props.items.filter(i => i.jobType === form.value.jobType)
-  const seen = new Set()
-  const result = []
-  for (const item of matched) {
-    for (const b of item.blocks || []) {
-      if (!seen.has(b)) { seen.add(b); result.push(b) }
-    }
-  }
-  return result
-})
+// Build select options from sensus detail items
+const detailOptions = computed(() => props.items.map(item => ({
+  value: item.id,
+  label: item.jobType || `Detail #${item.id}`
+})))
 
 const todayIso = new Date().toISOString().slice(0, 10)
 
-const defaultForm = () => ({
-  jobType: '',
-  blocks: [],
+// Initialize form directly from the prop. This component is mounted fresh on
+// every open (parent uses :key), so script setup re-runs and props are already
+// committed — props.prefillSensusDetailId is correct from the very first render.
+const form = ref({
+  sensusDetailId: props.prefillSensusDetailId ?? null,
   startDate: todayIso,
-  endDate: todayIso
+  endDate: todayIso,
+  status: '',
+  notes: ''
 })
 
-const form = ref(defaultForm())
-const blockError = ref('')
-const dateError = ref('')
-
-// Reset form when modal opens
-watch(() => props.modelValue, (v) => {
-  if (v) {
-    form.value = defaultForm()
-    blockError.value = ''
-    dateError.value = ''
+// Belt-and-suspenders: onMounted re-confirms the prefill value is applied.
+// This helps catch any timing issues with the :key + v-if mechanism.
+onMounted(() => {
+  console.log('[SensusPlanningModal] onMounted - props inspection:', {
+    prefillProp: props.prefillSensusDetailId,
+    itemsCount: props.items.length,
+    items: props.items.map(i => ({ id: i.id, jobType: i.jobType })),
+    detailOptionsCount: detailOptions.value.length,
+    detailOptions: detailOptions.value
+  })
+  
+  if (props.prefillSensusDetailId && form.value.sensusDetailId !== props.prefillSensusDetailId) {
+    console.log(
+      '[SensusPlanningModal] onMounted prefill correction:',
+      { prefillProp: props.prefillSensusDetailId, currentForm: form.value.sensusDetailId }
+    )
+    form.value.sensusDetailId = props.prefillSensusDetailId
   }
+  console.log(
+    '[SensusPlanningModal] mounted with form state:',
+    { sensusDetailId: form.value.sensusDetailId, prefillProp: props.prefillSensusDetailId, itemsCount: props.items.length }
+  )
 })
 
-// Clear selected blocks when job type changes
-watch(() => form.value.jobType, () => {
-  form.value.blocks = []
-  blockError.value = ''
-})
-
-function toggleBlock(b) {
-  const idx = form.value.blocks.indexOf(b)
-  if (idx >= 0) form.value.blocks.splice(idx, 1)
-  else form.value.blocks.push(b)
-  blockError.value = ''
-}
+const dateError = ref('')
+const saveError = ref('')
+const saving = ref(false)
 
 function close() {
   emit('update:modelValue', false)
 }
 
-function submit() {
-  blockError.value = ''
-  dateError.value = ''
-
-  if (form.value.blocks.length === 0) {
-    blockError.value = 'Pilih minimal satu blok.'
-    return
-  }
-  if (form.value.endDate < form.value.startDate) {
-    dateError.value = 'Tanggal selesai tidak boleh sebelum tanggal mulai.'
-    return
-  }
-
-  emit('save', {
-    id: Date.now().toString(),
-    jobType: form.value.jobType,
-    blocks: [...form.value.blocks],
-    startDate: form.value.startDate,
-    endDate: form.value.endDate
+function handleDetailChange(event) {
+  // HTML select returns string value, but we need a number
+  // Number("5") → 5; Number("") → 0; Number(null) → 0
+  const value = event.target.value
+  const parsed = value ? Number(value) : null
+  form.value.sensusDetailId = parsed
+  console.log('[SensusPlanningModal] handleDetailChange:', {
+    htmlValue: value,
+    parsed,
+    type: typeof parsed,
+    formValue: form.value.sensusDetailId
   })
-  close()
+}
+
+function validate() {
+  dateError.value = ''
+  saveError.value = ''
+  
+  // Check sensus detail is selected
+  if (form.value.sensusDetailId === null || form.value.sensusDetailId === undefined) {
+    saveError.value = 'Pilih aktivitas kebun terlebih dahulu.'
+    return false
+  }
+  
+  // Check dates
+  if (form.value.endDate && form.value.startDate && form.value.endDate < form.value.startDate) {
+    dateError.value = 'Tanggal akhir harus sama dengan atau setelah tanggal mulai.'
+    return false
+  }
+  return true
+}
+
+async function submit() {
+  if (!validate()) return
+  saveError.value = ''
+  saving.value = true
+  try {
+    const payload = {
+      sensus_detail_id: form.value.sensusDetailId,
+      start_date: form.value.startDate,
+      end_date: form.value.endDate
+    }
+    if (form.value.status) payload.status = form.value.status
+    if (form.value.notes?.trim()) payload.notes = form.value.notes.trim()
+    await emit('save', payload)
+    close()
+  } catch (err) {
+    saveError.value = err?.message || 'Gagal menyimpan rencana.'
+  } finally {
+    saving.value = false
+  }
 }
 </script>
 

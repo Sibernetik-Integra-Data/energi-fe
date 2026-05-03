@@ -1,9 +1,9 @@
 <template>
-  <div class="bg-(--surface) border border-(--border) rounded-2xl overflow-hidden shadow-sm flex flex-col">
+  <div class="bg-(--surface) border border-(--border) rounded-2xl overflow-hidden shadow-sm flex flex-col py-2 gap-2">
 
     <!-- Card header: title + icon -->
     <div class="p-5 pb-3 flex justify-between items-start gap-3">
-      <div class="min-w-0">
+      <div class="min-w-0 gap-1 flex flex-col">
         <h3 class="text-base font-bold text-(--text) leading-snug">{{ jobType || 'Pekerjaan' }}</h3>
         <p class="text-sm text-(--text-muted) mt-0.5">{{ date }}</p>
         <p class="text-xs text-(--text-muted) mt-0.5 font-medium">{{ sensusRef }}</p>
@@ -33,7 +33,7 @@
     </div>
 
     <!-- Photo -->
-    <div class="mx-5 mb-4 relative rounded-xl overflow-hidden h-36 bg-(--surface-muted)">
+    <!-- <div class="mx-5 mb-4 relative rounded-xl overflow-hidden h-36 bg-(--surface-muted)">
       <img
         v-if="photo"
         :src="photo"
@@ -47,15 +47,15 @@
       <div
         v-if="extraPhotos > 0"
         class="absolute bottom-2 right-2 bg-black/60 text-white text-xs font-bold px-2 py-0.5 rounded-full pointer-events-none"
-      >+{{ extraPhotos }}m</div>
+      >+{{ extraPhotos }}m</div> -->
 
       <!-- Progress status pill on photo -->
-      <div
+      <!-- <div
         v-if="progressStatus"
         class="absolute top-2 left-2 bg-white/90 backdrop-blur-sm text-xs font-semibold px-2.5 py-0.5 rounded-full"
         :class="progressStatusClass"
       >{{ progressStatus }}</div>
-    </div>
+    </div> -->
 
     <!-- Actions -->
     <div class="px-5 pb-5 mt-auto flex gap-2 font-semibold">

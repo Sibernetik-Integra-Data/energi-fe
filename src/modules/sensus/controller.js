@@ -9,6 +9,8 @@ export function createSensusController() {
     getList: () => model.getList(),
     getStats: () => model.getStats(),
     loadRows: () => model.loadRows(),
-    loadSensusDetail: (numericId) => model.loadSensusDetail(numericId)
+    loadSensusDetail: (numericId) => model.loadSensusDetail(numericId),
+    loadSensusPlanning: (idSensus) => model.loadSensusPlanning(idSensus),
+    saveSensusPlanning: (payload) => model.saveSensusPlanning(payload)
   }
 }
