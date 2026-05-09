@@ -39,22 +39,26 @@
             <div class="bg-(--surface) rounded-xl overflow-hidden border border-(--border) shadow-sm max-[920px]:hidden">
                 <table class="w-full border-collapse table-fixed">
                     <colgroup>
+                        <col style="width:10%" />
+                        <col style="width:20%" />
                         <col style="width:25%" />
-                        <col style="width:25%" />
-                        <col style="width:25%" />
-                        <col style="width:25%" />
+                        <col style="width:17%" />
+                        <col style="width:17%" />
+                        <col style="width:11%" />
                     </colgroup>
                     <thead>
                         <tr class="border-b border-(--border) bg-(--surface-muted)">
                             <th class="text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest text-center">#</th>
                             <th class="text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest text-left">Name</th>
                             <th class="text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest text-left">Detail</th>
+                            <th class="text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest text-left">Created By</th>
+                            <th class="text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest text-left">Updated By</th>
                             <th class="text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="filteredRows.length === 0">
-                            <td colspan="4" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
+                            <td colspan="6" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
                         </tr>
                         <tr
                             v-for="(row, index) in filteredRows"
@@ -63,6 +67,8 @@
                             <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-center">{{ index + 1 }}</td>
                             <td class="py-4 px-4 align-middle text-sm font-semibold text-(--text) text-left">{{ row.name }}</td>
                             <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-left whitespace-normal wrap-break-word">{{ row.detail || '-' }}</td>
+                            <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-left">{{ row.created_by || '-' }}</td>
+                            <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-left">{{ row.updated_by || '-' }}</td>
                             <td class="py-4 px-4 align-middle text-center">
                                 <div class="flex gap-3 items-center justify-center">
                                     <button
@@ -94,8 +100,8 @@
                     <div class="font-bold text-sm text-(--text)">{{ row.name }}</div>
                     <div class="text-xs text-(--text-muted) flex flex-wrap gap-x-4 gap-y-1">
                         <span v-if="row.detail">Detail: {{ row.detail }}</span>
-                        <span v-if="row.created_by">By: {{ row.created_by }}</span>
-                        <span v-if="row.created_at">Created: {{ formatDateTime(row.created_at) }}</span>
+                        <span>Created by: {{ row.created_by || '-' }}</span>
+                        <span>Updated by: {{ row.updated_by || '-' }}</span>
                     </div>
                     <div class="flex justify-end gap-2 mt-1">
                         <button

@@ -48,14 +48,15 @@
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Name</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Plants Count</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Area (ha)</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Date and Time</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Created At</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Created By</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Updated By</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="filteredRows.length === 0">
-                            <td colspan="6" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
+                            <td colspan="7" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
                         </tr>
                         <tr
                             v-for="row in filteredRows"
@@ -65,7 +66,8 @@
                             <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.plants_count ?? "" }}</td>
                             <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.wide ?? "" }}</td>
                             <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ formatDateTime(row.created_at) }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ formatUsername(row.created_by) }}</td>
+                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.created_by || '-' }}</td>
+                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.updated_by || '-' }}</td>
                             <td class="py-4 px-6 align-middle">
                                 <div class="flex gap-2 items-center">
                                     <button
@@ -98,7 +100,8 @@
                     <div class="text-xs text-(--text-muted) flex flex-wrap gap-x-4 gap-y-1">
                         <span v-if="row.plants_count != null">Plants: {{ row.plants_count }}</span>
                         <span v-if="row.wide != null">Area: {{ row.wide }} ha</span>
-                        <span v-if="row.created_by">Created by: {{ formatUsername(row.created_by) }}</span>
+                        <span>Created by: {{ row.created_by || '-' }}</span>
+                        <span>Updated by: {{ row.updated_by || '-' }}</span>
                     </div>
                     <div class="flex justify-end gap-2 mt-1">
                         <button
@@ -204,15 +207,6 @@ function formatDateTime(value) {
         return value.toISOString().replace(/T/, ' ').replace(/Z$/, '').substr(0, 19);
     }
     return String(value);
-}
-
-function formatUsername(value) {
-    if (!value) return "";
-    if (typeof value !== 'string') return String(value);
-    // If the value looks like an email, return the local-part before @
-    const m = value.match(/^([^@]+)@/);
-    if (m) return m[1];
-    return value;
 }
 
 async function loadData() {

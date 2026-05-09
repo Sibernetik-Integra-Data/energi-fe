@@ -49,13 +49,14 @@
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Group</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Detail</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Upload</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Date</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Created By</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Updated By</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="filteredRows.length === 0">
-                            <td colspan="6" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
+                            <td colspan="7" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
                         </tr>
                         <tr
                             v-for="row in filteredRows"
@@ -71,7 +72,8 @@
                                     {{ row.is_upload ? 'Yes' : 'No' }}
                                 </span>
                             </td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ formatDateTime(row.created_at) }}</td>
+                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.created_by || '-' }}</td>
+                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.updated_by || '-' }}</td>
                             <td class="py-4 px-6 align-middle">
                                 <div class="flex gap-2 items-center">
                                     <button
@@ -105,6 +107,8 @@
                         <span v-if="row.group_of_work_name">Group: {{ row.group_of_work_name }}</span>
                         <span v-if="row.detail">Detail: {{ row.detail }}</span>
                         <span>Upload: {{ row.is_upload ? 'Yes' : 'No' }}</span>
+                        <span>Created by: {{ row.created_by || '-' }}</span>
+                        <span>Updated by: {{ row.updated_by || '-' }}</span>
                     </div>
                     <div class="flex justify-end gap-2 mt-1">
                         <button

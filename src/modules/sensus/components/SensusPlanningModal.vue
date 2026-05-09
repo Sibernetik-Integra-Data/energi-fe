@@ -91,7 +91,7 @@
               <p v-if="dateError" class="text-xs text-red-500 -mt-3">{{ dateError }}</p>
 
               <!-- Status -->
-              <div class="flex flex-col gap-1.5">
+              <!-- <div class="flex flex-col gap-1.5">
                 <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Status</label>
                 <div class="relative">
                   <select
@@ -108,7 +108,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
-              </div>
+              </div> -->
 
               <!-- Catatan -->
               <div class="flex flex-col gap-1.5">

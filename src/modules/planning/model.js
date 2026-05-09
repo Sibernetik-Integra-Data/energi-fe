@@ -8,6 +8,27 @@ function cloneNavigation(items) {
   }))
 }
 
+function toDateOnlyString(value) {
+  if (!value) return ''
+  if (value instanceof Date) {
+    const y = value.getFullYear()
+    const m = String(value.getMonth() + 1).padStart(2, '0')
+    const d = String(value.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
+  }
+
+  const raw = String(value)
+  const direct = raw.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (direct) return `${direct[1]}-${direct[2]}-${direct[3]}`
+
+  const parsed = new Date(raw)
+  if (Number.isNaN(parsed.getTime())) return ''
+  const y = parsed.getFullYear()
+  const m = String(parsed.getMonth() + 1).padStart(2, '0')
+  const d = String(parsed.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 // Map a planning API row to the shape expected by the Gantt chart
 function mapPlanningItem(p) {
   return {
@@ -16,10 +37,10 @@ function mapPlanningItem(p) {
     sensusId: p.id_sensus || '',
     jobType: p.sensus_detail?.type_of_work?.name || '',
     blocks: Array.isArray(p.blocks) ? p.blocks.map(b => b.name || `Blok ${b.id}`) : [],
-    startDate: p.start_date ? p.start_date.slice(0, 10) : '',
-    endDate: p.end_date ? p.end_date.slice(0, 10) : '',
-    actualStartDate: p.actual_start_date ? p.actual_start_date.slice(0, 10) : '',
-    actualEndDate: p.actual_end_date ? p.actual_end_date.slice(0, 10) : '',
+    startDate: toDateOnlyString(p.start_date),
+    endDate: toDateOnlyString(p.end_date),
+    actualStartDate: toDateOnlyString(p.actual_start_date),
+    actualEndDate: toDateOnlyString(p.actual_end_date),
     status: p.status || '',
     notes: p.notes || ''
   }

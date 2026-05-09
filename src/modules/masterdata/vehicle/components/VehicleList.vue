@@ -43,13 +43,14 @@
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Title</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Type</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Notes</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Date</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Created By</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Updated By</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="filteredRows.length === 0">
-                            <td colspan="6" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
+                            <td colspan="7" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
                         </tr>
                         <tr
                             v-for="row in filteredRows"
@@ -59,7 +60,8 @@
                             <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.title || '' }}</td>
                             <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.type || '' }}</td>
                             <td class="py-4 px-6 align-middle text-sm text-(--text-muted) max-w-xs truncate">{{ row.notes || '' }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ formatDateTime(row.created_at) }}</td>
+                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.created_by || '-' }}</td>
+                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.updated_by || '-' }}</td>
                             <td class="py-4 px-6 align-middle">
                                 <div class="flex gap-2 items-center">
                                     <button
@@ -93,6 +95,8 @@
                         <span v-if="row.title">Title: {{ row.title }}</span>
                         <span v-if="row.type">Type: {{ row.type }}</span>
                         <span v-if="row.notes">Notes: {{ row.notes }}</span>
+                        <span>Created by: {{ row.created_by || '-' }}</span>
+                        <span>Updated by: {{ row.updated_by || '-' }}</span>
                     </div>
                     <div class="flex justify-end gap-2 mt-1">
                         <button

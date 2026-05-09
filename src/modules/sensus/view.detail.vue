@@ -41,7 +41,7 @@
           <SensusDetailInfo
             :sensus-id="sensus.id_sensus"
             :date="sensus.sensus_date_formatted || sensus.sensus_date"
-            :reporter="sensus.created_by"
+            :reporter="sensus.reporter"
             :status="sensus.status || 'draft'"
             class="mb-5"
           />

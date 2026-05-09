@@ -15,7 +15,7 @@
                         <span class="text-xs font-extrabold text-(--text-muted) uppercase tracking-widest">Job Types</span>
                     </div>
 
-                    <div class="px-4 py-3 border-b border-(--border)">
+                    <div class="px-4 py-3 border-b border-(--border) flex items-center" style="height: 70px">
                         <button
                             @click="$emit('add-plan')"
                             class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-(--text) text-(--surface) text-sm font-semibold hover:opacity-80 transition-opacity cursor-pointer border-0"
@@ -41,10 +41,13 @@
                             class="flex items-center px-4 gap-3 group cursor-pointer hover:bg-(--surface-muted) transition-colors"
                             style="height: 70px"
                             @click="$emit('view-plan', plan)"
+                            @mouseenter="handlePlanHoverStart($event, plan)"
+                            @mouseleave="handlePlanHoverEnd"
                         >
                             <div class="shrink-0 w-1 rounded-full self-stretch my-3" :style="{ backgroundColor: jobColor(plan.jobType).bar }"></div>
                             <div class="flex-1 min-w-0">
                                 <div class="text-sm font-semibold text-(--text) truncate">{{ plan.jobType }}</div>
+                                <div class="text-xs text-(--text-muted) truncate mt-0.5">ID Sensus: {{ plan.sensusId || '-' }}</div>
                                 <div class="flex flex-wrap gap-1 mt-1">
                                     <template v-if="plan.blocks.slice(0,3).length">
                                         <span
@@ -58,7 +61,7 @@
                                 </div>
                             </div>
                             <button
-                                @click.stop="$emit('remove-plan', plan.id)"
+                                @click.stop="openDeleteConfirm(plan)"
                                 class="shrink-0 opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center rounded text-(--text-muted) hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer border-0 bg-transparent"
                                 aria-label="Hapus rencana"
                             >
@@ -85,6 +88,19 @@
                                 >
                                 <span class="text-sm font-bold" :class="day.isToday ? 'text-blue-600' : 'text-(--text)'">{{ day.num }}</span>
                                 <span class="text-[10px] uppercase tracking-wide">{{ day.abbr }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Empty spacer row aligned with the add button row -->
+                        <div class="relative border-b border-(--border)" style="height: 70px">
+                            <div class="absolute inset-0 pointer-events-none flex">
+                                <div
+                                    v-for="day in days"
+                                    :key="'spacer-col-' + day.iso"
+                                    class="shrink-0 border-r border-(--border)"
+                                    :class="day.isWeekend ? 'bg-(--surface-muted) opacity-60' : ''"
+                                    :style="{ width: dayWidthComputed + 'px', boxSizing: 'border-box' }"
+                                ></div>
                             </div>
                         </div>
 
@@ -125,6 +141,63 @@
 
             </div>
         </div>
+
+        <Teleport to="body">
+            <div
+                v-if="showDeleteConfirm"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="delete-plan-title"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+                @mousedown.self="cancelDelete"
+            >
+                <div class="bg-(--surface) border border-(--border) rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
+                    <h3 id="delete-plan-title" class="text-base font-bold text-(--text) m-0">Hapus Rencana</h3>
+                    <p class="text-sm text-(--text-muted) m-0">
+                        Apakah Anda yakin ingin menghapus rencana
+                        <strong class="text-(--text)">{{ deletingPlan?.jobType || 'ini' }}</strong>?
+                        Tindakan ini tidak dapat dibatalkan.
+                    </p>
+                    <div class="flex justify-end gap-3">
+                        <button
+                            type="button"
+                            class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
+                            @click="cancelDelete"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            class="border-0 bg-red-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-red-700 transition-colors"
+                            @click="confirmDelete"
+                        >
+                            Ya, Hapus
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
+        <Teleport to="body">
+            <Transition name="hover-info-fade">
+                <div
+                    v-if="hoverInfoVisible && hoverInfoPlan"
+                    class="fixed z-40 pointer-events-none"
+                    :style="hoverInfoStyle"
+                >
+                    <div class="w-80 max-w-[85vw] border border-(--border) rounded-xl bg-(--surface) shadow-xl p-4">
+                        <div class="text-[11px] font-semibold uppercase tracking-wide text-(--text-muted)">Job Type</div>
+                        <div class="text-sm font-semibold text-(--text) mt-1" style="overflow-wrap:anywhere">{{ hoverInfoPlan.jobType || '-' }}</div>
+
+                        <div class="text-[11px] font-semibold uppercase tracking-wide text-(--text-muted) mt-3">ID Sensus</div>
+                        <div class="text-sm text-(--text) mt-1 break-all">{{ hoverInfoPlan.sensusId || '-' }}</div>
+
+                        <div class="text-[11px] font-semibold uppercase tracking-wide text-(--text-muted) mt-3">Type Blocks</div>
+                        <div class="text-sm text-(--text) mt-1" style="overflow-wrap:anywhere">{{ hoverInfoBlocks }}</div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </div>
 </template>
 
@@ -142,6 +215,12 @@ const emit = defineEmits(["add-plan", "remove-plan", "view-plan"]);
 
 // ─── Date range filter ─────────────────────────────────────────────────────
 const dateRange = ref({ start: null, end: null });
+const showDeleteConfirm = ref(false);
+const deletingPlan = ref(null);
+const hoverInfoVisible = ref(false);
+const hoverInfoPlan = ref(null);
+const hoverInfoStyle = ref({ top: '0px', left: '0px', transform: 'translateY(-50%)' });
+let hoverInfoTimer = null;
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 const COL_WIDTH = 48; // px per day column (match Sensus)
@@ -172,7 +251,7 @@ const items = computed(() => props.plans || []);
 // ─── Effective days count (overridden by dateRange picker) ─────────────────
 const effectiveDaysCount = computed(() => {
     if (dateRange.value.start && dateRange.value.end) {
-        const diff = Math.round((new Date(dateRange.value.end) - new Date(dateRange.value.start)) / 86400000);
+        const diff = Math.round((toDateOnly(dateRange.value.end) - toDateOnly(dateRange.value.start)) / 86400000);
         return Math.max(1, diff + 1);
     }
     return props.daysCount;
@@ -184,6 +263,7 @@ const rangeStart = computed(() => {
     if (props.startDate) return toDateOnly(props.startDate);
     const today = new Date();
     today.setDate(today.getDate() - 10);
+    today.setHours(0, 0, 0, 0);
     return today;
 });
 
@@ -218,6 +298,12 @@ onMounted(() => {
     window.addEventListener('resize', measureContainer)
 })
 onUnmounted(() => window.removeEventListener('resize', measureContainer))
+onUnmounted(() => {
+    if (hoverInfoTimer) {
+        clearTimeout(hoverInfoTimer);
+        hoverInfoTimer = null;
+    }
+})
 
 watch(days, () => nextTick(measureContainer))
 
@@ -245,7 +331,7 @@ const todayLineStyle = computed(() => {
 
 // ─── Bar helpers ───────────────────────────────────────────────────────────
 function dayOffset(dateStr) {
-    return Math.round((toDateOnly(dateStr) - rangeStart.value) / 86_400_000);
+    return Math.floor((toDateOnly(dateStr) - rangeStart.value) / 86_400_000);
 }
 
 function barVisible(item) {
@@ -261,6 +347,65 @@ function barStyle(item) {
     const left = startOff * dayWidthComputed.value + PAD;
     const width = Math.max((endOff - startOff + 1) * dayWidthComputed.value - PAD * 2, 24);
     return { left: `${left}px`, width: `${width}px`, position: 'absolute' };
+}
+
+const hoverInfoBlocks = computed(() => {
+    const blocks = hoverInfoPlan.value?.blocks;
+    if (!Array.isArray(blocks) || blocks.length === 0) return '-';
+    return blocks.join(', ');
+});
+
+function handlePlanHoverStart(event, plan) {
+    if (hoverInfoTimer) clearTimeout(hoverInfoTimer);
+    hoverInfoVisible.value = false;
+    hoverInfoPlan.value = null;
+
+    const rowRect = event.currentTarget?.getBoundingClientRect?.();
+    hoverInfoTimer = setTimeout(() => {
+        if (!rowRect) return;
+        const panelWidth = Math.min(320, Math.floor(window.innerWidth * 0.85));
+        let left = rowRect.right + 12;
+        if (left + panelWidth > window.innerWidth - 12) {
+            left = Math.max(12, rowRect.left - panelWidth - 12);
+        }
+        const top = Math.min(window.innerHeight - 12, Math.max(12, rowRect.top + rowRect.height / 2));
+        hoverInfoStyle.value = {
+            top: `${top}px`,
+            left: `${left}px`,
+            transform: 'translateY(-50%)'
+        };
+        hoverInfoPlan.value = plan;
+        hoverInfoVisible.value = true;
+        hoverInfoTimer = null;
+    }, 1000);
+}
+
+function handlePlanHoverEnd() {
+    if (hoverInfoTimer) {
+        clearTimeout(hoverInfoTimer);
+        hoverInfoTimer = null;
+    }
+    hoverInfoVisible.value = false;
+    hoverInfoPlan.value = null;
+}
+
+function openDeleteConfirm(plan) {
+    deletingPlan.value = plan;
+    showDeleteConfirm.value = true;
+}
+
+function cancelDelete() {
+    showDeleteConfirm.value = false;
+    deletingPlan.value = null;
+}
+
+function confirmDelete() {
+    if (!deletingPlan.value?.id) {
+        cancelDelete();
+        return;
+    }
+    emit('remove-plan', deletingPlan.value.id);
+    cancelDelete();
 }
 
 // ─── Job type color palette ────────────────────────────────────────────────
@@ -280,3 +425,15 @@ function jobColor(jobType) {
     return PALETTE[Math.abs(hash) % PALETTE.length];
 }
 </script>
+
+<style scoped>
+.hover-info-fade-enter-active,
+.hover-info-fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.hover-info-fade-enter-from,
+.hover-info-fade-leave-to {
+    opacity: 0;
+}
+</style>

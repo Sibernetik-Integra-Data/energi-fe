@@ -103,7 +103,7 @@
         </div>
 
         <!-- Status -->
-        <div class="flex flex-col gap-1.5">
+        <!-- <div class="flex flex-col gap-1.5">
           <label class="text-[12px] font-semibold text-(--text-muted) tracking-wide uppercase" for="planning-status">
             Status
           </label>
@@ -118,7 +118,7 @@
             <option value="done">Done</option>
             <option value="cancelled">Cancelled</option>
           </select>
-        </div>
+        </div> -->
 
         <!-- Catatan -->
         <div class="flex flex-col gap-1.5">

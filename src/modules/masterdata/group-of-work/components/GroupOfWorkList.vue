@@ -46,11 +46,11 @@
                             </th>
                             <th
                                 class="w-1/4 align-middle text-center text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">
-                                Created
+                                Created By
                             </th>
                             <th
                                 class="w-1/4 align-middle text-center text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">
-                                Updated
+                                Updated By
                             </th>
                             <th
                                 class="w-1/4 align-middle text-center text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">
@@ -70,10 +70,10 @@
                                 {{ row.name }}
                             </td>
                             <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-center">
-                                {{ formatDateTime(row.created_at) }}
+                                {{ row.created_by || '-' }}
                             </td>
                             <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-center">
-                                {{ formatDateTime(row.updated_at) }}
+                                {{ row.updated_by || '-' }}
                             </td>
                             <td class="py-4 px-4 align-middle text-center">
                                 <div class="flex gap-2 items-center justify-center">
@@ -106,8 +106,8 @@
                     :key="row.id"
                     class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2">
                     <div class="font-bold text-sm text-(--text)">{{ row.name }}</div>
-                    <div class="text-xs text-(--text-muted)">Created: {{ formatDateTime(row.created_at) }}</div>
-                    <div class="text-xs text-(--text-muted)">Updated: {{ formatDateTime(row.updated_at) }}</div>
+                    <div class="text-xs text-(--text-muted)">Created by: {{ row.created_by || '-' }}</div>
+                    <div class="text-xs text-(--text-muted)">Updated by: {{ row.updated_by || '-' }}</div>
                     <div class="flex justify-end gap-2 mt-1 whitespace-nowrap items-center">
                         <button
                             type="button"

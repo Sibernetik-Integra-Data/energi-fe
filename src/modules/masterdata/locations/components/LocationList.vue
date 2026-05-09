@@ -45,13 +45,14 @@
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Type</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Latitude</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Longitude</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Date</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Created By</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Updated By</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="filteredRows.length === 0">
-                            <td colspan="8" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
+                            <td colspan="9" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
                         </tr>
                         <tr
                             v-for="row in filteredRows"
@@ -63,7 +64,8 @@
                             <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.type_of_location || '' }}</td>
                             <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.latitude || '' }}</td>
                             <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.longitude || '' }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ formatDateTime(row.created_at) }}</td>
+                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.created_by || '-' }}</td>
+                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.updated_by || '-' }}</td>
                             <td class="py-4 px-6 align-middle">
                                 <div class="flex gap-2 items-center">
                                     <button
@@ -99,6 +101,8 @@
                         <span v-if="row.type_of_location">Type: {{ row.type_of_location }}</span>
                         <span v-if="row.latitude">Lat: {{ row.latitude }}</span>
                         <span v-if="row.longitude">Lng: {{ row.longitude }}</span>
+                        <span>Created by: {{ row.created_by || '-' }}</span>
+                        <span>Updated by: {{ row.updated_by || '-' }}</span>
                     </div>
                     <div class="flex justify-end gap-2 mt-1">
                         <button

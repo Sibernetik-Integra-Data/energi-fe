@@ -6,37 +6,34 @@
         <h2 class="text-2xl font-extrabold tracking-tight text-(--text) m-0 mb-1.5">{{ title }}</h2>
         <p class="text-sm text-(--text-muted) m-0">{{ subtitle }}</p>
       </div>
-      <div class="mt-3 flex gap-2 flex-wrap bg-(--surface-muted) border border-(--border) p-1.5 rounded-full items-center shrink-0" role="tablist" aria-label="Sensus filters">
-        <button
-          @click="setFilter('all')"
-          :class="activeFilter === 'all' ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)' : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'"
-          class="py-2 px-3.5 rounded-full text-sm font-semibold cursor-pointer transition-colors"
-          role="tab" :aria-selected="activeFilter === 'all'"
-        >Semua ({{ rows.length }})</button>
-        <button
-          @click="setFilter('done')"
-          :class="activeFilter === 'done' ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)' : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'"
-          class="py-2 px-3.5 rounded-full text-sm font-semibold cursor-pointer transition-colors"
-          role="tab" :aria-selected="activeFilter === 'done'"
-        >Done ({{ rows.filter(r => r.status === 'done').length }})</button>
-        <button
-          @click="setFilter('wip')"
-          :class="activeFilter === 'wip' ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)' : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'"
-          class="py-2 px-3.5 rounded-full text-sm font-semibold cursor-pointer transition-colors"
-          role="tab" :aria-selected="activeFilter === 'wip'"
-        >WIP ({{ rows.filter(r => r.status === 'wip').length }})</button>
-        <button
-          @click="setFilter('draft')"
-          :class="activeFilter === 'draft' ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)' : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'"
-          class="py-2 px-3.5 rounded-full text-sm font-semibold cursor-pointer transition-colors"
-          role="tab" :aria-selected="activeFilter === 'draft'"
-        >Draft ({{ rows.filter(r => r.status === 'draft').length }})</button>
-        <button
-          @click="setFilter('submitted')"
-          :class="activeFilter === 'submitted' ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)' : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'"
-          class="py-2 px-3.5 rounded-full text-sm font-semibold cursor-pointer transition-colors"
-          role="tab" :aria-selected="activeFilter === 'submitted'"
-        >Submitted ({{ rows.filter(r => r.status === 'submitted').length }})</button>
+      <div class="mt-3 grid grid-cols-1 md:grid-cols-4 gap-2 bg-(--surface-muted) border border-(--border) p-2 rounded-xl items-center">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Cari ID sensus, reporter, blok, atau jenis pekerjaan..."
+          class="md:col-span-2 w-full border border-(--border) bg-(--surface) rounded-lg px-3 py-2 text-sm text-(--text) outline-none focus:ring-2 focus:ring-green-200"
+        />
+
+        <select
+          v-model="sortOrder"
+          class="w-full border border-(--border) bg-(--surface) rounded-lg px-3 py-2 text-sm text-(--text) outline-none focus:ring-2 focus:ring-green-200 cursor-pointer"
+          aria-label="Urutkan data"
+        >
+          <option value="newest">Terbaru</option>
+          <option value="oldest">Terlama</option>
+        </select>
+
+        <select
+          v-model="activeStatus"
+          class="w-full border border-(--border) bg-(--surface) rounded-lg px-3 py-2 text-sm text-(--text) outline-none focus:ring-2 focus:ring-green-200 cursor-pointer"
+          aria-label="Filter status"
+        >
+          <option value="all">Semua Status ({{ rows.length }})</option>
+          <option value="draft">Draft ({{ statusCount.draft }})</option>
+          <option value="wip">WIP ({{ statusCount.wip }})</option>
+          <option value="done">Done ({{ statusCount.done }})</option>
+          <option value="submitted">Submitted ({{ statusCount.submitted }})</option>
+        </select>
       </div>
     </div>
 
@@ -150,10 +147,26 @@
     </div>
 
     <!-- Pagination -->
-    <div v-if="totalPages > 1" class="flex items-center justify-between mt-5 gap-4 flex-wrap">
+    <div class="flex items-center justify-between mt-5 gap-4 flex-wrap">
       <p class="text-xs text-(--text-muted) font-medium">
-        Showing {{ (currentPage - 1) * 10 + 1 }}–{{ Math.min(currentPage * 10, filteredRows.length) }} of {{ filteredRows.length }} records
+        Showing {{ processedRows.length === 0 ? 0 : (currentPage - 1) * pageSize + 1 }}–{{ Math.min(currentPage * pageSize, processedRows.length) }} of {{ processedRows.length }} records
       </p>
+      <div class="flex items-center gap-2">
+        <label class="text-xs text-(--text-muted) font-medium" for="page-size">Rows:</label>
+        <select
+          id="page-size"
+          v-model.number="pageSize"
+          class="border border-(--border) bg-(--surface) rounded-lg px-2.5 py-1.5 text-xs text-(--text) outline-none focus:ring-2 focus:ring-green-200 cursor-pointer"
+          aria-label="Jumlah data per halaman"
+        >
+          <option :value="5">5</option>
+          <option :value="10">10</option>
+          <option :value="20">20</option>
+        </select>
+      </div>
+    </div>
+
+    <div v-if="totalPages > 1" class="flex items-center justify-end mt-3 gap-4 flex-wrap">
       <nav class="flex items-center gap-1" aria-label="Pagination">
         <!-- Prev -->
         <button
@@ -208,23 +221,76 @@ const props = defineProps({
   error: { type: String, default: null }
 })
 
-const PAGE_SIZE = 10
 const currentPage = ref(1)
-const activeFilter = ref('all')
+const searchQuery = ref('')
+const sortOrder = ref('newest')
+const activeStatus = ref('all')
+const pageSize = ref(10)
 
 const wipCount = computed(() => (props.rows || []).filter(r => r?.status === 'wip').length)
 
-const filteredRows = computed(() => {
+const statusCount = computed(() => {
   const all = props.rows || []
-  if (activeFilter.value !== 'all') return all.filter(r => r.status === activeFilter.value)
-  return all
+  return {
+    draft: all.filter(r => (r?.status || '').toLowerCase() === 'draft').length,
+    wip: all.filter(r => (r?.status || '').toLowerCase() === 'wip').length,
+    done: all.filter(r => (r?.status || '').toLowerCase() === 'done').length,
+    submitted: all.filter(r => (r?.status || '').toLowerCase() === 'submitted').length
+  }
 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredRows.value.length / PAGE_SIZE)))
+const filteredByStatusRows = computed(() => {
+  const all = props.rows || []
+  if (activeStatus.value === 'all') return all
+  return all.filter(r => (r?.status || '').toLowerCase() === activeStatus.value)
+})
+
+const searchedRows = computed(() => {
+  const keyword = searchQuery.value.trim().toLowerCase()
+  if (!keyword) return filteredByStatusRows.value
+
+  return filteredByStatusRows.value.filter((row) => {
+    const haystack = [
+      row.id,
+      row.worker,
+      row.date,
+      row.time,
+      row.status,
+      ...(row.blocks || []),
+      ...(row.jobTypes || [])
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+
+    return haystack.includes(keyword)
+  })
+})
+
+function sortWeight(row) {
+  const combined = [row?.date, row?.time].filter(Boolean).join(' ')
+  const parsed = new Date(combined)
+  if (!Number.isNaN(parsed.getTime())) return parsed.getTime()
+  if (Number.isFinite(row?.numericId)) return Number(row.numericId)
+  const idNumber = Number(String(row?.id || '').replace(/\D/g, ''))
+  if (Number.isFinite(idNumber)) return idNumber
+  return 0
+}
+
+const processedRows = computed(() => {
+  const copy = [...searchedRows.value]
+  copy.sort((a, b) => {
+    const diff = sortWeight(a) - sortWeight(b)
+    return sortOrder.value === 'oldest' ? diff : -diff
+  })
+  return copy
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(processedRows.value.length / pageSize.value)))
 
 const paginatedRows = computed(() => {
-  const start = (currentPage.value - 1) * PAGE_SIZE
-  return filteredRows.value.slice(start, start + PAGE_SIZE)
+  const start = (currentPage.value - 1) * pageSize.value
+  return processedRows.value.slice(start, start + pageSize.value)
 })
 
 const visiblePages = computed(() => {
@@ -240,12 +306,11 @@ const visiblePages = computed(() => {
   return pages
 })
 
-function setFilter(f) {
-  activeFilter.value = f
-  currentPage.value = 1
-}
-
 watch(() => props.rows, () => { currentPage.value = 1 })
+watch([searchQuery, sortOrder, activeStatus, pageSize], () => { currentPage.value = 1 })
+watch(totalPages, (value) => {
+  if (currentPage.value > value) currentPage.value = value
+})
 
 function navigateToDetail(row) {
   if (row.numericId) {

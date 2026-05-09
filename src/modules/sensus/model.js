@@ -1,6 +1,7 @@
 import { getAuthenticatedUser, getAccessToken } from '../../auth/keycloak'
 import { navigation as sharedNavigation } from '../shared/navigation'
 import { apiFetch, signedApiFetch } from '../../api/fetch'
+import { resolveUsernames } from '../../utils/userCache'
 
 // ─── signed GET helper ────────────────────────────────────────────────────────
 async function signedGet(path) {
@@ -24,6 +25,27 @@ function cloneNavigation(items) {
     ...item,
     children: Array.isArray(item.children) ? cloneNavigation(item.children) : undefined
   }))
+}
+
+function toDateOnlyString(value) {
+  if (!value) return ''
+  if (value instanceof Date) {
+    const y = value.getFullYear()
+    const m = String(value.getMonth() + 1).padStart(2, '0')
+    const d = String(value.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
+  }
+
+  const raw = String(value)
+  const direct = raw.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (direct) return `${direct[1]}-${direct[2]}-${direct[3]}`
+
+  const parsed = new Date(raw)
+  if (Number.isNaN(parsed.getTime())) return ''
+  const y = parsed.getFullYear()
+  const m = String(parsed.getMonth() + 1).padStart(2, '0')
+  const d = String(parsed.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
 }
 
 // ─── Friendly date formatter (YYYY-MM-DD or ISO → "13 Apr 2026") ─────────────
@@ -120,10 +142,10 @@ function mapPlanningItem(p) {
     sensusId: p.id_sensus || '',
     jobType: p.sensus_detail?.type_of_work?.name || '',
     blocks: Array.isArray(p.blocks) ? p.blocks.map(b => b.name || `Blok ${b.id}`) : [],
-    startDate: p.start_date ? p.start_date.slice(0, 10) : '',
-    endDate: p.end_date ? p.end_date.slice(0, 10) : '',
-    actualStartDate: p.actual_start_date ? p.actual_start_date.slice(0, 10) : '',
-    actualEndDate: p.actual_end_date ? p.actual_end_date.slice(0, 10) : '',
+    startDate: toDateOnlyString(p.start_date),
+    endDate: toDateOnlyString(p.end_date),
+    actualStartDate: toDateOnlyString(p.actual_start_date),
+    actualEndDate: toDateOnlyString(p.actual_end_date),
     status: p.status || '',
     notes: p.notes || ''
   }
@@ -174,7 +196,21 @@ export function createSensusModel() {
       ...(token ? { Authorization: `Bearer ${token}` } : {})
     }
     const resp = await apiFetch(path, { method: 'GET', headers })
-    return (resp.data || []).map(mapRow)
+    const rows = (resp.data || []).map(mapRow)
+
+    // Resolve Keycloak user IDs → display usernames
+    try {
+      const userIds = rows.map(r => r.worker).filter(Boolean)
+      const usernameMap = await resolveUsernames(userIds)
+      rows.forEach(r => {
+        if (r.worker) r.worker = usernameMap.get(r.worker) || ''
+      })
+    } catch {
+      // Ignore resolution errors — leave worker as-is (raw ID), UI will show empty via fallback
+      rows.forEach(r => { if (r.worker) r.worker = '' })
+    }
+
+    return rows
   }
 
   // ─── Load sensus detail ─────────────────────────────────────────────────────
@@ -253,6 +289,18 @@ export function createSensusModel() {
       allItemsHaveId: items.every(i => i.id)
     })
 
+    // Resolve reporter username (created_by holds a Keycloak user ID)
+    let reporterUsername = ''
+    try {
+      const createdById = sensusData.created_by || ''
+      if (createdById) {
+        const usernameMap = await resolveUsernames([createdById])
+        reporterUsername = usernameMap.get(createdById) || ''
+      }
+    } catch {
+      reporterUsername = ''
+    }
+
     return {
       sensus: {
         ...sensusData,
@@ -261,7 +309,9 @@ export function createSensusModel() {
         // Derive an overall status for the info card (first detail wins)
         status: sensusData.details?.length > 0
           ? normaliseStatus(sensusData.details[0].progress_status)
-          : 'draft'
+          : 'draft',
+        // Resolved display username (empty string if not found)
+        reporter: reporterUsername
       },
       items
     }
