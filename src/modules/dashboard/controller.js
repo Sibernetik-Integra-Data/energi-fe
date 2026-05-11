@@ -27,6 +27,10 @@ export function createDashboardController() {
     return model.getMetrics()
   }
 
+  async function loadMetrics() {
+    return model.loadMetrics()
+  }
+
   return {
     getNavigation,
     getHeader,
@@ -34,5 +38,6 @@ export function createDashboardController() {
     getPendingVerification,
     getRecentVerified,
     getMetrics,
+    loadMetrics,
   }
 }

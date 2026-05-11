@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import BaseHeader from '../shared/header'
 import DashboardMetricCard from './components/DashboardMetricCard.vue'
 import BaseSidebar from '../shared/sidebar'
@@ -57,13 +57,32 @@ const props = defineProps({
 
 const appStore = useAppStore()
 
+// Metrics state
+const metricsData = ref(null)
+
 const navigation = computed(() => props.controller.getNavigation())
 const header = computed(() => props.controller.getHeader())
 const intro = computed(() => props.controller.getIntro())
 const pendingVerification = computed(() => props.controller.getPendingVerification())
 const recentVerified = computed(() => props.controller.getRecentVerified())
-const metrics = computed(() => props.controller.getMetrics())
+const metrics = computed(() => {
+  if (metricsData.value) {
+    return metricsData.value
+  }
+  return props.controller.getMetrics()
+})
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
+
+// Load metrics from API on mount
+onMounted(async () => {
+  try {
+    const loadedMetrics = await props.controller.loadMetrics()
+    metricsData.value = loadedMetrics
+  } catch (error) {
+    console.error('[Dashboard] Failed to load metrics:', error)
+    // Keep showing fallback data
+  }
+})
 </script>
 
 <style scoped>

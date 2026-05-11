@@ -13,13 +13,20 @@
       <span>update</span>
     </div>
 
-    <DashboardSparkline :points="metric.points" :tone="metricTone" />
+    <div class="metric-card__chart">
+      <apexchart
+        :key="chartKey"
+        :options="chartOptions"
+        :series="chartSeries"
+        type="area"
+        height="72"
+      />
+    </div>
   </article>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import DashboardSparkline from './DashboardSparkline.vue'
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   metric: {
@@ -28,7 +35,144 @@ const props = defineProps({
   }
 })
 
+const chartKey = ref(0)
+
 const metricTone = computed(() => props.metric.tone || 'orange')
+const chartLabels = computed(() => {
+  if (Array.isArray(props.metric.pointLabels) && props.metric.pointLabels.length === (props.metric.points || []).length) {
+    return props.metric.pointLabels
+  }
+
+  const points = props.metric.points || []
+  return points.map((_, index) => `Data ${index + 1}`)
+})
+
+const toneColorMap = {
+  orange: { color: '#fb8c00', light: 'rgba(251, 140, 0, 0.1)' },
+  green: { color: '#16a34a', light: 'rgba(22, 163, 74, 0.1)' },
+  blue: { color: '#2563eb', light: 'rgba(37, 99, 235, 0.1)' },
+  amber: { color: '#d97706', light: 'rgba(217, 119, 6, 0.1)' }
+}
+
+const chartOptions = computed(() => {
+  const tone = toneColorMap[metricTone.value] || toneColorMap.orange
+  return {
+    chart: {
+      type: 'area',
+      sparkline: {
+        enabled: true
+      },
+      parentHeightOffset: 0,
+      toolbar: {
+        show: false
+      }
+    },
+    markers: {
+      size: 0,
+      strokeWidth: 0,
+      hover: {
+        size: 6,
+        sizeOffset: 1
+      }
+    },
+    stroke: {
+      curve: 'smooth',
+      width: 2,
+      colors: [tone.color]
+    },
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.45,
+        opacityTo: 0.05,
+        colorStops: [
+          {
+            offset: 0,
+            color: tone.color,
+            opacity: 0.28
+          },
+          {
+            offset: 100,
+            color: tone.color,
+            opacity: 0.02
+          }
+        ]
+      }
+    },
+    grid: {
+      show: false,
+      padding: {
+        top: 8,
+        right: 10,
+        bottom: 0,
+        left: 10
+      }
+    },
+    xaxis: {
+      categories: chartLabels.value,
+      crosshairs: {
+        show: false
+      },
+      axisBorder: {
+        show: false
+      },
+      labels: {
+        show: false
+      }
+    },
+    yaxis: {
+      labels: {
+        show: false
+      }
+    },
+    tooltip: {
+      enabled: true,
+      theme: 'dark',
+      x: {
+        show: true,
+        formatter: (_, opts) => {
+          const pointIndex = opts?.dataPointIndex ?? 0
+          return chartLabels.value[pointIndex] || `Minggu ke ${pointIndex + 1}`
+        }
+      },
+      y: {
+        formatter: (value) => {
+          const label = props.metric.tooltipLabel || 'Total'
+          return `${label}: ${Math.round(value)}`
+        },
+        title: {
+          formatter: () => ''
+        }
+      },
+      marker: {
+        show: true
+      },
+      style: {
+        fontSize: '12px',
+        fontFamily: 'var(--font-family, system-ui, -apple-system, sans-serif)'
+      }
+    }
+  }
+})
+
+const chartSeries = computed(() => {
+  const points = props.metric.points || []
+  return [
+    {
+      data: points
+    }
+  ]
+})
+
+// Re-render chart when metric points change
+watch(() => props.metric.points, () => {
+  chartKey.value += 1
+}, { deep: true })
+
+watch(() => props.metric.pointLabels, () => {
+  chartKey.value += 1
+}, { deep: true })
 </script>
 
 <style scoped>
@@ -109,5 +253,10 @@ const metricTone = computed(() => props.metric.tone || 'orange')
   font-size: 12px;
   font-weight: 600;
   color: var(--text-muted);
+}
+
+.metric-card__chart {
+  margin: 0 -12px -10px;
+  height: 82px;
 }
 </style>
