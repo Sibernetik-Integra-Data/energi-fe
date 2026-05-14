@@ -121,6 +121,23 @@
                 ></textarea>
               </div>
 
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Block Terkait</label>
+                <div
+                  v-if="selectedDetailBlocks.length"
+                  class="flex flex-wrap gap-1.5 rounded-xl border border-(--border) bg-(--surface-muted) p-2"
+                >
+                  <span
+                    v-for="block in selectedDetailBlocks"
+                    :key="block"
+                    class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-(--surface) text-(--text) border border-(--border)"
+                  >
+                    {{ block }}
+                  </span>
+                </div>
+                <p v-else class="text-xs text-(--text-muted)">Pilih aktivitas kebun untuk melihat daftar block.</p>
+              </div>
+
               <!-- Save error -->
               <p v-if="saveError" class="text-xs text-red-500">{{ saveError }}</p>
 
@@ -158,6 +175,11 @@ const detailOptions = computed(() => props.items.map(item => ({
   value: item.id,
   label: item.jobType || `Detail #${item.id}`
 })))
+
+const selectedDetailBlocks = computed(() => {
+  const selected = props.items.find((item) => item.id === form.value.sensusDetailId)
+  return Array.isArray(selected?.blocks) ? selected.blocks : []
+})
 
 const todayIso = new Date().toISOString().slice(0, 10)
 

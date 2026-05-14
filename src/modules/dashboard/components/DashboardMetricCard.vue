@@ -185,6 +185,7 @@ watch(() => props.metric.pointLabels, () => {
   box-shadow: var(--shadow);
   display: grid;
   gap: 8px;
+  overflow: hidden;
 }
 
 .metric-card__header {
@@ -256,7 +257,23 @@ watch(() => props.metric.pointLabels, () => {
 }
 
 .metric-card__chart {
-  margin: 0 -12px -10px;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
   height: 82px;
+  overflow: hidden;
+}
+
+.metric-card__chart :deep(.apexcharts-canvas),
+.metric-card__chart :deep(.apexcharts-svg),
+.metric-card__chart :deep(.apexcharts-inner),
+.metric-card__chart :deep(.apexcharts-graphical),
+.metric-card__chart :deep(svg) {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.metric-card__chart :deep(.apexcharts-tooltip) {
+  pointer-events: none;
 }
 </style>

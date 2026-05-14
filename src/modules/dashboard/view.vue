@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, watch } from 'vue'
 import BaseHeader from '../shared/header'
 import DashboardMetricCard from './components/DashboardMetricCard.vue'
 import BaseSidebar from '../shared/sidebar'
@@ -57,8 +57,8 @@ const props = defineProps({
 
 const appStore = useAppStore()
 
-// Metrics state
 const metricsData = ref(null)
+const metricsLoading = ref(false)
 
 const navigation = computed(() => props.controller.getNavigation())
 const header = computed(() => props.controller.getHeader())
@@ -73,16 +73,23 @@ const metrics = computed(() => {
 })
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 
-// Load metrics from API on mount
-onMounted(async () => {
-  try {
-    const loadedMetrics = await props.controller.loadMetrics()
-    metricsData.value = loadedMetrics
-  } catch (error) {
-    console.error('[Dashboard] Failed to load metrics:', error)
-    // Keep showing fallback data
-  }
-})
+watch(
+  () => appStore.ready,
+  async (ready) => {
+    if (!ready || metricsLoading.value || metricsData.value) return
+
+    metricsLoading.value = true
+    try {
+      const loadedMetrics = await props.controller.loadMetrics()
+      metricsData.value = loadedMetrics
+    } catch (error) {
+      console.error('[Dashboard] Failed to load metrics:', error)
+    } finally {
+      metricsLoading.value = false
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

@@ -29,14 +29,33 @@ function toDateOnlyString(value) {
   return `${y}-${m}-${d}`
 }
 
+function normalizeBlockNames(rawBlocks) {
+  if (!Array.isArray(rawBlocks)) return []
+  const names = rawBlocks
+    .map((block) => {
+      if (typeof block === 'string') return block
+      if (typeof block === 'number' && Number.isFinite(block)) return `Blok ${block}`
+      if (!block || typeof block !== 'object') return ''
+      if (block.name) return String(block.name)
+      if (block.block_name) return String(block.block_name)
+      if (Number.isFinite(block.id)) return `Blok ${block.id}`
+      return ''
+    })
+    .filter(Boolean)
+
+  return [...new Set(names)]
+}
+
 // Map a planning API row to the shape expected by the Gantt chart
 function mapPlanningItem(p) {
+  const rawBlocks = Array.isArray(p.blocks) ? p.blocks : p.sensus_detail?.blocks
+
   return {
     id: p.id,
     sensusDetailId: p.sensus_detail_id,
     sensusId: p.id_sensus || '',
     jobType: p.sensus_detail?.type_of_work?.name || '',
-    blocks: Array.isArray(p.blocks) ? p.blocks.map(b => b.name || `Blok ${b.id}`) : [],
+    blocks: normalizeBlockNames(rawBlocks),
     startDate: toDateOnlyString(p.start_date),
     endDate: toDateOnlyString(p.end_date),
     actualStartDate: toDateOnlyString(p.actual_start_date),
@@ -97,10 +116,11 @@ export async function loadSensusDetails(idSensus) {
     for (const d of details) {
       const activity = d.type_of_work?.name || ''
       const desc = d.description || ''
+      const blocks = normalizeBlockNames(d.blocks)
       const label = activity && desc
         ? `${activity} — ${desc}`
         : activity || desc || `Detail #${d.id}`
-      options.push({ value: d.id, label })
+      options.push({ value: d.id, label, blocks })
     }
   }
   return options

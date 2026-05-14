@@ -68,7 +68,7 @@
                             <div class="shrink-0 w-1 rounded-full self-stretch my-3" :style="{ backgroundColor: jobColor(plan.jobType).bar }"></div>
                             <div class="flex-1 min-w-0">
                                 <div class="text-sm font-semibold text-(--text) truncate">{{ plan.jobType }}</div>
-                                <div class="text-xs text-(--text-muted) truncate mt-0.5">ID Sensus: {{ plan.sensusId || '-' }}</div>
+                                <div class="text-xs text-(--text-muted) truncate mt-0.5">{{ plan.sensusId || '-' }}</div>
                                 <div class="flex flex-wrap gap-1 mt-1">
                                     <template v-if="plan.blocks.slice(0,3).length">
                                         <span

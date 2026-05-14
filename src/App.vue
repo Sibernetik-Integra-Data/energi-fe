@@ -81,15 +81,18 @@ function retryLogin() {
 async function syncUserProfile() {
   if (!isAuthenticated()) {
     appStore.clearProfile()
+    appStore.setReady(false)
     return
   }
 
   try {
     const profile = await fetchUserProfile()
     appStore.setProfile(profile)
+    appStore.setReady(true)
   } catch (err) {
     console.warn('Failed to load user profile', err)
     appStore.clearProfile()
+    appStore.setReady(true)
   }
 }
 

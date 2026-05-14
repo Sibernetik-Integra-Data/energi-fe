@@ -134,6 +134,27 @@
           ></textarea>
         </div>
 
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[12px] font-semibold text-(--text-muted) tracking-wide uppercase">
+            Block Terkait
+          </label>
+          <div
+            v-if="selectedDetailBlocks.length"
+            class="flex flex-wrap gap-1.5 rounded-lg border border-(--border) bg-(--surface-muted) p-2"
+          >
+            <span
+              v-for="block in selectedDetailBlocks"
+              :key="block"
+              class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-(--surface) text-(--text) border border-(--border)"
+            >
+              {{ block }}
+            </span>
+          </div>
+          <p v-else class="text-xs text-(--text-muted)">
+            Pilih detail sensus untuk melihat daftar block.
+          </p>
+        </div>
+
         <!-- Error message -->
         <p v-if="saveError" class="text-xs text-red-500">{{ saveError }}</p>
 
@@ -250,6 +271,15 @@ const isFormValid = computed(() => {
   const base = form.value.startDate && form.value.endDate
   if (props.editItem) return !!base
   return !!(base && form.value.sensusDetailId)
+})
+
+const selectedDetailBlocks = computed(() => {
+  if (props.editItem) {
+    return Array.isArray(props.editItem.blocks) ? props.editItem.blocks : []
+  }
+
+  const selected = sensusDetailOptions.value.find((opt) => opt.value === form.value.sensusDetailId)
+  return Array.isArray(selected?.blocks) ? selected.blocks : []
 })
 
 function close() {
