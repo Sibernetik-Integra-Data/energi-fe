@@ -29,7 +29,7 @@
 
         <!-- Loading state -->
         <div v-if="loading" class="flex justify-center items-center py-20 text-sm text-(--text-muted)">
-            <span class="animate-pulse">Memuat data pembersihan&hellip;</span>
+            <span class="animate-pulse">Memuat data pemupukan&hellip;</span>
         </div>
 
         <!-- Empty state -->
@@ -37,8 +37,8 @@
             v-else-if="!loading && filteredItems.length === 0"
             class="flex flex-col items-center justify-center py-20 gap-3 text-(--text-muted) border border-(--border) rounded-2xl bg-(--surface)">
             <span class="text-5xl">🧹</span>
-            <p class="text-sm font-semibold m-0">Tidak ada penugasan pembersihan ditemukan.</p>
-            <p class="text-xs text-(--text-muted) m-0">Pastikan data perencanaan pembersihan sudah diisi.</p>
+            <p class="text-sm font-semibold m-0">Tidak ada penugasan pemupukan ditemukan.</p>
+            <p class="text-xs text-(--text-muted) m-0">Pastikan data perencanaan pemupukan sudah diisi.</p>
         </div>
 
         <!-- Card grid (main page) -->
@@ -181,3 +181,4 @@ function statusChipClass(status) {
     return map[status] || "bg-gray-100 text-gray-600";
 }
 </script>
+

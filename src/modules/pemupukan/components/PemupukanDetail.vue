@@ -4,7 +4,7 @@
             class="inline-flex items-center gap-1.5 text-sm font-semibold text-teal-600 hover:text-teal-700 transition-colors cursor-pointer w-fit bg-transparent border-0 p-0"
             @click="$emit('back')">
             <span aria-hidden="true">←</span>
-            Kembali ke Daftar Pembersihan
+            Kembali ke Daftar Pemupukan
         </button>
 
         <div v-if="loading" class="flex justify-center items-center py-20 text-sm text-(--text-muted)">
@@ -353,3 +353,4 @@ function formatGroupLabel(rawDate) {
     return `${match[1]} - ${match[2]} - ${match[3]}`;
 }
 </script>
+

@@ -4,7 +4,7 @@
 
         <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
             <BaseHeader
-                eyebrow="Pembersihan"
+                eyebrow="Pemupukan"
                 :title="header.title"
                 :notifications="header.notifications"
                 :user="user"
@@ -33,7 +33,7 @@
                 </div>
 
                 <!-- Detail view -->
-                <PembersihanDetail
+                <PemupukanDetail
                     v-if="selectedPlan"
                     :plan="selectedPlan"
                     :loading="detailLoading"
@@ -41,7 +41,7 @@
                     @back="handleBack" />
 
                 <!-- List view -->
-                <PembersihanList
+                <PemupukanList
                     v-else
                     :items="items"
                     :loading="loading"
@@ -56,8 +56,8 @@
 import { ref, computed, onMounted } from "vue";
 import BaseHeader from "../shared/header";
 import BaseSidebar from "../shared/sidebar";
-import PembersihanList from "./components/PembersihanList.vue";
-import PembersihanDetail from "./components/PembersihanDetail.vue";
+import PemupukanList from "./components/PemupukanList.vue";
+import PemupukanDetail from "./components/PemupukanDetail.vue";
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from "../../auth/keycloak";
 import { useAppStore } from "../../stores";
 
@@ -85,8 +85,8 @@ onMounted(async () => {
     try {
         items.value = await props.controller.fetchList();
     } catch (err) {
-        console.error("[Pembersihan] Failed to load list:", err);
-        fetchError.value = err?.message || "Gagal memuat data pembersihan.";
+        console.error("[Pemupukan] Failed to load list:", err);
+        fetchError.value = err?.message || "Gagal memuat data pemupukan.";
     } finally {
         loading.value = false;
     }
@@ -100,7 +100,7 @@ async function handleViewDetail(item) {
         const detail = await props.controller.fetchDetail(item.id);
         if (detail) selectedPlan.value = detail;
     } catch (err) {
-        console.error("[Pembersihan] Failed to load detail:", err);
+        console.error("[Pemupukan] Failed to load detail:", err);
         detailError.value = err?.message || "Gagal memuat detail penugasan.";
     } finally {
         detailLoading.value = false;
@@ -112,3 +112,4 @@ function handleBack() {
     detailError.value = null;
 }
 </script>
+

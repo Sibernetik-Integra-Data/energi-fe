@@ -123,9 +123,9 @@ const beforePhotos = computed(() => {
     const value = Array.isArray(props.labor.beforePhotos) ? props.labor.beforePhotos : [];
     if (value.length) return value.slice(0, 3);
     return [
-        "https://picsum.photos/seed/pembersihan-before-1/320/180",
-        "https://picsum.photos/seed/pembersihan-before-2/320/180",
-        "https://picsum.photos/seed/pembersihan-before-3/320/180",
+        "https://picsum.photos/seed/pemupukan-before-1/320/180",
+        "https://picsum.photos/seed/pemupukan-before-2/320/180",
+        "https://picsum.photos/seed/pemupukan-before-3/320/180",
     ];
 });
 
@@ -133,9 +133,9 @@ const afterPhotos = computed(() => {
     const value = Array.isArray(props.labor.afterPhotos) ? props.labor.afterPhotos : [];
     if (value.length) return value.slice(0, 3);
     return [
-        "https://picsum.photos/seed/pembersihan-after-1/320/180",
-        "https://picsum.photos/seed/pembersihan-after-2/320/180",
-        "https://picsum.photos/seed/pembersihan-after-3/320/180",
+        "https://picsum.photos/seed/pemupukan-after-1/320/180",
+        "https://picsum.photos/seed/pemupukan-after-2/320/180",
+        "https://picsum.photos/seed/pemupukan-after-3/320/180",
     ];
 });
 
@@ -155,3 +155,4 @@ onUnmounted(() => {
     document.removeEventListener("keydown", handleKeydown);
 });
 </script>
+
