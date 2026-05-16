@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import DashboardModule from '../modules/dashboard'
 import SensusModule from '../modules/sensus'
 import PlanningModule from '../modules/planning'
+import PembersihanModule from '../modules/pembersihan'
 import BlocksModule from '../modules/masterdata/blocks'
 import DriverModule from '../modules/masterdata/driver'
 import VehicleModule from '../modules/masterdata/vehicle'
@@ -29,6 +30,12 @@ const routes = [
       : { requiresAuth: true }
   })),
   ...PlanningModule.routes.map(route => ({
+    ...route,
+    meta: route.meta
+      ? { ...route.meta, requiresAuth: true }
+      : { requiresAuth: true }
+  })),
+  ...PembersihanModule.routes.map(route => ({
     ...route,
     meta: route.meta
       ? { ...route.meta, requiresAuth: true }
