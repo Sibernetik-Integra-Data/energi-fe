@@ -167,7 +167,7 @@ const filteredItems = computed(() => {
 });
 
 function statusLabel(status) {
-    const map = { draft: "Draft", wip: "WIP", done: "Done", submitted: "Submitted" };
+    const map = { draft: "Draft", wip: "WIP", done: "Done", submitted: "Submitted", in_progress: "In Progress" };
     return map[status] || status || "—";
 }
 
@@ -177,6 +177,7 @@ function statusChipClass(status) {
         wip: "bg-blue-100 text-blue-700",
         done: "bg-green-100 text-green-700",
         submitted: "bg-teal-100 text-teal-700",
+        in_progress: "bg-indigo-100 text-indigo-700",
     };
     return map[status] || "bg-gray-100 text-gray-600";
 }

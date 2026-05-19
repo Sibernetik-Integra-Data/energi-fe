@@ -8,6 +8,6 @@ export function createPembersihanController() {
     getHeader: () => model.getHeader(),
     getIntro: () => model.getIntro(),
     fetchList: (filters = {}) => loadPembersihanList(filters),
-    fetchDetail: (planId) => loadPembersihanDetail(planId)
+    fetchDetail: (sensusId, detailId) => loadPembersihanDetail(sensusId, detailId)
   }
 }
