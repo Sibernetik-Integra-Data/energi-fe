@@ -1,6 +1,5 @@
 import { signedApiFetch } from '../../api/fetch'
 import { navigation as sharedNavigation } from '../shared/navigation'
-import { resolveUsernames } from '../../utils/userCache'
 
 function cloneNavigation(items) {
   return items.map((item) => ({
@@ -51,50 +50,126 @@ function normalizeBlockNames(rawBlocks) {
   return [...new Set(names)]
 }
 
-function isPemupukan(item) {
-  const typeOfWork = item?.sensus_detail?.type_of_work
-  const groupOfWorkName = (typeOfWork?.group_of_work_name || '').toLowerCase()
-  const typeOfWorkName = (typeOfWork?.name || '').toLowerCase()
-  return (
-    groupOfWorkName.includes('pemupuk') ||
-    groupOfWorkName.includes('pupuk') ||
-    groupOfWorkName.includes('fertiliz') ||
-    typeOfWorkName.includes('pemupuk') ||
-    typeOfWorkName.includes('pupuk') ||
-    typeOfWorkName.includes('fertiliz')
-  )
+function toIsoDateOrEmpty(value) {
+  return toDateOnlyString(value || '')
 }
 
-function mapPlanItem(p) {
-  const rawBlocks = Array.isArray(p.blocks) ? p.blocks : p.sensus_detail?.blocks
+function mapSensusDetailItem(sensus, detail) {
+  const rawBlocks = Array.isArray(detail?.blocks) ? detail.blocks : []
+  const status = detail?.progress_status || sensus?.status || 'draft'
+  const sensusDate = toDateOnlyString(sensus?.sensus_date)
+
   return {
-    id: p.id,
-    sensusDetailId: p.sensus_detail_id,
-    sensusId: p.id_sensus || '',
-    jobType: p.sensus_detail?.type_of_work?.name || 'Pemupukan',
-    groupOfWork: p.sensus_detail?.type_of_work?.group_of_work_name || '',
+    id: sensus?.id,
+    detailId: detail?.id || null,
+    sensusDetailId: detail?.id || null,
+    sensusId: sensus?.id_sensus || '',
+    jobType: detail?.type_of_work?.name || detail?.description || 'Pemupukan',
+    groupOfWork: detail?.type_of_work?.group_of_work_name || '',
     blocks: normalizeBlockNames(rawBlocks),
-    startDate: toDateOnlyString(p.start_date),
-    endDate: toDateOnlyString(p.end_date),
-    startDateFormatted: formatDate(p.start_date),
-    endDateFormatted: formatDate(p.end_date),
-    actualStartDate: toDateOnlyString(p.actual_start_date),
-    actualEndDate: toDateOnlyString(p.actual_end_date),
-    status: p.status || 'draft',
-    notes: p.notes || '',
-    sensusDate: toDateOnlyString(p.sensus_detail?.created_at),
-    sensusDateFormatted: formatDate(p.sensus_detail?.created_at),
-    createdBy: p.created_by || '',
-    createdAt: p.created_at || '',
-    labors: Array.isArray(p.labors)
-      ? p.labors.map((l) => ({
-          id: l.id,
-          planId: l.plan_id,
-          userId: l.user_id || '',
-          notes: l.notes || '',
-          username: ''
-        }))
-      : []
+    startDate: sensusDate,
+    endDate: sensusDate,
+    startDateFormatted: formatDate(sensusDate),
+    endDateFormatted: formatDate(sensusDate),
+    actualStartDate: '',
+    actualEndDate: '',
+    status,
+    notes: detail?.description || sensus?.description || '',
+    sensusDate,
+    sensusDateFormatted: formatDate(sensusDate),
+    createdBy: sensus?.created_by || '',
+    createdAt: sensus?.created_at || '',
+    labors: []
+  }
+}
+
+function mapSensusToListItems(sensus) {
+  const details = Array.isArray(sensus?.details) ? sensus.details : []
+  if (details.length === 0) {
+    return [
+      {
+        id: sensus?.id,
+        detailId: null,
+        sensusDetailId: null,
+        sensusId: sensus?.id_sensus || '',
+        jobType: 'Pemupukan',
+        groupOfWork: 'Pemupukan',
+        blocks: [],
+        startDate: toDateOnlyString(sensus?.sensus_date),
+        endDate: toDateOnlyString(sensus?.sensus_date),
+        startDateFormatted: formatDate(sensus?.sensus_date),
+        endDateFormatted: formatDate(sensus?.sensus_date),
+        actualStartDate: '',
+        actualEndDate: '',
+        status: sensus?.status || 'draft',
+        notes: sensus?.description || '',
+        sensusDate: toDateOnlyString(sensus?.sensus_date),
+        sensusDateFormatted: formatDate(sensus?.sensus_date),
+        createdBy: sensus?.created_by || '',
+        createdAt: sensus?.created_at || '',
+        labors: []
+      }
+    ]
+  }
+
+  return details.map((detail) => mapSensusDetailItem(sensus, detail))
+}
+
+function pickDateRangeFromPlans(plans = []) {
+  const starts = plans.map((item) => toIsoDateOrEmpty(item?.start_date)).filter(Boolean).sort()
+  const ends = plans.map((item) => toIsoDateOrEmpty(item?.end_date)).filter(Boolean).sort()
+  return {
+    startDate: starts[0] || '',
+    endDate: ends.length ? ends[ends.length - 1] : ''
+  }
+}
+
+async function loadPlanningRowsBySensusDetail(sensusId, detailId) {
+  const params = new URLSearchParams()
+  params.set('idSensus', sensusId)
+  if (detailId) params.set('sensusDetailId', String(detailId))
+  params.set('limit', '200')
+
+  const query = params.toString() ? `?${params.toString()}` : ''
+  const resp = await signedApiFetch(`/planning${query}`, { method: 'GET' })
+  const rows = Array.isArray(resp.data) ? resp.data : []
+
+  return rows.filter((row) => {
+    const sameSensus = String(row?.id_sensus || '') === String(sensusId || '')
+    const sameDetail = detailId ? Number(row?.sensus_detail_id) === Number(detailId) : true
+    return sameSensus && sameDetail
+  })
+}
+
+async function loadLaborsByPlanIds(planIds = []) {
+  const uniquePlanIds = [...new Set(planIds.map(Number).filter((id) => Number.isInteger(id)))]
+  if (uniquePlanIds.length === 0) return []
+
+  const responses = await Promise.all(
+    uniquePlanIds.map(async (planId) => {
+      const resp = await signedApiFetch(`/labor?plan_id=${planId}&limit=200`, { method: 'GET' })
+      return Array.isArray(resp.data) ? resp.data : []
+    })
+  )
+
+  return responses.flat()
+}
+
+function mapLaborItem(laborRow, plansById) {
+  const planId = Number(laborRow?.plan_id)
+  const planning = laborRow?.planning || plansById.get(planId) || null
+
+  return {
+    id: laborRow?.id,
+    planId: Number.isInteger(planId) ? planId : null,
+    userId: laborRow?.user_id || '',
+    username: laborRow?.user_id || '',
+    notes: laborRow?.notes || '',
+    workDate: toIsoDateOrEmpty(laborRow?.point_date),
+    pointDate: toIsoDateOrEmpty(laborRow?.point_date),
+    status: Number(laborRow?.is_selected) === 0 ? 'pending' : 'submitted',
+    planningStartDate: toIsoDateOrEmpty(planning?.start_date),
+    planningEndDate: toIsoDateOrEmpty(planning?.end_date)
   }
 }
 
@@ -114,7 +189,7 @@ export function createPemupukanModel() {
     getIntro() {
       return {
         title: 'Penugasan Pemupukan',
-        description: 'Daftar penugasan pemupukan kebun berdasarkan data perencanaan.'
+        description: 'Daftar sensus pemupukan kebun berdasarkan data lapangan.'
       }
     }
   }
@@ -122,47 +197,42 @@ export function createPemupukanModel() {
 
 export async function loadPemupukanList(filters = {}) {
   const params = new URLSearchParams()
-  if (filters.idSensus) params.set('idSensus', filters.idSensus)
+  if (filters.idSensus) params.set('id_sensus', filters.idSensus)
+  params.set('group_of_work', '3')
   params.set('limit', '200')
   const query = params.toString() ? `?${params.toString()}` : ''
-  const resp = await signedApiFetch(`/planning${query}`, { method: 'GET' })
+  const resp = await signedApiFetch(`/sensus${query}`, { method: 'GET' })
   const rows = Array.isArray(resp.data) ? resp.data : []
-  const allItems = rows.map(mapPlanItem)
-
-  // Filter to only pemupukan items (client-side)
-  const filtered = allItems.filter((item) => {
-    const rawRow = rows.find((r) => r.id === item.id)
-    return isPemupukan(rawRow)
-  })
-
-  // Resolve usernames for all labors
-  const allUserIds = filtered.flatMap((item) => item.labors.map((l) => l.userId)).filter(Boolean)
-  const usernameMap = await resolveUsernames(allUserIds)
-
-  return filtered.map((item) => ({
-    ...item,
-    labors: item.labors.map((l) => ({
-      ...l,
-      username: usernameMap.get(l.userId) || l.userId || ''
-    }))
-  }))
+  return rows.flatMap((sensus) => mapSensusToListItems(sensus))
 }
 
-export async function loadPemupukanDetail(planId) {
-  const resp = await signedApiFetch(`/planning/${planId}`, { method: 'GET' })
+export async function loadPemupukanDetail(sensusId, detailId = null) {
+  const resp = await signedApiFetch(`/sensus/${sensusId}`, { method: 'GET' })
   if (!resp.data) return null
-  const item = mapPlanItem({ ...resp.data, labors: resp.data.labors || [] })
+  const details = Array.isArray(resp.data.details) ? resp.data.details : []
+  if (details.length === 0) {
+    const fallback = mapSensusToListItems(resp.data)
+    return fallback[0] || null
+  }
 
-  // Resolve usernames
-  const userIds = item.labors.map((l) => l.userId).filter(Boolean)
-  const usernameMap = await resolveUsernames(userIds)
+  const selectedDetail = detailId
+    ? details.find((detail) => Number(detail.id) === Number(detailId)) || details[0]
+    : details[0]
+
+  const baseItem = mapSensusDetailItem(resp.data, selectedDetail)
+  const planningRows = await loadPlanningRowsBySensusDetail(baseItem.sensusId, selectedDetail?.id)
+  const plansById = new Map(planningRows.map((row) => [Number(row.id), row]))
+  const laborRows = await loadLaborsByPlanIds(planningRows.map((row) => row.id))
+  const dateRange = pickDateRangeFromPlans(planningRows)
 
   return {
-    ...item,
-    labors: item.labors.map((l) => ({
-      ...l,
-      username: usernameMap.get(l.userId) || l.userId || ''
-    }))
+    ...baseItem,
+    startDate: dateRange.startDate || baseItem.startDate,
+    endDate: dateRange.endDate || baseItem.endDate,
+    startDateFormatted: formatDate(dateRange.startDate || baseItem.startDate),
+    endDateFormatted: formatDate(dateRange.endDate || baseItem.endDate),
+    plans: planningRows,
+    labors: laborRows.map((row) => mapLaborItem(row, plansById))
   }
 }
 

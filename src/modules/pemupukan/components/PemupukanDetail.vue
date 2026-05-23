@@ -133,7 +133,7 @@
                                     v-for="labor in group.labors"
                                     :key="`${group.key}-${labor.id}`"
                                     :labor="labor"
-                                    :plan-id="plan.id"
+                                    :plan-id="labor.planId || group.planId"
                                     :plan="plan"
                                     :work-date="group.rawDate" />
                             </div>
@@ -157,109 +157,8 @@ const props = defineProps({
 
 defineEmits(["back"]);
 
-const dummyLabors = [
-    {
-        id: 1001,
-        userId: "Pekerja 0001",
-        username: "Jamaru",
-        notes: "ID Pekerja 0001",
-        status: "submitted",
-        workDate: "2026-02-20",
-    },
-    {
-        id: 1002,
-        userId: "Pekerja 0002",
-        username: "Hanu Irian",
-        notes: "ID Pekerja 0002",
-        status: "submitted",
-        workDate: "2026-02-20",
-    },
-    {
-        id: 1003,
-        userId: "Pekerja 0003",
-        username: "Asep Sunandar",
-        notes: "ID Pekerja 0003",
-        status: "submitted",
-        workDate: "2026-02-20",
-    },
-    {
-        id: 1004,
-        userId: "Pekerja 0004",
-        username: "Hanu Irian",
-        notes: "ID Pekerja 0004",
-        status: "submitted",
-        workDate: "2026-02-20",
-    },
-    {
-        id: 1005,
-        userId: "Pekerja 0005",
-        username: "Eko Nugroho",
-        notes: "ID Pekerja 0005",
-        status: "submitted",
-        workDate: "2026-02-20",
-    },
-    {
-        id: 1006,
-        userId: "Pekerja 0006",
-        username: "Agus Setiawan",
-        notes: "ID Pekerja 0006",
-        status: "submitted",
-        workDate: "2026-02-20",
-    },
-    {
-        id: 1007,
-        userId: "Pekerja 0007",
-        username: "Rudi Hartono",
-        notes: "ID Pekerja 0007",
-        status: "pending",
-        workDate: "2026-02-20",
-    },
-    {
-        id: 1008,
-        userId: "Pekerja 0008",
-        username: "Hendra Jaya",
-        notes: "ID Pekerja 0008",
-        status: "pending",
-        workDate: "2026-02-20",
-    },
-    {
-        id: 1009,
-        userId: "Pekerja 0009",
-        username: "Djoko Susanto",
-        notes: "ID Pekerja 0009",
-        status: "submitted",
-        workDate: "2026-02-20",
-    },
-    {
-        id: 1010,
-        userId: "Pekerja 0010",
-        username: "Dwi Haryanto",
-        notes: "ID Pekerja 0010",
-        status: "submitted",
-        workDate: "2026-02-20",
-    },
-    {
-        id: 1011,
-        userId: "Pekerja 0011",
-        username: "Budi Santoso",
-        notes: "ID Pekerja 0011",
-        status: "submitted",
-        workDate: "2026-02-19",
-    },
-    {
-        id: 1012,
-        userId: "Pekerja 0012",
-        username: "Rahmat Hidayat",
-        notes: "ID Pekerja 0012",
-        status: "submitted",
-        workDate: "2026-02-18",
-    },
-];
-
 const effectiveLabors = computed(() => {
-    const source = Array.isArray(props.plan?.labors) ? props.plan.labors : [];
-    if (source.length > 0) return source;
-    return dummyLabors;
+    return Array.isArray(props.plan?.labors) ? props.plan.labors : [];
 });
 
 const laborGroups = computed(() => {
@@ -267,13 +166,15 @@ const laborGroups = computed(() => {
 
     for (const labor of effectiveLabors.value) {
         const dateValue = getLaborDate(labor, props.plan);
-        const key = dateValue || "unknown";
+        const planId = labor?.planId || labor?.plan_id || null;
+        const key = `${planId || "no-plan"}::${dateValue || "unknown"}`;
 
         if (!grouped.has(key)) {
             grouped.set(key, {
                 key,
+                planId,
                 rawDate: dateValue,
-                label: formatGroupLabel(dateValue),
+                label: formatGroupLabel(dateValue, planId),
                 sortKey: dateValue || "0000-00-00",
                 submittedCount: 0,
                 pendingCount: 0,
@@ -343,14 +244,17 @@ function getLaborDate(labor, plan) {
     );
 }
 
-function formatGroupLabel(rawDate) {
+function formatGroupLabel(rawDate, planId) {
     if (!rawDate) return "Tanggal belum ditentukan";
 
     const dateOnly = String(rawDate).slice(0, 10);
     const match = dateOnly.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!match) return String(rawDate);
+    if (!match) {
+        return planId ? `Plan #${planId} - ${String(rawDate)}` : String(rawDate);
+    }
 
-    return `${match[1]} - ${match[2]} - ${match[3]}`;
+    const dateLabel = `${match[1]} - ${match[2]} - ${match[3]}`;
+    return planId ? `Plan #${planId} - ${dateLabel}` : dateLabel;
 }
 </script>
 

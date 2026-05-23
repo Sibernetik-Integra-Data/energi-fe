@@ -97,7 +97,7 @@ async function handleViewDetail(item) {
     detailLoading.value = true;
     detailError.value = null;
     try {
-        const detail = await props.controller.fetchDetail(item.id);
+        const detail = await props.controller.fetchDetail(item.id, item.detailId);
         if (detail) selectedPlan.value = detail;
     } catch (err) {
         console.error("[Pemupukan] Failed to load detail:", err);

@@ -8,7 +8,7 @@ export function createPemupukanController() {
     getHeader: () => model.getHeader(),
     getIntro: () => model.getIntro(),
     fetchList: (filters = {}) => loadPemupukanList(filters),
-    fetchDetail: (planId) => loadPemupukanDetail(planId)
+    fetchDetail: (sensusId, detailId) => loadPemupukanDetail(sensusId, detailId)
   }
 }
 
