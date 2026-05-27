@@ -107,14 +107,9 @@
 
                             <div class="ml-auto flex items-center gap-2 shrink-0">
                                 <span
-                                    v-if="group.submittedCount > 0"
+                                    v-if="group.labors.length > 0"
                                     class="inline-flex items-center text-[10px] font-semibold px-2 py-1 rounded-full bg-green-100 text-green-700"
-                                    >{{ group.submittedCount }} Submitted</span
-                                >
-                                <span
-                                    v-if="group.pendingCount > 0"
-                                    class="inline-flex items-center text-[10px] font-semibold px-2 py-1 rounded-full bg-amber-100 text-amber-700"
-                                    >{{ group.pendingCount }} Pending</span
+                                    >{{ group.labors.length }} Labors</span
                                 >
                                 <span
                                     class="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-(--border) text-(--text-muted)"
@@ -176,17 +171,12 @@ const laborGroups = computed(() => {
                 rawDate: dateValue,
                 label: formatGroupLabel(dateValue, planId),
                 sortKey: dateValue || "0000-00-00",
-                submittedCount: 0,
-                pendingCount: 0,
                 labors: [],
             });
         }
 
         const group = grouped.get(key);
         group.labors.push(labor);
-
-        if (labor.status === "pending") group.pendingCount += 1;
-        else group.submittedCount += 1;
     }
 
     return Array.from(grouped.values()).sort((a, b) => b.sortKey.localeCompare(a.sortKey));
@@ -250,10 +240,11 @@ function formatGroupLabel(rawDate, planId) {
     const dateOnly = String(rawDate).slice(0, 10);
     const match = dateOnly.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (!match) {
-        return planId ? `Plan #${planId} - ${String(rawDate)}` : String(rawDate);
+        // return planId ? `Plan #${planId} - ${String(rawDate)}` : String(rawDate);
+        return planId ? `${String(rawDate)}` : String(rawDate);
     }
 
     const dateLabel = `${match[1]} - ${match[2]} - ${match[3]}`;
-    return planId ? `Plan #${planId} - ${dateLabel}` : dateLabel;
+    return planId ? `${dateLabel}` : dateLabel;
 }
 </script>
