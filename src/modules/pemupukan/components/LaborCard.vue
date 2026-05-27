@@ -15,10 +15,9 @@
             <!-- Info -->
             <div class="min-w-0 flex-1">
                 <p class="text-sm font-bold text-(--text) truncate m-0">
-                    {{ displayName }}
+                    {{ fullName }}
                 </p>
-                <p v-if="labor.notes" class="text-xs text-(--text-muted) truncate mt-0.5 m-0">{{ labor.notes }}</p>
-                <p v-else class="text-xs text-(--text-muted) mt-0.5 m-0">Labor ID: {{ labor.id }}</p>
+                <p class="text-xs text-(--text-muted) truncate mt-0.5 m-0">ID Pekerja {{ shortUserId }}</p>
             </div>
         </button>
 
@@ -45,11 +44,17 @@ const props = defineProps({
 
 const popupOpen = ref(false);
 
-const displayName = computed(() => {
-    if (props.labor.username && props.labor.username !== props.labor.userId) {
-        return props.labor.username;
-    }
-    return props.labor.userId || `Pekerja #${props.labor.id}`;
+const shortUserId = computed(() => {
+    const value = String(props.labor.userId || "").trim();
+    if (!value) return `Pekerja #${props.labor.id}`;
+    return value.slice(0, 7);
+});
+
+const fullName = computed(() => {
+    const first = String(props.labor.firstName || "").trim();
+    const last = String(props.labor.lastName || "").trim();
+    const combined = [first, last].filter(Boolean).join(" ");
+    return combined || "-";
 });
 
 function togglePopup() {

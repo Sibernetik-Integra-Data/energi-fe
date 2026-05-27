@@ -91,14 +91,16 @@ const props = defineProps({
 const emit = defineEmits(["close"]);
 
 const displayName = computed(() => {
-    if (props.labor.username && props.labor.username !== props.labor.userId) {
-        return props.labor.username;
-    }
+    const first = String(props.labor.firstName || "").trim();
+    const last = String(props.labor.lastName || "").trim();
+    const fullName = [first, last].filter(Boolean).join(" ");
+    if (fullName) return fullName;
     return props.labor.userId || `Pekerja #${props.labor.id}`;
 });
 
 const workerIdLabel = computed(() => {
-    if (props.labor.userId) return props.labor.userId;
+    const userId = String(props.labor.userId || "").trim();
+    if (userId) return `ID Pekerja ${userId.slice(0, 7)}`;
     return `ID Pekerja ${String(props.labor.id || "").padStart(4, "0")}`;
 });
 

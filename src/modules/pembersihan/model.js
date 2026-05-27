@@ -132,6 +132,8 @@ function mapLaborItem(laborRow, plansById) {
     planId: Number.isInteger(planId) ? planId : null,
     userId: laborRow?.user_id || '',
     username: laborRow?.user_id || '',
+    firstName: laborRow?.first_name || '',
+    lastName: laborRow?.last_name || '',
     notes: laborRow?.notes || '',
     workDate: toIsoDateOrEmpty(laborRow?.point_date),
     pointDate: toIsoDateOrEmpty(laborRow?.point_date),
