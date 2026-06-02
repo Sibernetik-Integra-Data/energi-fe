@@ -34,7 +34,7 @@
       class="flex min-h-0 flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto px-3 py-3"
       :aria-label="navLabel"
     >
-      <div v-for="item in items" :key="getItemKey(item)">
+      <div v-for="item in resolvedItems" :key="getItemKey(item)">
         <!-- Group item with children -->
         <template v-if="hasChildren(item)">
           <button
@@ -161,21 +161,6 @@
       @click="isCollapsed = !isCollapsed"
       :title="isCollapsed ? 'Tampilkan sidebar' : 'Sembunyikan sidebar'"
     >
-      <!-- <svg
-        :class="['transform transition-transform duration-300', isCollapsed ? 'rotate-180' : 'rotate-0']"
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2.2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        aria-hidden="true"
-      >
-        <polyline points="9 18 15 12 9 6" />
-      </svg> -->
       <BaseIcon
         :name="isCollapsed ? 'chevron-right' : 'chevron-left'"
         :size="16"
@@ -186,14 +171,22 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import BaseIcon from "../icon";
+import { cloneNavigation, loadStrapiSidebarNavigation } from "./strapiNavigation";
 
 const isCollapsed = ref(false);
 const router = useRouter();
 const route = useRoute();
 const expandedGroups = ref(new Set());
+const resolvedItems = ref([]);
+const hasLoadedRemoteNavigation = ref(false);
+let refreshTimerId = null;
+
+function refreshRemoteNavigation() {
+  hydrateRemoteNavigation();
+}
 
 const props = defineProps({
   items: {
@@ -236,7 +229,7 @@ const props = defineProps({
 
 function onNavigate(item) {
   if (item?.to) {
-    void router.push(item.to).catch(() => {});
+    router.push(item.to).catch(() => {});
   }
 }
 
@@ -284,10 +277,55 @@ function toggleGroup(item) {
 }
 
 watch(
-  () => route.path,
+  () => props.items,
+  (items) => {
+    if (!hasLoadedRemoteNavigation.value) {
+      resolvedItems.value = cloneNavigation(items)
+    }
+  },
+  { immediate: true, deep: true }
+)
+
+async function hydrateRemoteNavigation() {
+  const remoteItems = await loadStrapiSidebarNavigation()
+  if (Array.isArray(remoteItems) && remoteItems.length > 0) {
+    resolvedItems.value = remoteItems
+    hasLoadedRemoteNavigation.value = true
+  }
+}
+
+onMounted(() => {
+  hydrateRemoteNavigation()
+
+  window.addEventListener('focus', refreshRemoteNavigation)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+  refreshTimerId = globalThis.setInterval(() => {
+    if (!document.hidden) {
+      refreshRemoteNavigation()
+    }
+  }, 15000)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('focus', refreshRemoteNavigation)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  if (refreshTimerId !== null) {
+    globalThis.clearInterval(refreshTimerId)
+    refreshTimerId = null
+  }
+})
+
+function handleVisibilityChange() {
+  if (document.visibilityState === 'visible') {
+    refreshRemoteNavigation()
+  }
+}
+
+watch(
+  [() => route.path, resolvedItems],
   () => {
-    const next = new Set(expandedGroups.value);
-    props.items.forEach((item) => {
+    const next = new Set();
+    resolvedItems.value.forEach((item) => {
       if (!hasChildren(item)) return;
       if (item.defaultExpanded || isItemActive(item)) {
         next.add(getItemKey(item));
