@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --mode devlocal",
+    "staging": "vite --mode development",
     "build": "vite build",
     "preview": "vite preview",
     "server:dev": "cross-env NODE_ENV=development node server.js",

@@ -42,7 +42,7 @@ function getMonthKey(referenceDate = new Date()) {
   return `${referenceDate.getFullYear()}-${referenceDate.getMonth() + 1}`
 }
 
-function buildWeeklySensusMetric(sensusList, referenceDate = new Date()) {
+function buildWeeklyMetric(config, sensusList, referenceDate = new Date()) {
   const year = referenceDate.getFullYear()
   const month = referenceDate.getMonth()
   const pointLabels = getCurrentMonthWeekLabels(referenceDate)
@@ -68,51 +68,76 @@ function buildWeeklySensusMetric(sensusList, referenceDate = new Date()) {
   const deltaSign = deltaPercent >= 0 ? '+' : ''
 
   return {
-    title: 'Sensus',
+    title: config.title,
     value: String(currentMonthTotal),
     delta: `${deltaSign}${deltaPercent}%`,
-    detail: 'Total bulan berjalan',
-    tone: 'orange',
+    detail: config.detail,
+    tone: config.tone,
     points: weeklyTotals,
     pointLabels,
-    tooltipLabel: 'Total sensus'
+    tooltipLabel: config.tooltipLabel
   }
 }
 
-function buildDummyWeeklyPoints(sourcePoints, length) {
-  if (!Array.isArray(sourcePoints) || sourcePoints.length === 0) {
-    return Array(length).fill(0)
+const DASHBOARD_METRIC_CONFIGS = [
+  {
+    title: 'Sensus',
+    detail: 'Total bulan berjalan',
+    tone: 'orange',
+    tooltipLabel: 'Total sensus',
+    groupOfWork: null
+  },
+  {
+    title: 'Pembersihan',
+    detail: 'Blok aktif',
+    tone: 'green',
+    tooltipLabel: 'Total aktivitas',
+    groupOfWork: 1
+  },
+  {
+    title: 'Pemupukan',
+    detail: 'Target mingguan',
+    tone: 'blue',
+    tooltipLabel: 'Total aktivitas',
+    groupOfWork: 3
+  },
+  {
+    title: 'Panen',
+    detail: 'Tonase terkini',
+    tone: 'amber',
+    tooltipLabel: 'Total aktivitas',
+    groupOfWork: 2
   }
+]
 
-  if (sourcePoints.length === length) {
-    return [...sourcePoints]
+function buildEmptyMetric(config, referenceDate = new Date(), value = '0') {
+  const pointLabels = getCurrentMonthWeekLabels(referenceDate)
+  return {
+    title: config.title,
+    value,
+    delta: '+0%',
+    detail: config.detail,
+    tone: config.tone,
+    points: Array(pointLabels.length).fill(0),
+    pointLabels,
+    tooltipLabel: config.tooltipLabel
   }
-
-  return Array.from({ length }, (_, index) => {
-    const mappedIndex = Math.floor((index / Math.max(length - 1, 1)) * (sourcePoints.length - 1))
-    return sourcePoints[mappedIndex]
-  })
 }
 
-// Helper function to fetch sensus metrics
-async function fetchSensusMetrics(referenceDate = new Date()) {
+async function fetchWeeklyMetric(config, referenceDate = new Date()) {
   try {
-    const response = await signedApiFetch('/sensus?limit=100', { method: 'GET' })
-    const sensusList = Array.isArray(response.data) ? response.data : []
-    return buildWeeklySensusMetric(sensusList, referenceDate)
-  } catch (error) {
-    console.error('[Dashboard] Failed to fetch sensus metrics:', error)
-    const pointLabels = getCurrentMonthWeekLabels(referenceDate)
-    return {
-      title: 'Sensus',
-      value: '0',
-      delta: '+0%',
-      detail: 'Total bulan berjalan',
-      tone: 'orange',
-      points: Array(pointLabels.length).fill(0),
-      pointLabels,
-      tooltipLabel: 'Total sensus'
+    const params = new URLSearchParams()
+    params.set('limit', '200')
+    if (config.groupOfWork !== null && config.groupOfWork !== undefined) {
+      params.set('group_of_work', String(config.groupOfWork))
     }
+
+    const response = await signedApiFetch(`/sensus?${params.toString()}`, { method: 'GET' })
+    const sensusList = Array.isArray(response.data) ? response.data : []
+    return buildWeeklyMetric(config, sensusList, referenceDate)
+  } catch (error) {
+    console.error(`[Dashboard] Failed to fetch ${config.title} metrics:`, error)
+    return buildEmptyMetric(config, referenceDate)
   }
 }
 
@@ -127,43 +152,6 @@ export function createDashboardModel() {
   const intro = {
     title: 'Dashboard',
     description: 'Ringkasan aktivitas kebun, progres pekerjaan, dan daftar tindak lanjut yang sedang berjalan.'
-  }
-
-  function buildStaticMetrics(referenceDate = new Date()) {
-    const currentMonthWeekLabels = getCurrentMonthWeekLabels(referenceDate)
-
-    return [
-      {
-        title: 'Pembersihan',
-        value: '54',
-        delta: '-4%',
-        detail: 'Blok aktif',
-        tone: 'green',
-        points: buildDummyWeeklyPoints([30, 28, 25, 31, 29, 35, 33, 37], currentMonthWeekLabels.length),
-        pointLabels: currentMonthWeekLabels,
-        tooltipLabel: 'Total aktivitas'
-      },
-      {
-        title: 'Pemupukan',
-        value: '76',
-        delta: '+8%',
-        detail: 'Target mingguan',
-        tone: 'blue',
-        points: buildDummyWeeklyPoints([14, 18, 21, 26, 24, 30, 36, 40], currentMonthWeekLabels.length),
-        pointLabels: currentMonthWeekLabels,
-        tooltipLabel: 'Total aktivitas'
-      },
-      {
-        title: 'Panen',
-        value: '92',
-        delta: '+15%',
-        detail: 'Tonase terkini',
-        tone: 'amber',
-        points: buildDummyWeeklyPoints([20, 22, 28, 26, 30, 34, 38, 42], currentMonthWeekLabels.length),
-        pointLabels: currentMonthWeekLabels,
-        tooltipLabel: 'Total aktivitas'
-      }
-    ]
   }
 
   const pendingVerification = {
@@ -267,8 +255,10 @@ export function createDashboardModel() {
 
     if (!metricsLoadingPromise || metricsMonthKey !== monthKey) {
       metricsMonthKey = monthKey
-      metricsLoadingPromise = fetchSensusMetrics(referenceDate).then((sensusMetric) => {
-        metricsCache = [sensusMetric, ...buildStaticMetrics(referenceDate)]
+      metricsLoadingPromise = Promise.all(
+        DASHBOARD_METRIC_CONFIGS.map((config) => fetchWeeklyMetric(config, referenceDate))
+      ).then((loadedMetrics) => {
+        metricsCache = loadedMetrics
         return metricsCache
       })
     }
@@ -308,26 +298,14 @@ export function createDashboardModel() {
     getMetrics() {
       const referenceDate = new Date()
       const monthKey = getMonthKey(referenceDate)
-      const currentMonthWeekLabels = getCurrentMonthWeekLabels(referenceDate)
 
       // Return cached metrics or placeholder while loading
       if (metricsCache && metricsMonthKey === monthKey) {
         return metricsCache.map((item) => ({ ...item, points: [...item.points] }))
       }
+
       // Return placeholder metrics while loading
-      return [
-        {
-          title: 'Sensus',
-          value: '—',
-          delta: '—',
-          detail: 'Total bulan berjalan',
-          tone: 'orange',
-          points: Array(currentMonthWeekLabels.length).fill(0),
-          pointLabels: currentMonthWeekLabels,
-          tooltipLabel: 'Total sensus'
-        },
-        ...buildStaticMetrics(referenceDate)
-      ]
+      return DASHBOARD_METRIC_CONFIGS.map((config) => buildEmptyMetric(config, referenceDate, '-'))
     },
     loadMetrics() {
       return loadMetricsAsync()
