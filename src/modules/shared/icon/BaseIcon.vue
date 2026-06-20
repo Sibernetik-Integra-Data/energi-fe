@@ -1,5 +1,12 @@
 <template>
+  <span
+    v-if="iconSrc"
+    class="base-icon-mask"
+    :style="maskRenderStyle"
+    aria-hidden="true"
+  ></span>
   <svg
+    v-else
     :width="size"
     :height="size"
     viewBox="0 0 20 20"
@@ -220,7 +227,18 @@
 </template>
 
 <script setup>
-defineProps({
+import dashboardIcon from '../../../assets/icons/left-sidebar/dashboard.svg'
+import noteIcon from '../../../assets/icons/left-sidebar/note.svg'
+import dateIcon from '../../../assets/icons/left-sidebar/date.svg'
+import broomIcon from '../../../assets/icons/left-sidebar/broom.svg'
+import plantIcon from '../../../assets/icons/left-sidebar/plant.svg'
+import locationIcon from '../../../assets/icons/left-sidebar/location.svg'
+import packageIcon from '../../../assets/icons/left-sidebar/package.svg'
+import settingsIcon from '../../../assets/icons/left-sidebar/settings.svg'
+import planLogoIcon from '../../../assets/icons/left-sidebar/plan-logo.svg'
+import { computed } from 'vue'
+
+const props = defineProps({
   name: {
     type: String,
     required: true
@@ -230,9 +248,57 @@ defineProps({
     default: 20
   }
 })
+
+const SIDEBAR_ICON_SOURCES = {
+  dashboard: dashboardIcon,
+  sensus: noteIcon,
+  note: noteIcon,
+  date: dateIcon,
+  planning: dateIcon,
+  cleaning: broomIcon,
+  broom: broomIcon,
+  fertilize: plantIcon,
+  plant: plantIcon,
+  harvest: locationIcon,
+  location: locationIcon,
+  'truck-delivery': packageIcon,
+  package: packageIcon,
+  settings: settingsIcon,
+  logo: planLogoIcon,
+  'plan-logo': planLogoIcon
+}
+
+const iconSrc = computed(() => SIDEBAR_ICON_SOURCES[props.name] || '')
+const maskStyle = computed(() => {
+  if (!iconSrc.value) return {}
+  return {
+    '--mask-url': `url("${iconSrc.value}")`
+  }
+})
+const maskRenderStyle = computed(() => {
+  const dimension = typeof props.size === 'number' ? `${props.size}px` : String(props.size)
+  return {
+    ...maskStyle.value,
+    width: dimension,
+    height: dimension
+  }
+})
 </script>
 
 <style scoped>
+.base-icon-mask {
+  display: inline-block;
+  background-color: currentColor;
+  -webkit-mask-image: var(--mask-url);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  mask-image: var(--mask-url);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
+
 svg {
   stroke: currentColor;
   stroke-width: 1.6;

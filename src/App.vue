@@ -17,7 +17,7 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { clearSessionTokens, exchangeAuthorizationCode, fetchUserProfile, redirectToKeycloakLogin, isAuthenticated, setAppStore } from './auth/keycloak'
+import { clearSessionTokens, exchangeAuthorizationCode, fetchUserProfile, redirectToKeycloakLogin, isAuthenticated, setAppStore, tryRestoreSession } from './auth/keycloak'
 import { useAppStore } from './stores'
 import AppToast from './components/AppToast.vue'
 
@@ -140,9 +140,12 @@ watch(
   { immediate: true }
 )
 
-onMounted(() => {
+onMounted(async () => {
   clearAllLoginRetryFlags()
-  void syncUserProfile()
+  if (!isAuthenticated()) {
+    await tryRestoreSession()
+  }
+  await syncUserProfile()
 })
 </script>
 

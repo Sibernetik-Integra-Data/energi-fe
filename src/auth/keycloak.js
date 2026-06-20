@@ -249,6 +249,7 @@ export async function tryRestoreSession() {
             } catch (e) {
               // ignore profile fetch errors during restore
             }
+            appStoreInstance.setReady(true)
           }
       return true
     } catch {

@@ -16,13 +16,7 @@
         aria-hidden="true"
         class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-linear-to-br from-[#fb8c00] to-[#f59e0b] text-white shadow-[0_8px_20px_rgba(251,140,0,0.22)] ring-1 ring-white/30"
       >
-        <!-- Ganti BaseIcon dengan img untuk brand -->
-        <img
-          :src="getIconUrl(brandIcon)"
-          alt=""
-          :style="{ width: brandIconSize + 'px', height: brandIconSize + 'px' }"
-          class="shrink-0"
-        />
+        <BaseIcon :name="brandIcon" :size="brandIconSize" class="justify-center items-center" />
       </div>
 
       <div v-show="!isCollapsed" class="flex items-baseline gap-1 min-w-0 overflow-hidden">
@@ -46,8 +40,10 @@
           <button
             type="button"
             :class="[
+              'sidebar-item-button',
               'group relative flex w-full items-center appearance-none border-0 bg-transparent text-left outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-orange-300 min-h-10 rounded-[10px] px-3 py-1.5 cursor-pointer',
               'text-(--text-muted) hover:bg-black/4 hover:text-(--text)',
+              isItemActive(item) ? 'is-active' : '',
             ]"
             :title="isCollapsed ? item.label : ''"
             :aria-expanded="isExpanded(item)"
@@ -56,13 +52,8 @@
             <span v-if="isItemActive(item)" aria-hidden="true" class="absolute left-0 top-2 bottom-2 w-0.75 rounded-full bg-(--brand)"></span>
 
             <span :class="['flex flex-1 items-center gap-2', isCollapsed ? 'justify-center' : '']">
-              <span class="grid h-7 w-7 shrink-0 place-items-center text-current">
-                <!-- Ganti BaseIcon dengan img -->
-                <img
-                  :src="getIconUrl(item.icon)"
-                  alt=""
-                  class="h-5.5 w-5.5 shrink-0"
-                />
+              <span class="sidebar-icon grid h-7 w-7 shrink-0 place-items-center text-current">
+                <BaseIcon :name="item.icon" :size="22" />
               </span>
               <span v-show="!isCollapsed" class="flex-1 truncate text-[15px] font-semibold leading-snug tracking-[-0.01em] text-current">{{ item.label }}</span>
             </span>
@@ -73,7 +64,6 @@
               v-show="!isCollapsed"
               :class="['ml-1 inline-grid h-5 w-5 shrink-0 place-items-center text-(--text-muted) transition-transform duration-150', isExpanded(item) ? 'rotate-180' : 'rotate-0']"
             >
-              <!-- Chevron tetap pakai BaseIcon -->
               <BaseIcon name="chevron-down" :size="14" />
             </span>
           </button>
@@ -88,20 +78,17 @@
               :key="getItemKey(child)"
               type="button"
               :class="[
+                'sidebar-item-button',
                 'group relative flex w-full appearance-none items-center gap-2 border-0 text-left outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-orange-300 min-h-8.5 rounded-lg px-3 py-1 cursor-pointer',
                 isChildActive(child)
                   ? 'bg-orange-100 text-(--brand)'
                   : 'bg-transparent text-(--text-muted) hover:bg-black/4 hover:text-(--text)',
+                isChildActive(child) ? 'is-active' : '',
               ]"
               @click="onNavigate(child)"
             >
-              <span v-if="child.icon" class="grid h-6 w-6 shrink-0 place-items-center text-current">
-                <!-- Ganti BaseIcon dengan img -->
-                <img
-                  :src="getIconUrl(child.icon)"
-                  alt=""
-                  class="h-4.5 w-4.5 shrink-0"
-                />
+              <span v-if="child.icon" class="sidebar-icon grid h-6 w-6 shrink-0 place-items-center text-current">
+                <BaseIcon :name="child.icon" :size="18" />
               </span>
               <span
                 :class="['truncate text-[14px] font-medium leading-snug tracking-[-0.01em]', isChildActive(child) ? 'text-(--brand)' : 'text-current']"
@@ -115,10 +102,12 @@
           v-else
           type="button"
           :class="[
+            'sidebar-item-button',
             'group relative flex w-full items-center appearance-none border-0 text-left outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-orange-300 min-h-10 rounded-[10px] px-3 py-1.5 cursor-pointer',
             isItemActive(item)
               ? 'bg-orange-100 text-(--brand)'
               : 'bg-transparent text-(--text-muted) hover:bg-black/4 hover:text-(--text)',
+            isItemActive(item) ? 'is-active' : '',
           ]"
           :title="isCollapsed ? item.label : ''"
           @click="onNavigate(item)"
@@ -126,13 +115,8 @@
           <span v-if="isItemActive(item)" aria-hidden="true" class="absolute left-0 top-2 bottom-2 w-0.75 rounded-full bg-(--brand)"></span>
 
           <span :class="['flex flex-1 items-center gap-2', isCollapsed ? 'justify-center' : '']">
-            <span class="grid h-7 w-7 shrink-0 place-items-center text-current">
-              <!-- Ganti BaseIcon dengan img -->
-              <img
-                :src="getIconUrl(item.icon)"
-                alt=""
-                class="h-5.5 w-5.5 shrink-0"
-              />
+            <span class="sidebar-icon grid h-7 w-7 shrink-0 place-items-center text-current">
+              <BaseIcon :name="item.icon" :size="22" />
             </span>
             <span
               v-show="!isCollapsed"
@@ -183,7 +167,6 @@
       @click="isCollapsed = !isCollapsed"
       :title="isCollapsed ? 'Tampilkan sidebar' : 'Sembunyikan sidebar'"
     >
-      <!-- Chevron tetap pakai BaseIcon -->
       <BaseIcon
         :name="isCollapsed ? 'chevron-right' : 'chevron-left'"
         :size="16"
@@ -206,17 +189,6 @@ const expandedGroups = ref(new Set());
 const resolvedItems = ref([]);
 const hasLoadedRemoteNavigation = ref(false);
 let refreshTimerId = null;
-
-// ------------------------------------------------------------
-//  FUNGSI UNTUK MENDAPATKAN URL IKON DARI FOLDER ASSETS
-// ------------------------------------------------------------
-function getIconUrl(name) {
-  if (!name) return '';
-  // Asumsikan file SVG berada di src/assets/icons/left-sidebar/
-  // Menggunakan new URL agar path di-resolve oleh Vite
-  return new URL(`../assets/icons/left-sidebar/${name}.svg`, import.meta.url).href;
-}
-// ------------------------------------------------------------
 
 function refreshRemoteNavigation() {
   hydrateRemoteNavigation();
@@ -241,7 +213,7 @@ const props = defineProps({
   },
   brandIcon: {
     type: String,
-    default: "logo", // akan dicari logo.svg di folder left-sidebar
+    default: "plan-logo",
   },
   brandIconSize: {
     type: [Number, String],
@@ -370,3 +342,21 @@ watch(
   { immediate: true },
 );
 </script>
+
+<style scoped>
+:global(.theme-dark) .sidebar-item-button.is-active .sidebar-icon {
+  color: #ffffff;
+}
+
+:global(.theme-dark) .sidebar-item-button:not(.is-active) .sidebar-icon {
+  color: var(--text-muted);
+}
+
+:global(html:not(.theme-dark)) .sidebar-item-button.is-active .sidebar-icon {
+  color: var(--brand);
+}
+
+:global(html:not(.theme-dark)) .sidebar-item-button:not(.is-active) .sidebar-icon {
+  color: var(--text-muted);
+}
+</style>
