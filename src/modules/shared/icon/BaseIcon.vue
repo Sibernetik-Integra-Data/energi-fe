@@ -206,6 +206,13 @@
       <polyline points="3.5,14.5 5,16 7.5,13" />
     </template>
 
+    <template v-else-if="name === 'truck-delivery'">
+      <rect x="2.5" y="4.5" width="9.5" height="8.5" rx="1" />
+      <path d="M12 7.5h3.2l2.3 2.5v3h-5.5V7.5z" />
+      <circle cx="5.5" cy="15.5" r="1.5" />
+      <circle cx="14.5" cy="15.5" r="1.5" />
+    </template>
+
     <template v-else>
       <circle cx="10" cy="10" r="6" />
     </template>

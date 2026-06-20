@@ -16,7 +16,13 @@
         aria-hidden="true"
         class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-linear-to-br from-[#fb8c00] to-[#f59e0b] text-white shadow-[0_8px_20px_rgba(251,140,0,0.22)] ring-1 ring-white/30"
       >
-        <BaseIcon :name="brandIcon" :size="brandIconSize" class="justify-center items-center" />
+        <!-- Ganti BaseIcon dengan img untuk brand -->
+        <img
+          :src="getIconUrl(brandIcon)"
+          alt=""
+          :style="{ width: brandIconSize + 'px', height: brandIconSize + 'px' }"
+          class="shrink-0"
+        />
       </div>
 
       <div v-show="!isCollapsed" class="flex items-baseline gap-1 min-w-0 overflow-hidden">
@@ -51,7 +57,12 @@
 
             <span :class="['flex flex-1 items-center gap-2', isCollapsed ? 'justify-center' : '']">
               <span class="grid h-7 w-7 shrink-0 place-items-center text-current">
-                <BaseIcon :name="item.icon" :size="22" />
+                <!-- Ganti BaseIcon dengan img -->
+                <img
+                  :src="getIconUrl(item.icon)"
+                  alt=""
+                  class="h-5.5 w-5.5 shrink-0"
+                />
               </span>
               <span v-show="!isCollapsed" class="flex-1 truncate text-[15px] font-semibold leading-snug tracking-[-0.01em] text-current">{{ item.label }}</span>
             </span>
@@ -62,6 +73,7 @@
               v-show="!isCollapsed"
               :class="['ml-1 inline-grid h-5 w-5 shrink-0 place-items-center text-(--text-muted) transition-transform duration-150', isExpanded(item) ? 'rotate-180' : 'rotate-0']"
             >
+              <!-- Chevron tetap pakai BaseIcon -->
               <BaseIcon name="chevron-down" :size="14" />
             </span>
           </button>
@@ -84,7 +96,12 @@
               @click="onNavigate(child)"
             >
               <span v-if="child.icon" class="grid h-6 w-6 shrink-0 place-items-center text-current">
-                <BaseIcon :name="child.icon" :size="18" />
+                <!-- Ganti BaseIcon dengan img -->
+                <img
+                  :src="getIconUrl(child.icon)"
+                  alt=""
+                  class="h-4.5 w-4.5 shrink-0"
+                />
               </span>
               <span
                 :class="['truncate text-[14px] font-medium leading-snug tracking-[-0.01em]', isChildActive(child) ? 'text-(--brand)' : 'text-current']"
@@ -110,7 +127,12 @@
 
           <span :class="['flex flex-1 items-center gap-2', isCollapsed ? 'justify-center' : '']">
             <span class="grid h-7 w-7 shrink-0 place-items-center text-current">
-              <BaseIcon :name="item.icon" :size="22" />
+              <!-- Ganti BaseIcon dengan img -->
+              <img
+                :src="getIconUrl(item.icon)"
+                alt=""
+                class="h-5.5 w-5.5 shrink-0"
+              />
             </span>
             <span
               v-show="!isCollapsed"
@@ -161,6 +183,7 @@
       @click="isCollapsed = !isCollapsed"
       :title="isCollapsed ? 'Tampilkan sidebar' : 'Sembunyikan sidebar'"
     >
+      <!-- Chevron tetap pakai BaseIcon -->
       <BaseIcon
         :name="isCollapsed ? 'chevron-right' : 'chevron-left'"
         :size="16"
@@ -183,6 +206,17 @@ const expandedGroups = ref(new Set());
 const resolvedItems = ref([]);
 const hasLoadedRemoteNavigation = ref(false);
 let refreshTimerId = null;
+
+// ------------------------------------------------------------
+//  FUNGSI UNTUK MENDAPATKAN URL IKON DARI FOLDER ASSETS
+// ------------------------------------------------------------
+function getIconUrl(name) {
+  if (!name) return '';
+  // Asumsikan file SVG berada di src/assets/icons/left-sidebar/
+  // Menggunakan new URL agar path di-resolve oleh Vite
+  return new URL(`../assets/icons/left-sidebar/${name}.svg`, import.meta.url).href;
+}
+// ------------------------------------------------------------
 
 function refreshRemoteNavigation() {
   hydrateRemoteNavigation();
@@ -207,7 +241,7 @@ const props = defineProps({
   },
   brandIcon: {
     type: String,
-    default: "logo",
+    default: "logo", // akan dicari logo.svg di folder left-sidebar
   },
   brandIconSize: {
     type: [Number, String],

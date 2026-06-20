@@ -5,6 +5,7 @@ export const navigation = [
   { label: 'Pembersihan', icon: 'cleaning', to: '/pembersihan' },
   { label: 'Pemupukan', icon: 'fertilize', to: '/pemupukan', compact: true },
   { label: 'Panen', icon: 'harvest', to: '/panen', compact: true },
+  { label: 'Pengiriman & Penerimaan', icon: 'truck-delivery', to: '/pengiriman-penerimaan', compact: true },
   {
     label: 'Master Data',
     icon: 'settings',
