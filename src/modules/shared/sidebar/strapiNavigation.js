@@ -66,84 +66,14 @@ function hasText(value) {
   return typeof value === 'string' && value.trim().length > 0
 }
 
-function normalizePath(value) {
-  if (!hasText(value)) return ''
-  const trimmed = value.trim()
-  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`
-}
-
-function normalizeToken(value) {
-  if (!hasText(value)) return ''
+function normalizeToken(value, fallback = '') {
+  if (!hasText(value)) return fallback
   return value
     .trim()
     .toLowerCase()
     .replaceAll('_', '-')
     .replaceAll(' ', '-')
-}
-
-const SIDEBAR_ICON_OVERRIDES = {
-  dashboard: 'dashboard',
-  sensus: 'note',
-  planning: 'date',
-  perencanaan: 'date',
-  pembersihan: 'broom',
-  pemupukan: 'plant',
-  panen: 'location',
-  'pengiriman-penerimaan': 'package',
-  pengiriman: 'package',
-  penerimaan: 'package',
-  settings: 'settings',
-  'master-data': 'settings'
-}
-
-const LEGACY_ICON_NAME_MAP = {
-  sensus: 'note',
-  calendar: 'date',
-  cleaning: 'broom',
-  fertilize: 'plant',
-  harvest: 'location',
-  'truck-delivery': 'package'
-}
-
-function resolveSidebarIcon(attributes = {}) {
-  const rawIcon = toText(attributes.icon, 'dashboard')
-  const normalizedIcon = normalizeToken(rawIcon)
-
-  const keyCandidates = [
-    attributes.key,
-    attributes.slug,
-    attributes.name
-  ]
-    .map((value) => normalizeToken(value))
-    .filter(Boolean)
-
-  const pathCandidate = normalizePath(attributes.to || attributes.path)
-  if (pathCandidate) {
-    keyCandidates.push(normalizeToken(pathCandidate.slice(1)))
-    const pathSegments = pathCandidate
-      .split('/')
-      .filter(Boolean)
-      .map((segment) => normalizeToken(segment))
-    keyCandidates.push(...pathSegments)
-    if (pathSegments.length >= 2 && pathSegments[0] === 'master-data') {
-      keyCandidates.push(`master-data-${pathSegments[1]}`)
-    }
-  }
-
-  const labelCandidate = normalizeToken(attributes.label || attributes.title)
-  if (labelCandidate) keyCandidates.push(labelCandidate)
-
-  for (const candidate of keyCandidates) {
-    if (SIDEBAR_ICON_OVERRIDES[candidate]) {
-      return SIDEBAR_ICON_OVERRIDES[candidate]
-    }
-  }
-
-  if (LEGACY_ICON_NAME_MAP[normalizedIcon]) {
-    return LEGACY_ICON_NAME_MAP[normalizedIcon]
-  }
-
-  return rawIcon
+    .replace(/\.svg$/i, '')
 }
 
 function extractRelationId(value) {
@@ -175,7 +105,7 @@ function createSidebarItem(attributes = {}, id = null) {
     id: id ?? undefined,
     key: toText(key, ''),
     label: toText(attributes.label || attributes.title || attributes.name, 'Untitled'),
-    icon: resolveSidebarIcon(attributes),
+    icon: normalizeToken(attributes.icon, 'dashboard'),
     to: toText(attributes.to || attributes.path, ''),
     compact: toBoolean(attributes.compact),
     defaultExpanded: toBoolean(attributes.defaultExpanded),

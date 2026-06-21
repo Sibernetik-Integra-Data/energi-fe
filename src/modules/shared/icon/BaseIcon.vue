@@ -227,15 +227,6 @@
 </template>
 
 <script setup>
-import dashboardIcon from '../../../assets/icons/left-sidebar/dashboard.svg'
-import noteIcon from '../../../assets/icons/left-sidebar/note.svg'
-import dateIcon from '../../../assets/icons/left-sidebar/date.svg'
-import broomIcon from '../../../assets/icons/left-sidebar/broom.svg'
-import plantIcon from '../../../assets/icons/left-sidebar/plant.svg'
-import locationIcon from '../../../assets/icons/left-sidebar/location.svg'
-import packageIcon from '../../../assets/icons/left-sidebar/package.svg'
-import settingsIcon from '../../../assets/icons/left-sidebar/settings.svg'
-import planLogoIcon from '../../../assets/icons/left-sidebar/plan-logo.svg'
 import { computed } from 'vue'
 
 const props = defineProps({
@@ -249,26 +240,31 @@ const props = defineProps({
   }
 })
 
-const SIDEBAR_ICON_SOURCES = {
-  dashboard: dashboardIcon,
-  sensus: noteIcon,
-  note: noteIcon,
-  date: dateIcon,
-  planning: dateIcon,
-  cleaning: broomIcon,
-  broom: broomIcon,
-  fertilize: plantIcon,
-  plant: plantIcon,
-  harvest: locationIcon,
-  location: locationIcon,
-  'truck-delivery': packageIcon,
-  package: packageIcon,
-  settings: settingsIcon,
-  logo: planLogoIcon,
-  'plan-logo': planLogoIcon
-}
+const sidebarIconModules = import.meta.glob('../../../assets/icons/left-sidebar/*.svg', {
+  eager: true,
+  import: 'default'
+})
 
-const iconSrc = computed(() => SIDEBAR_ICON_SOURCES[props.name] || '')
+const SIDEBAR_ICON_SOURCES = Object.entries(sidebarIconModules).reduce((acc, [path, source]) => {
+  const fileName = path.split('/').pop() || ''
+  const iconName = fileName.replace(/\.svg$/i, '').toLowerCase()
+  if (iconName) {
+    acc[iconName] = source
+  }
+  return acc
+}, {})
+
+const normalizedIconName = computed(() => {
+  if (typeof props.name !== 'string') return ''
+  return props.name
+    .trim()
+    .toLowerCase()
+    .replaceAll('_', '-')
+    .replaceAll(' ', '-')
+    .replace(/\.svg$/i, '')
+})
+
+const iconSrc = computed(() => SIDEBAR_ICON_SOURCES[normalizedIconName.value] || '')
 const maskStyle = computed(() => {
   if (!iconSrc.value) return {}
   return {
