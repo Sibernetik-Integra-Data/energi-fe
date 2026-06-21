@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import DashboardModule from '../modules/dashboard'
+import PekerjaModule from '../modules/pekerja'
 import SensusModule from '../modules/sensus'
 import PlanningModule from '../modules/planning'
 import PembersihanModule from '../modules/pembersihan'
@@ -20,6 +21,12 @@ import { isAuthenticated, redirectToKeycloakLogin, tryRestoreSession } from '../
 const routes = [
   { path: '/', redirect: '/dashboard', meta: { requiresAuth: true } },
   ...DashboardModule.routes.map(route => ({
+    ...route,
+    meta: route.meta
+      ? { ...route.meta, requiresAuth: true }
+      : { requiresAuth: true }
+  })),
+  ...PekerjaModule.routes.map(route => ({
     ...route,
     meta: route.meta
       ? { ...route.meta, requiresAuth: true }
