@@ -1,85 +1,118 @@
 <template>
-    <div class="min-h-screen bg-gray-50 p-6">
-        <!-- Header -->
-        <div class="mb-6 flex items-center justify-between">
-            <h1 class="text-2xl font-semibold text-gray-900">
-                Pengiriman dan Penerimaan Panen
-            </h1>
-            <button type="button"
-                class="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
-                @click="onTambahPenerimaan">
-                <PlusIcon class="h-4 w-4" />
-                Tambah Penerimaan
-            </button>
-        </div>
+    <div class="h-screen flex bg-transparent max-[920px]:flex-col">
+        <BaseSidebar :items="navigation" :user="user" />
 
-        <!-- Summary Cards -->
-        <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <PengirimanPenerimanCard label="Total Pengiriman" :value="summary.totalPengiriman" unit="Kg"
-                icon-bg-class="bg-blue-600">
-                <template #icon>
-                    <TruckIcon class="h-5 w-5 text-white" />
+        <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+            <BaseHeader eyebrow="Pengiriman & Penerimaan" :title="header.title" :notifications="header.notifications"
+                :user="user" :on-logout="logoutFromKeycloak" />
+
+            <main class="flex-1 min-w-0 p-6 max-[920px]:p-4.5 overflow-y-auto flex flex-col gap-5">
+                <div v-if="fetchError" class="px-4 py-3 rounded-lg bg-red-50 text-red-600 text-sm border border-red-200">
+                    {{ fetchError }}
+                </div>
+
+                <template v-if="!selectedDetail">
+                    <PengirimanPenerimaanOverview :intro="intro" :summary="summary" :items="items"
+                        @tambah-penerimaan="onTambahPenerimaan" @terima="onTerima" @view="onView" />
                 </template>
-            </PengirimanPenerimanCard>
 
-            <PengirimanPenerimanCard label="Total Penerimaan" :value="summary.totalPenerimaan" unit="Kg"
-                icon-bg-class="bg-yellow-700/80">
-                <template #icon>
-                    <ScaleIcon class="h-5 w-5 text-white" />
+                <template v-else>
+                    <PengirimanPenerimaanDetail :detail="selectedDetail" @back="onBack"
+                        @publish-receipt="onPublishReceipt" />
                 </template>
-            </PengirimanPenerimanCard>
+            </main>
         </div>
-
-        <!-- Table -->
-        <PengirimanPenerimaanList :items="items" @terima="onTerima" @view="onView" />
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import PengirimanPenerimanCard from './components/PengirimanPenerimanCard.vue'
-import PengirimanPenerimaanList from './components/PengirimanPenerimaanList.vue'
-// Contoh pakai @heroicons/vue — ganti sesuai icon library yang Anda pakai
-import { PlusIcon, TruckIcon, ScaleIcon } from '@heroicons/vue/24/solid'
+import { computed, onMounted, ref } from 'vue'
+import BaseHeader from '../shared/header'
+import BaseSidebar from '../shared/sidebar'
+import PengirimanPenerimaanOverview from './components/PengirimanPenerimaanOverview.vue'
+import PengirimanPenerimaanDetail from './components/PengirimanPenerimaanDetail.vue'
+import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
+import { useAppStore } from '../../stores'
 
-const summary = ref({
-    totalPengiriman: 1000,
-    totalPenerimaan: 980,
+const props = defineProps({
+    controller: { type: Object, required: true }
 })
 
-const items = ref([
-    {
-        idPengiriman: '0001',
-        datePengiriman: 'dd/mm/yyyy',
-        qtyPengiriman: 'XX Kg',
-        sensudId: '[sensusID]',
-        idPenerimaan: null,
-        datePenerimaan: null,
-        qtyPenerimaan: null,
-    },
-    {
-        idPengiriman: '0002',
-        datePengiriman: 'dd/mm/yyyy',
-        qtyPengiriman: 'XX Kg',
-        sensudId: '[sensusID]',
-        idPenerimaan: 'ACC0001',
-        datePenerimaan: 'dd/mm/yyyy',
-        qtyPenerimaan: 'XX Kg',
-    },
-    // ... lanjutkan 0003 - 0010 sesuai data asli, atau fetch dari API
-])
+const appStore = useAppStore()
+const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
+const navigation = computed(() => props.controller.getNavigation())
+const header = computed(() => props.controller.getHeader())
+const intro = computed(() => props.controller.getIntro())
 
-function onTambahPenerimaan() {
-    // TODO: navigasi ke form tambah penerimaan
+const items = ref([])
+const fetchError = ref(null)
+const selectedDetail = ref(null)
+
+const summary = computed(() => {
+    const totalPengiriman = items.value.reduce((sum, item) => sum + (item.qtyPengirimanValue || 0), 0)
+    const totalPenerimaan = items.value.reduce((sum, item) => sum + (item.qtyPenerimaanValue || 0), 0)
+    return { totalPengiriman, totalPenerimaan }
+})
+
+onMounted(async () => {
+    await loadList()
+})
+
+async function loadList() {
+    fetchError.value = null
+    try {
+        items.value = await props.controller.fetchList()
+    } catch (err) {
+        fetchError.value = err?.message || 'Gagal memuat data pengiriman dan penerimaan.'
+    }
 }
 
-function onTerima(item) {
-    // TODO: panggil API terima penerimaan untuk item ini
-    console.log('Terima:', item)
+async function onView(item) {
+    try {
+        const detail = await props.controller.fetchDetail(item.idPengiriman)
+        if (!detail) {
+            fetchError.value = 'Detail pengiriman tidak ditemukan.'
+            return
+        }
+        selectedDetail.value = detail
+    } catch (err) {
+        fetchError.value = err?.message || 'Gagal memuat detail pengiriman.'
+    }
 }
 
-function onView(item) {
-    // TODO: navigasi ke halaman detail / buka modal
-    console.log('View:', item)
+async function onTerima(item) {
+    await onView(item)
+}
+
+async function onTambahPenerimaan() {
+    const pendingItem = items.value.find((item) => !item.idPenerimaan) || items.value[0]
+    if (!pendingItem) return
+    await onTerima(pendingItem)
+}
+
+function onBack() {
+    selectedDetail.value = null
+}
+
+function onPublishReceipt(receipt) {
+    if (!selectedDetail.value) {
+        return
+    }
+
+    selectedDetail.value = {
+        ...selectedDetail.value,
+        receipt
+    }
+
+    items.value = items.value.map((item) => {
+        if (item.idPengiriman !== selectedDetail.value.idPengiriman) return item
+        return {
+            ...item,
+            idPenerimaan: receipt.idPenerimaan,
+            datePenerimaan: receipt.datePenerimaanLabel,
+            qtyPenerimaan: `${receipt.qtyPenerimaanValue.toLocaleString('id-ID')} Kg`,
+            qtyPenerimaanValue: receipt.qtyPenerimaanValue
+        }
+    })
 }
 </script>

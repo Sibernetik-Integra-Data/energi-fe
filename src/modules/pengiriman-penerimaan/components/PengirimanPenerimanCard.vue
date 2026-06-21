@@ -1,8 +1,8 @@
 <template>
-    <div class="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-5">
+    <div class="flex items-center justify-between rounded-xl border border-(--border) bg-(--surface) p-5">
         <div>
-            <p class="text-sm text-gray-400">{{ label }}</p>
-            <p class="mt-2 text-2xl font-semibold text-gray-900">
+            <p class="text-sm text-(--text-muted)">{{ label }}</p>
+            <p class="mt-2 text-2xl font-semibold text-(--text)">
                 {{ formattedValue }} <span v-if="unit">{{ unit }}</span>
             </p>
         </div>
