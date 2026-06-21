@@ -11,7 +11,7 @@ export const navigation = [
     label: 'Master Data',
     icon: 'settings',
     key: 'settings',
-    defaultExpanded: true,
+    defaultExpanded: false,
     children: [
       { label: 'Blocks', icon: 'database', to: '/master-data/blocks' },
       { label: 'Driver', icon: 'users', to: '/master-data/driver' },
