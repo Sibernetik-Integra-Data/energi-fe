@@ -1,6 +1,9 @@
 const STRAPI_BASE_URL = (import.meta.env.VITE_STRAPI_URL || '').trim()
 const STRAPI_SIDEBAR_ENDPOINT = (import.meta.env.VITE_STRAPI_SIDEBAR_ENDPOINT || '/api/sidebar-navigation').trim()
 const STRAPI_SIDEBAR_POPULATE = (import.meta.env.VITE_STRAPI_SIDEBAR_POPULATE || 'populate[icons]=*').trim()
+const STRAPI_SIDEBAR_MEDIA_ENDPOINT = (import.meta.env.VITE_STRAPI_SIDEBAR_MEDIA_ENDPOINT || '/api/sidebar-items').trim()
+const STRAPI_SIDEBAR_MEDIA_POPULATE = (import.meta.env.VITE_STRAPI_SIDEBAR_MEDIA_POPULATE || 'populate[icons]=*&pagination[pageSize]=250').trim()
+const STRAPI_API_TOKEN = (import.meta.env.VITE_STRAPI_API_TOKEN || '').trim()
 
 let sidebarNavigationPromise = null
 let cachedNavigationItems = null
@@ -108,7 +111,11 @@ function extractMediaUrl(value) {
 
   const media = value?.data ?? value
   if (Array.isArray(media)) {
-    return extractMediaUrl(media[0])
+    for (const entry of media) {
+      const url = extractMediaUrl(entry)
+      if (url) return url
+    }
+    return ''
   }
 
   if (!media || typeof media !== 'object') {
@@ -116,12 +123,132 @@ function extractMediaUrl(value) {
   }
 
   const attributes = media.attributes ?? media
-  const directUrl = attributes?.url ?? attributes?.formats?.thumbnail?.url ?? ''
+  const directUrl =
+    attributes?.url ??
+    attributes?.formats?.thumbnail?.url ??
+    attributes?.formats?.small?.url ??
+    ''
   if (hasText(directUrl)) {
     return resolveMediaUrl(directUrl)
   }
 
   return ''
+}
+
+function buildStrapiHeaders() {
+  const headers = {
+    Accept: 'application/json'
+  }
+
+  if (STRAPI_API_TOKEN) {
+    headers.Authorization = `Bearer ${STRAPI_API_TOKEN}`
+  }
+
+  return headers
+}
+
+function resolveStrapiEndpointUrl(endpoint = '') {
+  const trimmedEndpoint = endpoint.trim()
+  if (!trimmedEndpoint) return ''
+  if (/^https?:\/\//i.test(trimmedEndpoint)) return trimmedEndpoint
+  if (!STRAPI_BASE_URL) return trimmedEndpoint
+
+  const normalizedBaseUrl = STRAPI_BASE_URL.replace(/\/$/, '')
+  const normalizedEndpoint = trimmedEndpoint.startsWith('/') ? trimmedEndpoint : `/${trimmedEndpoint}`
+  return `${normalizedBaseUrl}${normalizedEndpoint}`
+}
+
+function extractMediaEntries(payload) {
+  if (Array.isArray(payload)) return payload
+  if (Array.isArray(payload?.data)) return payload.data
+  return []
+}
+
+function registerMediaLookup(map, lookupKey, iconUrl) {
+  if (!lookupKey || !iconUrl || map.has(lookupKey)) return
+  map.set(lookupKey, iconUrl)
+}
+
+function buildMediaLookupMap(entries = []) {
+  const map = new Map()
+
+  for (const entry of entries) {
+    const unwrapped = extractEntry(entry)
+    if (!unwrapped) continue
+
+    const attributes = unwrapped.attributes ?? {}
+    const iconUrl = extractMediaUrl(attributes.icons)
+    if (!iconUrl) continue
+
+    if (hasText(attributes.key)) {
+      registerMediaLookup(map, `key:${attributes.key}`, iconUrl)
+    }
+    if (unwrapped.id != null && unwrapped.id !== '') {
+      registerMediaLookup(map, `id:${String(unwrapped.id)}`, iconUrl)
+    }
+    if (hasText(attributes.documentId)) {
+      registerMediaLookup(map, `documentId:${attributes.documentId}`, iconUrl)
+    }
+  }
+
+  return map
+}
+
+function resolveIconUrlFromMap(item = {}, mediaMap = new Map()) {
+  if (!mediaMap.size) return item.iconUrl || ''
+
+  return (
+    item.iconUrl ||
+    (hasText(item.key) ? mediaMap.get(`key:${item.key}`) : '') ||
+    (item.id != null ? mediaMap.get(`id:${String(item.id)}`) : '') ||
+    (hasText(item.documentId) ? mediaMap.get(`documentId:${item.documentId}`) : '') ||
+    ''
+  )
+}
+
+function mergeSidebarIconMedia(items = [], mediaMap = new Map()) {
+  if (!Array.isArray(items) || items.length === 0) return []
+
+  return items.map((item) => {
+    const iconUrl = resolveIconUrlFromMap(item, mediaMap)
+    const nextItem = {
+      ...item,
+      ...(iconUrl ? { iconUrl } : {})
+    }
+
+    if (Array.isArray(item.children) && item.children.length > 0) {
+      nextItem.children = mergeSidebarIconMedia(item.children, mediaMap)
+    }
+
+    return nextItem
+  })
+}
+
+async function fetchSidebarMediaMap() {
+  const requestUrl = appendQueryParams(
+    resolveStrapiEndpointUrl(STRAPI_SIDEBAR_MEDIA_ENDPOINT),
+    STRAPI_SIDEBAR_MEDIA_POPULATE
+  )
+  if (!requestUrl) return new Map()
+
+  try {
+    const response = await fetch(requestUrl, {
+      method: 'GET',
+      cache: 'no-store',
+      headers: buildStrapiHeaders()
+    })
+
+    if (!response.ok) {
+      console.warn(`[Sidebar] Failed to load Strapi icon media (${response.status}).`)
+      return new Map()
+    }
+
+    const payload = await response.json()
+    return buildMediaLookupMap(extractMediaEntries(payload))
+  } catch (error) {
+    console.warn('[Sidebar] Failed to load Strapi icon media.', error)
+    return new Map()
+  }
 }
 
 function extractRelationId(value) {
@@ -150,12 +277,15 @@ function createSidebarItem(attributes = {}, id = null) {
   else if (typeof id === 'string' || typeof id === 'number') key = String(id)
 
   const iconUrl = extractMediaUrl(attributes.icons)
+  const icon = hasText(attributes.icon)
+    ? normalizeToken(attributes.icon)
+    : (iconUrl ? '' : 'dashboard')
 
   return {
     id: id ?? undefined,
     key: toText(key, ''),
     label: toText(attributes.label || attributes.title || attributes.name, 'Untitled'),
-    icon: normalizeToken(attributes.icon, 'dashboard'),
+    icon,
     iconUrl,
     to: toText(attributes.to || attributes.path, ''),
     compact: toBoolean(attributes.compact),
@@ -277,38 +407,29 @@ function appendQueryParams(url, queryString = '') {
 }
 
 function resolveStrapiUrl(endpoint = STRAPI_SIDEBAR_ENDPOINT) {
-  const trimmedEndpoint = endpoint.trim()
-  if (!trimmedEndpoint) return ''
-  if (/^https?:\/\//i.test(trimmedEndpoint)) {
-    return appendQueryParams(trimmedEndpoint, STRAPI_SIDEBAR_POPULATE)
-  }
-  if (!STRAPI_BASE_URL) {
-    return appendQueryParams(trimmedEndpoint, STRAPI_SIDEBAR_POPULATE)
-  }
-
-  const normalizedBaseUrl = STRAPI_BASE_URL.replace(/\/$/, '')
-  const normalizedEndpoint = trimmedEndpoint.startsWith('/') ? trimmedEndpoint : `/${trimmedEndpoint}`
-  return appendQueryParams(`${normalizedBaseUrl}${normalizedEndpoint}`, STRAPI_SIDEBAR_POPULATE)
+  return appendQueryParams(resolveStrapiEndpointUrl(endpoint), STRAPI_SIDEBAR_POPULATE)
 }
 
 async function fetchSidebarNavigation() {
   const requestUrl = resolveStrapiUrl()
   if (!requestUrl) return null
 
-  const response = await fetch(requestUrl, {
-    method: 'GET',
-    cache: 'no-store',
-    headers: {
-      Accept: 'application/json'
-    }
-  })
+  const [navigationResponse, mediaMap] = await Promise.all([
+    fetch(requestUrl, {
+      method: 'GET',
+      cache: 'no-store',
+      headers: buildStrapiHeaders()
+    }),
+    fetchSidebarMediaMap()
+  ])
 
-  if (!response.ok) {
-    throw new Error(`Failed to load Strapi sidebar navigation (${response.status})`)
+  if (!navigationResponse.ok) {
+    throw new Error(`Failed to load Strapi sidebar navigation (${navigationResponse.status})`)
   }
 
-  const payload = await response.json()
-  return normalizeSidebarPayload(payload)
+  const payload = await navigationResponse.json()
+  const items = normalizeSidebarPayload(payload)
+  return mergeSidebarIconMedia(items, mediaMap)
 }
 
 export async function loadStrapiSidebarNavigation() {
