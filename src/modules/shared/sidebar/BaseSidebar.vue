@@ -53,7 +53,7 @@
 
             <span :class="['flex flex-1 items-center gap-2', isCollapsed ? 'justify-center' : '']">
               <span class="sidebar-icon grid h-7 w-7 shrink-0 place-items-center text-current">
-                <BaseIcon :name="item.icon" :size="22" />
+                <BaseIcon :name="item.icon" :src="item.iconUrl" :size="22" />
               </span>
               <span v-show="!isCollapsed" class="flex-1 truncate text-[15px] font-semibold leading-snug tracking-[-0.01em] text-current">{{ item.label }}</span>
             </span>
@@ -87,8 +87,8 @@
               ]"
               @click="onNavigate(child)"
             >
-              <span v-if="child.icon" class="sidebar-icon grid h-6 w-6 shrink-0 place-items-center text-current">
-                <BaseIcon :name="child.icon" :size="18" />
+              <span v-if="child.icon || child.iconUrl" class="sidebar-icon grid h-6 w-6 shrink-0 place-items-center text-current">
+                <BaseIcon :name="child.icon" :src="child.iconUrl" :size="18" />
               </span>
               <span
                 :class="['truncate text-[14px] font-medium leading-snug tracking-[-0.01em]', isChildActive(child) ? 'text-(--brand)' : 'text-current']"
@@ -116,7 +116,7 @@
 
           <span :class="['flex flex-1 items-center gap-2', isCollapsed ? 'justify-center' : '']">
             <span class="sidebar-icon grid h-7 w-7 shrink-0 place-items-center text-current">
-              <BaseIcon :name="item.icon" :size="22" />
+              <BaseIcon :name="item.icon" :src="item.iconUrl" :size="22" />
             </span>
             <span
               v-show="!isCollapsed"
@@ -180,14 +180,15 @@
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import BaseIcon from "../icon";
-import { cloneNavigation, loadStrapiSidebarNavigation } from "./strapiNavigation";
+import { cloneNavigation, getCachedSidebarNavigation, hasSidebarNavigationCache, loadStrapiSidebarNavigation } from "./strapiNavigation";
 
 const isCollapsed = ref(false);
 const router = useRouter();
 const route = useRoute();
 const expandedGroups = ref(new Set());
-const resolvedItems = ref([]);
-const hasLoadedRemoteNavigation = ref(false);
+const cachedNavigation = getCachedSidebarNavigation();
+const resolvedItems = ref(cachedNavigation ?? []);
+const hasLoadedRemoteNavigation = ref(hasSidebarNavigationCache());
 let refreshTimerId = null;
 
 function refreshRemoteNavigation() {

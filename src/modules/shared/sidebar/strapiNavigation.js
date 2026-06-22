@@ -1,7 +1,9 @@
 const STRAPI_BASE_URL = (import.meta.env.VITE_STRAPI_URL || '').trim()
 const STRAPI_SIDEBAR_ENDPOINT = (import.meta.env.VITE_STRAPI_SIDEBAR_ENDPOINT || '/api/sidebar-navigation').trim()
+const STRAPI_SIDEBAR_POPULATE = (import.meta.env.VITE_STRAPI_SIDEBAR_POPULATE || 'populate[icons]=*').trim()
 
 let sidebarNavigationPromise = null
+let cachedNavigationItems = null
 
 function cloneItem(item) {
   return {
@@ -14,6 +16,20 @@ export function cloneNavigation(items = []) {
   return Array.isArray(items)
     ? items.map(cloneItem)
     : []
+}
+
+export function hasSidebarNavigationCache() {
+  return Array.isArray(cachedNavigationItems) && cachedNavigationItems.length > 0
+}
+
+export function getCachedSidebarNavigation() {
+  return hasSidebarNavigationCache()
+    ? cloneNavigation(cachedNavigationItems)
+    : null
+}
+
+export function preloadStrapiSidebarNavigation() {
+  void loadStrapiSidebarNavigation()
 }
 
 function toArray(value) {
@@ -76,6 +92,38 @@ function normalizeToken(value, fallback = '') {
     .replace(/\.svg$/i, '')
 }
 
+function resolveMediaUrl(url = '') {
+  if (!hasText(url)) return ''
+  const trimmedUrl = url.trim()
+  if (/^https?:\/\//i.test(trimmedUrl)) return trimmedUrl
+  if (!STRAPI_BASE_URL) return trimmedUrl
+
+  const normalizedBaseUrl = STRAPI_BASE_URL.replace(/\/$/, '')
+  const normalizedPath = trimmedUrl.startsWith('/') ? trimmedUrl : `/${trimmedUrl}`
+  return `${normalizedBaseUrl}${normalizedPath}`
+}
+
+function extractMediaUrl(value) {
+  if (!value) return ''
+
+  const media = value?.data ?? value
+  if (Array.isArray(media)) {
+    return extractMediaUrl(media[0])
+  }
+
+  if (!media || typeof media !== 'object') {
+    return typeof media === 'string' ? resolveMediaUrl(media) : ''
+  }
+
+  const attributes = media.attributes ?? media
+  const directUrl = attributes?.url ?? attributes?.formats?.thumbnail?.url ?? ''
+  if (hasText(directUrl)) {
+    return resolveMediaUrl(directUrl)
+  }
+
+  return ''
+}
+
 function extractRelationId(value) {
   const relation = value?.data ?? value
   if (Array.isArray(relation)) {
@@ -101,11 +149,14 @@ function createSidebarItem(attributes = {}, id = null) {
   else if (hasText(attributes.name)) key = attributes.name
   else if (typeof id === 'string' || typeof id === 'number') key = String(id)
 
+  const iconUrl = extractMediaUrl(attributes.icons)
+
   return {
     id: id ?? undefined,
     key: toText(key, ''),
     label: toText(attributes.label || attributes.title || attributes.name, 'Untitled'),
     icon: normalizeToken(attributes.icon, 'dashboard'),
+    iconUrl,
     to: toText(attributes.to || attributes.path, ''),
     compact: toBoolean(attributes.compact),
     defaultExpanded: toBoolean(attributes.defaultExpanded),
@@ -217,15 +268,27 @@ function normalizeSidebarPayload(payload) {
   )
 }
 
+function appendQueryParams(url, queryString = '') {
+  const trimmedQuery = queryString.trim().replace(/^\?/, '')
+  if (!trimmedQuery) return url
+
+  const separator = url.includes('?') ? '&' : '?'
+  return `${url}${separator}${trimmedQuery}`
+}
+
 function resolveStrapiUrl(endpoint = STRAPI_SIDEBAR_ENDPOINT) {
   const trimmedEndpoint = endpoint.trim()
   if (!trimmedEndpoint) return ''
-  if (/^https?:\/\//i.test(trimmedEndpoint)) return trimmedEndpoint
-  if (!STRAPI_BASE_URL) return trimmedEndpoint
+  if (/^https?:\/\//i.test(trimmedEndpoint)) {
+    return appendQueryParams(trimmedEndpoint, STRAPI_SIDEBAR_POPULATE)
+  }
+  if (!STRAPI_BASE_URL) {
+    return appendQueryParams(trimmedEndpoint, STRAPI_SIDEBAR_POPULATE)
+  }
 
   const normalizedBaseUrl = STRAPI_BASE_URL.replace(/\/$/, '')
   const normalizedEndpoint = trimmedEndpoint.startsWith('/') ? trimmedEndpoint : `/${trimmedEndpoint}`
-  return `${normalizedBaseUrl}${normalizedEndpoint}`
+  return appendQueryParams(`${normalizedBaseUrl}${normalizedEndpoint}`, STRAPI_SIDEBAR_POPULATE)
 }
 
 async function fetchSidebarNavigation() {
@@ -253,7 +316,11 @@ export async function loadStrapiSidebarNavigation() {
     sidebarNavigationPromise = (async () => {
       try {
         const items = await fetchSidebarNavigation()
-        return Array.isArray(items) ? items : []
+        const normalizedItems = Array.isArray(items) ? items : []
+        if (normalizedItems.length > 0) {
+          cachedNavigationItems = normalizedItems
+        }
+        return normalizedItems
       } catch (error) {
         console.warn('[Sidebar] Failed to load Strapi navigation, using fallback menu.', error)
         return []

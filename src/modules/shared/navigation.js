@@ -2,7 +2,7 @@ export const navigation = [
   { label: 'Dashboard', icon: 'dashboard', to: '/dashboard', compact: true },
   { label: 'Pekerja', icon: 'users', to: '/pekerja', compact: true },
   { label: 'Sensus', icon: 'note', to: '/sensus', compact: true },
-  { label: 'Planning', icon: 'date', to: '/planning', compact: true },
+  { label: 'Planning', icon: 'calendar', to: '/planning', compact: true },
   { label: 'Pembersihan', icon: 'broom', to: '/pembersihan', compact: true },
   { label: 'Pemupukan', icon: 'plant', to: '/pemupukan', compact: true },
   { label: 'Panen', icon: 'location', to: '/panen', compact: true },

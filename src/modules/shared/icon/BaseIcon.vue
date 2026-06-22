@@ -1,6 +1,15 @@
 <template>
+  <img
+    v-if="remoteIconSrc"
+    :src="remoteIconSrc"
+    :width="size"
+    :height="size"
+    class="base-icon-img"
+    alt=""
+    aria-hidden="true"
+  />
   <span
-    v-if="iconSrc"
+    v-else-if="iconSrc"
     class="base-icon-mask"
     :style="maskRenderStyle"
     aria-hidden="true"
@@ -237,6 +246,10 @@ const props = defineProps({
   size: {
     type: [Number, String],
     default: 20
+  },
+  src: {
+    type: String,
+    default: ''
   }
 })
 
@@ -264,7 +277,16 @@ const normalizedIconName = computed(() => {
     .replace(/\.svg$/i, '')
 })
 
-const iconSrc = computed(() => SIDEBAR_ICON_SOURCES[normalizedIconName.value] || '')
+const remoteIconSrc = computed(() => {
+  if (typeof props.src !== 'string') return ''
+  const trimmed = props.src.trim()
+  return trimmed || ''
+})
+
+const iconSrc = computed(() => {
+  if (remoteIconSrc.value) return ''
+  return SIDEBAR_ICON_SOURCES[normalizedIconName.value] || ''
+})
 const maskStyle = computed(() => {
   if (!iconSrc.value) return {}
   return {
@@ -282,6 +304,12 @@ const maskRenderStyle = computed(() => {
 </script>
 
 <style scoped>
+.base-icon-img {
+  display: block;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
 .base-icon-mask {
   display: inline-block;
   background-color: currentColor;
