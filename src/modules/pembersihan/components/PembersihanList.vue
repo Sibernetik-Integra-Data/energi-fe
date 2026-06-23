@@ -106,7 +106,7 @@
                     </div>
                 </div>
 
-                <div class="px-5 pb-5 mt-auto pt-2 flex items-center gap-2">
+                <div class="px-2 pb-2 mt-auto pt-2 flex items-center gap-2">
                     <button
                         class="text-xs font-semibold py-2 px-3 rounded-full border border-(--border) bg-transparent text-(--text) hover:bg-(--surface-muted) transition-colors cursor-pointer"
                         @click="$emit('view-detail', item)">

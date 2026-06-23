@@ -26,12 +26,12 @@ const routes = [
       ? { ...route.meta, requiresAuth: true }
       : { requiresAuth: true }
   })),
-  ...PekerjaModule.routes.map(route => ({
-    ...route,
-    meta: route.meta
-      ? { ...route.meta, requiresAuth: true }
-      : { requiresAuth: true }
-  })),
+  // ...PekerjaModule.routes.map(route => ({
+  //   ...route,
+  //   meta: route.meta
+  //     ? { ...route.meta, requiresAuth: true }
+  //     : { requiresAuth: true }
+  // })),
   ...SensusModule.routes.map(route => ({
     ...route,
     meta: route.meta

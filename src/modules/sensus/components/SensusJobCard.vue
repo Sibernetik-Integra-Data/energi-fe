@@ -58,7 +58,7 @@
     </div> -->
 
     <!-- Actions -->
-    <div class="px-5 pb-5 mt-auto flex gap-2 font-semibold">
+    <div class="px-2 pb-2 mt-auto flex gap-2 font-semibold">
       <button
         class="shrink-0 text-sm py-2 px-4 rounded-xl text-(--text) bg-transparent border border-(--border) hover:bg-(--surface-muted) transition-colors cursor-pointer"
         @click="$emit('view')"

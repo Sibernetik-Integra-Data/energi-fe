@@ -1,9 +1,10 @@
 <template>
     <div class="overflow-hidden rounded-xl border border-(--border) bg-(--surface)">
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto table-scroll">
             <table class="min-w-full divide-y divide-(--border)">
                 <thead>
-                    <tr class="text-left text-xs font-medium uppercase tracking-wide text-(--text-muted) bg-(--surface-muted)">
+                    <tr
+                        class="text-left text-xs font-medium uppercase tracking-wide text-(--text-muted) bg-(--surface-muted)">
                         <th class="px-6 py-4">ID Pengiriman</th>
                         <th class="px-6 py-4">Date Pengiriman</th>
                         <th class="px-6 py-4">Qty Pengiriman</th>
@@ -54,3 +55,40 @@ defineProps({
 
 defineEmits(['terima', 'view'])
 </script>
+
+<style>
+.table-scroll {
+    /* Untuk Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-muted) var(--surface-muted);
+
+    /* Untuk Webkit (Chrome, Edge, Safari) */
+    &::-webkit-scrollbar {
+        height: 8px;
+        /* tinggi scrollbar horizontal */
+        width: 8px;
+        /* lebar scrollbar vertikal (jika digunakan) */
+    }
+
+    &::-webkit-scrollbar-track {
+        background: var(--surface-muted);
+        border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--text-muted);
+        border-radius: 4px;
+        transition: background 0.2s;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: var(--text);
+    }
+}
+
+.table-scroll {
+    max-height: 600px;
+    /* sesuaikan */
+    overflow-y: auto;
+}
+</style>
