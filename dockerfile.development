@@ -3,10 +3,14 @@ FROM node:22-slim
 WORKDIR /app
 
 COPY package*.json ./
+
+RUN npm install -g npm@latest
+RUN node -v && npm -v
+
 RUN if [ -f package-lock.json ]; then \
-      npm ci --include=dev; \
+      npm ci --include=dev --verbose; \
     else \
-      npm install --include=dev; \
+      npm install --include=dev --verbose; \
     fi
 
 COPY .env.development ./
