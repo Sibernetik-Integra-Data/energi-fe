@@ -50,6 +50,9 @@ jobs:
         with:
           node-version: 24
 
+      - name: Install dependencies
+        run: npm i --include=dev
+
       - name: Build frontend dist
         run: |
           rm -rf dist
