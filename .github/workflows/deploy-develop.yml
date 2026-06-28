@@ -99,4 +99,4 @@ jobs:
         run: |
           podman run -d --name energi-fe-dev --restart=always \
             --log-driver=k8s-file --log-opt max-size=50m --log-opt max-file=10 \
-            --network host -e PORT=10001 -e HOST=0.0.0.0 energi-fe-dev:latest
+            --network host -e PORT=10001 -e HOST=0.0.0.0 energi-fe-dev
