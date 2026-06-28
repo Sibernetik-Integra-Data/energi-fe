@@ -57,7 +57,7 @@ jobs:
       - name: Build frontend dist
         run: |
           rm -rf dist
-          npm run build -- --mode development
+          npm run staging
 
       - name: Prune old Podman images
         run: podman image prune -f --filter until=24h

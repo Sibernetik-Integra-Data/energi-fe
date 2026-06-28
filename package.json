@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "vite --mode devlocal",
-    "staging": "vite --mode development",
-    "build": "vite build",
+    "staging": "vite build --mode development",
+    "build": "vite build --mode production",
     "preview": "vite preview",
     "server:dev": "cross-env NODE_ENV=development node server.js",
     "server:prod": "cross-env NODE_ENV=production node server.js"
