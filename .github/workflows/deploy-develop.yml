@@ -24,7 +24,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Install dependencies
         run: npm ci
@@ -35,7 +35,7 @@ jobs:
           npm run build -- --mode development
 
   deploy:
-    runs-on: energi-fe
+    runs-on: energi-fe-vps
     needs: build
 
     permissions:
@@ -49,9 +49,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --include=dev --verbose
 
       - name: Build frontend dist
         run: |
