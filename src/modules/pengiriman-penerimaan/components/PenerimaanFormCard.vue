@@ -9,13 +9,13 @@
             <label class="grid grid-cols-[140px_1fr] items-start gap-2">
                 <span class="text-sm font-medium text-(--text) pt-2">Tanggal Terima</span>
                 <input v-model="form.tanggalTerima" type="date"
-                    class="rounded-lg border border-(--border) bg-(--surface-muted) px-3 py-2.5 text-sm text-(--text) outline-none" />
+                    class="date-input rounded-lg border border-(--border) bg-(--surface-muted) px-3 py-2.5 text-sm text-(--text) outline-none" />
             </label>
 
             <label class="grid grid-cols-[140px_1fr] items-start gap-2">
                 <span class="text-sm font-medium text-(--text) pt-2">Jenis Panen</span>
                 <select v-model="form.jenisPanen"
-                    class="rounded-lg border border-(--border) bg-(--surface-muted) px-3 py-2.5 text-sm text-(--text) outline-none">
+                    class="rounded-lg border border-(--border) bg-(--surface-muted) px-3 py-2.5 text-sm text-(--text) outline-none hover:cursor-pointer">
                     <option value="" disabled>Pilih jenis panen</option>
                     <option value="TBS">TBS</option>
                     <option value="Loose Fruit">Loose Fruit</option>
@@ -25,7 +25,7 @@
             <label class="grid grid-cols-[140px_1fr] items-start gap-2">
                 <span class="text-sm font-medium text-(--text) pt-2">Berat Terima</span>
                 <input v-model="form.beratTerima" type="number" min="1" placeholder="Contoh: 1290"
-                    class="rounded-lg border border-(--border) bg-(--surface-muted) px-3 py-2.5 text-sm text-(--text) outline-none" />
+                    class="weight-input rounded-lg border border-(--border) bg-(--surface-muted) px-3 py-2.5 text-sm text-(--text) outline-none" />
             </label>
 
             <label class="grid grid-cols-[140px_1fr] items-start gap-2">
@@ -44,7 +44,7 @@
                 Cancel
             </button>
             <button type="button"
-                class="rounded-3xl bg-(--text) px-4 py-2 text-sm font-medium text-(--surface) opacity-90 hover:opacity-100"
+                class="rounded-3xl bg-(--text) px-4 py-2 text-sm font-medium text-(--surface) opacity-90 hover:opacity-100 hover:cursor-pointer"
                 @click="handlePublish">
                 Simpan dan Publish
             </button>
@@ -101,3 +101,14 @@ function handlePublish() {
     })
 }
 </script>
+
+<style scoped>
+.date-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+}
+
+.weight-input::-webkit-inner-spin-button,
+.weight-input::-webkit-outer-spin-button {
+    cursor: pointer;
+}
+</style>

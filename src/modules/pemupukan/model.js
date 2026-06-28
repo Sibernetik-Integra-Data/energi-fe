@@ -1,5 +1,6 @@
 import { signedApiFetch } from '../../api/fetch'
 import { navigation as sharedNavigation } from '../shared/navigation'
+import { loadPaginatedAssignmentList } from '../shared/assignmentListLoader'
 
 function cloneNavigation(items) {
   return items.map((item) => ({
@@ -198,14 +199,15 @@ export function createPemupukanModel() {
 }
 
 export async function loadPemupukanList(filters = {}) {
-  const params = new URLSearchParams()
-  if (filters.idSensus) params.set('id_sensus', filters.idSensus)
-  params.set('group_of_work', '3')
-  params.set('limit', '200')
-  const query = params.toString() ? `?${params.toString()}` : ''
-  const resp = await signedApiFetch(`/sensus${query}`, { method: 'GET' })
-  const rows = Array.isArray(resp.data) ? resp.data : []
-  return rows.flatMap((sensus) => mapSensusToListItems(sensus))
+  return loadPaginatedAssignmentList({
+    groupOfWork: 3,
+    page: filters.page,
+    limit: filters.limit,
+    status: filters.status,
+    sort: filters.sort,
+    search: filters.search,
+    mapSensusToListItems,
+  })
 }
 
 export async function loadPemupukanDetail(sensusId, detailId = null) {

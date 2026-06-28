@@ -45,21 +45,29 @@
                     v-else
                     :items="items"
                     :loading="loading"
-                    :error="null"
-                    @view-detail="handleViewDetail" />
+                    :total-items="totalItems"
+                    :current-page="currentPage"
+                    :page-size="pageSize"
+                    :total-pages="totalPages"
+                    :visible-pages="visiblePages"
+                    @view-detail="handleViewDetail"
+                    @update:current-page="currentPage = $event"
+                    @update:page-size="pageSize = $event"
+                    @filters-change="handleFiltersChange" />
             </main>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import BaseHeader from "../shared/header";
 import BaseSidebar from "../shared/sidebar";
 import PemupukanList from "./components/PemupukanList.vue";
 import PemupukanDetail from "./components/PemupukanDetail.vue";
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from "../../auth/keycloak";
 import { useAppStore } from "../../stores";
+import { useServerPagination } from "../shared/pagination";
 
 const props = defineProps({
     controller: { type: Object, required: true },
@@ -74,23 +82,62 @@ const intro = computed(() => props.controller.getIntro());
 const items = ref([]);
 const loading = ref(false);
 const fetchError = ref(null);
+const totalItems = ref(0);
+const currentPage = ref(1);
+const pageSize = ref(10);
+const listFilters = ref({ search: "", status: "all", sort: "newest" });
+
+const { totalPages, visiblePages } = useServerPagination(totalItems, currentPage, pageSize);
 
 const selectedPlan = ref(null);
 const detailLoading = ref(false);
 const detailError = ref(null);
 
-onMounted(async () => {
+async function loadList() {
     loading.value = true;
     fetchError.value = null;
     try {
-        items.value = await props.controller.fetchList();
+        const result = await props.controller.fetchList({
+            page: currentPage.value,
+            limit: pageSize.value,
+            search: listFilters.value.search,
+            status: listFilters.value.status,
+            sort: listFilters.value.sort,
+        });
+        items.value = result.items || [];
+        totalItems.value = result.total || 0;
     } catch (err) {
         console.error("[Pemupukan] Failed to load list:", err);
         fetchError.value = err?.message || "Gagal memuat data pemupukan.";
+        items.value = [];
+        totalItems.value = 0;
     } finally {
         loading.value = false;
     }
+}
+
+onMounted(loadList);
+
+watch(pageSize, () => {
+    if (currentPage.value !== 1) {
+        currentPage.value = 1;
+        return;
+    }
+    loadList();
 });
+
+watch(currentPage, () => {
+    loadList();
+});
+
+function handleFiltersChange(filters) {
+    listFilters.value = filters;
+    if (currentPage.value !== 1) {
+        currentPage.value = 1;
+        return;
+    }
+    loadList();
+}
 
 async function handleViewDetail(item) {
     selectedPlan.value = item;

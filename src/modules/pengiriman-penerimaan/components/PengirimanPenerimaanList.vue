@@ -27,12 +27,12 @@
                         <td class="px-6 py-4">
                             <div class="flex items-center justify-end gap-2">
                                 <button v-if="!item.idPenerimaan" type="button"
-                                    class="rounded-md bg-(--text) px-3.5 py-1.5 text-sm font-medium text-(--surface) opacity-90 hover:opacity-100"
+                                    class="rounded-md bg-(--text) px-3.5 py-1.5 text-sm font-medium text-(--surface) opacity-90 hover:opacity-100 hover:cursor-pointer"
                                     @click="$emit('terima', item)">
                                     Terima
                                 </button>
                                 <button type="button"
-                                    class="rounded-md border border-(--border) px-3.5 py-1.5 text-sm font-medium text-(--text) hover:bg-(--surface-muted)"
+                                    class="rounded-md border border-(--border) px-3.5 py-1.5 text-sm font-medium text-(--text) hover:bg-(--surface-muted) hover:cursor-pointer"
                                     @click="$emit('view', item)">
                                     View
                                 </button>
