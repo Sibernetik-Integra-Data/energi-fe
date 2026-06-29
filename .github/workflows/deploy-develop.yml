@@ -24,15 +24,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
 
       - name: Install dependencies
-        run: npm ci
-
-      - name: Build frontend dist
-        run: |
-          rm -rf dist
-          npm run build -- --mode development
+        run: npm ci --prefer-offline --no-audit --progress=false
 
   deploy:
     runs-on: energi-fe-vps
@@ -52,7 +47,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --include=dev --verbose
+        run: npm ci --prefer-offline --no-audit --progress=false
 
       - name: Build frontend dist
         run: |
