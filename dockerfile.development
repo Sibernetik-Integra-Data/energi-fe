@@ -12,9 +12,6 @@ RUN if [ -f package-lock.json ]; then \
 
 COPY .env.development ./
 COPY server.js ./
-
-RUN npm run staging
-
 COPY dist ./dist
 
 RUN chown -R node:node /app
