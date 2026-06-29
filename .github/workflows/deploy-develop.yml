@@ -25,9 +25,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci --prefer-offline --no-audit --progress=false
+
+      - name: Build frontend dist
+        run: |
+          rm -rf dist
+          npm run staging
 
   deploy:
     runs-on: energi-fe-vps
@@ -44,15 +50,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --prefer-offline --no-audit --progress=false
-
-      - name: Build frontend dist
-        run: |
-          rm -rf dist
-          npm run staging
 
       - name: Prune old Podman images
         run: podman image prune -f --filter until=24h
