@@ -32,6 +32,7 @@ WORKDIR /app
 # in build stage, copy it; otherwise copy from current context.
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/server.js ./server.js
+COPY --from=build /app/node_modules ./node_modules
 COPY .env.development ./
 
 # Ensure non-root user owns the files
