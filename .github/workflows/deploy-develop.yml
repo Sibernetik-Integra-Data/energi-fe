@@ -27,7 +27,7 @@ jobs:
           node-version: 22
 
   deploy:
-    runs-on: energi-fe-vps
+    runs-on: energi-fe
     needs: build
 
     permissions:
