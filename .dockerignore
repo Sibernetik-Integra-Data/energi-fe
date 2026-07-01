@@ -5,7 +5,10 @@ Dockerfile*
 .dockerignore
 .env*
 .vscode
-dist
 energi-fe-dev.tar
 *.log
 **/__pycache__
+
+# Include dist in build context (we produce and upload it in CI before building)
+!dist/
+!dist/**
