@@ -25,6 +25,31 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'npm'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --progress=false
+
+      - name: Build frontend dist
+        run: |
+          rm -rf dist
+          npm run staging
+
+      - name: Upload `dist` artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: energi-fe-dist
+          path: dist
 
   deploy:
     runs-on: energi-fe
@@ -36,6 +61,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Download `dist` artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: energi-fe-dist
+          path: ./dist
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -79,7 +110,10 @@ jobs:
           fi
 
       - name: Build container image
-        run: podman build -f dockerfile.development -t energi-fe:dev .
+        run: |
+          # ensure Podman can access the built dist directory
+          ls -la dist || true
+          podman build -f dockerfile.development -t energi-fe:dev .
 
       - name: Remove existing container
         run: |
@@ -92,3 +126,25 @@ jobs:
           podman run -d --name energi-fe-dev --restart=always \
             --log-driver=k8s-file --log-opt max-size=50m --log-opt max-file=10 \
             --network host -e PORT=10001 -e HOST=0.0.0.0 energi-fe:dev
+
+      - name: Verify container health
+        run: |
+          # Try to curl the exposed port (adjust if your app uses different port)
+          for i in {1..12}; do
+            sleep 2
+            if curl -sS --fail http://127.0.0.1:10001/ >/dev/null; then
+              echo "Application responded"
+              break
+            fi
+            echo "Waiting for application... ($i)"
+          done
+
+      - name: Save image artifact (tar)
+        run: |
+          podman save -o energi-fe-dev.tar energi-fe:dev || true
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: energi-fe-image
+          path: energi-fe-dev.tar
