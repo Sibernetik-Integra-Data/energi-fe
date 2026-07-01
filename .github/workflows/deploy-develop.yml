@@ -51,6 +51,24 @@ jobs:
           name: energi-fe-dist
           path: dist
 
+      - name: Install Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install podman buildah
+
+      - name: Build container image (in build job)
+        run: |
+          IMAGE=energi-fe:dev
+          ls -la dist || true
+          podman build -f dockerfile.development -t $IMAGE .
+          podman save -o energi-fe-dev.tar $IMAGE
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: energi-fe-image
+          path: energi-fe-dev.tar
+
   deploy:
     runs-on: energi-fe
     needs: build
@@ -68,19 +86,15 @@ jobs:
           name: energi-fe-dist
           path: ./dist
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
         with:
-          node-version: 22
-          cache: 'npm'
+          name: energi-fe-image
+          path: ./
 
-      - name: Install dependencies
-        run: npm ci --prefer-offline --no-audit --progress=false
-
-      - name: Build frontend dist
+      - name: Load image into local Podman
         run: |
-          rm -rf dist
-          npm run staging
+          podman load -i energi-fe-dev.tar || true
 
       - name: Prune old Podman images
         run: podman image prune -f --filter until=24h
