@@ -33,6 +33,8 @@ WORKDIR /app
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/server.js ./server.js
 COPY --from=build /app/node_modules ./node_modules
+# Copy package metadata so `npm run` scripts and `cross-env` are available at runtime
+COPY --from=build /app/package*.json ./
 # Do not COPY local `.env.development` into the image (may be gitignored/secrets).
 # Provide runtime configuration via environment variables or `--env-file` when running.
 
