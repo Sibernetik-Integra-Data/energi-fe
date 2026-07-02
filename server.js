@@ -89,7 +89,8 @@ app.use((req, res, next) => {
   return res.status(500).send('dist/index.html was not found. Run npm run build first.');
 });
 
-console.log(`Proxy target ${apiProxyTarget ? `is set to ${apiProxyTarget}` : 'is not set'}`);
+console.log(`Backend proxy target ${apiProxyTarget ? `is set to ${apiProxyTarget}` : 'is not set'}`);
+console.log(`Credential proxy target ${credProxyTarget ? `is set to ${credProxyTarget}` : 'is not set'}`);
 
 const server = app.listen(port, host, () => {
   const displayHost = host === '0.0.0.0' ? 'localhost' : host;
