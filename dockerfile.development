@@ -10,13 +10,6 @@ RUN if [ -f package-lock.json ]; then \
       npm install --silent; \
     fi
 
-# Copy project files only if you want the image to build the dist here.
-# In CI we typically upload/download `dist` artifact; copying `dist` is supported.
-COPY . .
-
-# If your project builds a production bundle, run it here (uncomment if needed)
-# RUN npm run build
-
 
 # Runtime stage: minimal image, non-root user for rootless Podman
 FROM node:22-alpine AS runtime
@@ -28,13 +21,12 @@ RUN addgroup -S appgroup && adduser -S app -G appgroup
 WORKDIR /app
 
 # Copy only necessary runtime files from build stage or context
-# Prefer using the pre-built `dist` artifact produced by CI. If `dist` exists
-# in build stage, copy it; otherwise copy from current context.
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/server.js ./server.js
+# Copy the pre-built `dist` artifact from the build context downloaded by CI.
+COPY dist ./dist
+COPY server.js ./server.js
 COPY --from=build /app/node_modules ./node_modules
 # Copy package metadata so `npm run` scripts and `cross-env` are available at runtime
-COPY --from=build /app/package*.json ./
+COPY package*.json ./
 # Do not COPY local `.env.development` into the image (may be gitignored/secrets).
 # Provide runtime configuration via environment variables or `--env-file` when running.
 
