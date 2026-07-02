@@ -1,4 +1,3 @@
-const STRAPI_BASE_URL = (import.meta.env.VITE_STRAPI_URL || '').trim()
 const STRAPI_SIDEBAR_ENDPOINT = (import.meta.env.VITE_STRAPI_SIDEBAR_ENDPOINT || '/api/sidebar-navigation').trim()
 const STRAPI_SIDEBAR_POPULATE = (import.meta.env.VITE_STRAPI_SIDEBAR_POPULATE || 'populate=icons').trim()
 const STRAPI_SIDEBAR_MEDIA_ENDPOINT = (import.meta.env.VITE_STRAPI_SIDEBAR_MEDIA_ENDPOINT || '/api/sidebar-items').trim()
@@ -95,15 +94,21 @@ function normalizeToken(value, fallback = '') {
     .replace(/\.svg$/i, '')
 }
 
+function toPathAndQuery(value = '') {
+  if (!hasText(value)) return ''
+
+  const trimmedValue = value.trim()
+  if (!/^https?:\/\//i.test(trimmedValue)) {
+    return trimmedValue
+  }
+
+  const parsedUrl = new URL(trimmedValue)
+  return `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`
+}
+
 function resolveMediaUrl(url = '') {
   if (!hasText(url)) return ''
-  const trimmedUrl = url.trim()
-  if (/^https?:\/\//i.test(trimmedUrl)) return trimmedUrl
-  if (!STRAPI_BASE_URL) return trimmedUrl
-
-  const normalizedBaseUrl = STRAPI_BASE_URL.replace(/\/$/, '')
-  const normalizedPath = trimmedUrl.startsWith('/') ? trimmedUrl : `/${trimmedUrl}`
-  return `${normalizedBaseUrl}${normalizedPath}`
+  return toPathAndQuery(url)
 }
 
 function extractMediaUrl(value) {
@@ -150,12 +155,7 @@ function buildStrapiHeaders() {
 function resolveStrapiEndpointUrl(endpoint = '') {
   const trimmedEndpoint = endpoint.trim()
   if (!trimmedEndpoint) return ''
-  if (/^https?:\/\//i.test(trimmedEndpoint)) return trimmedEndpoint
-  if (!STRAPI_BASE_URL) return trimmedEndpoint
-
-  const normalizedBaseUrl = STRAPI_BASE_URL.replace(/\/$/, '')
-  const normalizedEndpoint = trimmedEndpoint.startsWith('/') ? trimmedEndpoint : `/${trimmedEndpoint}`
-  return `${normalizedBaseUrl}${normalizedEndpoint}`
+  return toPathAndQuery(trimmedEndpoint)
 }
 
 function extractMediaEntries(payload) {

@@ -17,7 +17,17 @@ const indexFile = path.join(distDir, 'index.html');
 const port = Number(process.env.PORT || 3000);
 const host = process.env.HOST || '0.0.0.0';
 const apiProxyTarget = process.env.VITE_PROXY_DEVELOP || '';
+const strapiProxyTarget = process.env.VITE_STRAPI_URL || '';
 const credProxyTarget = process.env.VITE_CRED_PROXY_TARGET || '';
+
+function parseListEnv(value = '') {
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+const strapiProxyPaths = parseListEnv(process.env.VITE_STRAPI_PROXY_PATHS || '');
 
 function proxyRequestToTarget(target, req, res, errorMessage) {
   if (!target) {
@@ -67,12 +77,22 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/api', (req, res) => {
-  proxyRequestToTarget(apiProxyTarget, req, res, 'API proxy target is not configured.');
+if (strapiProxyPaths.length > 0) {
+  app.use(strapiProxyPaths, (req, res) => {
+    proxyRequestToTarget(strapiProxyTarget, req, res, 'Strapi proxy target is not configured.');
+  });
+}
+
+app.use('/uploads', (req, res) => {
+  proxyRequestToTarget(strapiProxyTarget, req, res, 'Strapi proxy target is not configured.');
 });
 
 app.use('/cred', (req, res) => {
   proxyRequestToTarget(credProxyTarget, req, res, 'Credential proxy target is not configured.');
+});
+
+app.use('/api', (req, res) => {
+  proxyRequestToTarget(apiProxyTarget, req, res, 'API proxy target is not configured.');
 });
 
 app.use(express.static(distDir, { fallthrough: true }));
@@ -90,6 +110,7 @@ app.use((req, res, next) => {
 });
 
 console.log(`Backend proxy target ${apiProxyTarget ? `is set to ${apiProxyTarget}` : 'is not set'}`);
+console.log(`Strapi proxy target ${strapiProxyTarget ? `is set to ${strapiProxyTarget}` : 'is not set'}`);
 console.log(`Credential proxy target ${credProxyTarget ? `is set to ${credProxyTarget}` : 'is not set'}`);
 
 const server = app.listen(port, host, () => {
