@@ -17,13 +17,14 @@ const indexFile = path.join(distDir, 'index.html');
 const port = Number(process.env.PORT || 3000);
 const host = process.env.HOST || '0.0.0.0';
 const apiProxyTarget = process.env.VITE_PROXY_DEVELOP || '';
+const credProxyTarget = process.env.VITE_CRED_PROXY_TARGET || '';
 
-function proxyApiRequest(req, res) {
-  if (!apiProxyTarget) {
-    return res.status(502).send('API proxy target is not configured.');
+function proxyRequestToTarget(target, req, res, errorMessage) {
+  if (!target) {
+    return res.status(502).send(errorMessage);
   }
 
-  const targetUrl = new URL(req.originalUrl, apiProxyTarget);
+  const targetUrl = new URL(req.originalUrl, target);
   const targetClient = targetUrl.protocol === 'https:' ? https : http;
   const headers = { ...req.headers };
 
@@ -48,9 +49,9 @@ function proxyApiRequest(req, res) {
   });
 
   proxyRequest.on('error', (error) => {
-    console.error('API proxy request failed', error);
+    console.error('Proxy request failed', error);
     if (!res.headersSent) {
-      res.status(502).send('API proxy request failed.');
+      res.status(502).send(errorMessage);
       return;
     }
     res.end();
@@ -67,7 +68,11 @@ app.use((req, res, next) => {
 });
 
 app.use('/api', (req, res) => {
-  proxyApiRequest(req, res);
+  proxyRequestToTarget(apiProxyTarget, req, res, 'API proxy target is not configured.');
+});
+
+app.use('/cred', (req, res) => {
+  proxyRequestToTarget(credProxyTarget, req, res, 'Credential proxy target is not configured.');
 });
 
 app.use(express.static(distDir, { fallthrough: true }));
