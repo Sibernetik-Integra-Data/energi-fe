@@ -84,6 +84,8 @@ app.use((req, res, next) => {
   return res.status(500).send('dist/index.html was not found. Run npm run build first.');
 });
 
+console.log(`Proxy target ${apiProxyTarget ? `is set to ${apiProxyTarget}` : 'is not set'}`);
+
 const server = app.listen(port, host, () => {
   const displayHost = host === '0.0.0.0' ? 'localhost' : host;
   console.log(`Serving ${envName} build on http://${displayHost}:${port}`);
