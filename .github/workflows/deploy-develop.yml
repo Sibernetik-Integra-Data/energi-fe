@@ -80,12 +80,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download `dist` artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: energi-fe-dist
-          path: ./dist
-
       - name: Download image artifact
         uses: actions/download-artifact@v4
         with:
@@ -122,12 +116,6 @@ jobs:
           else
             echo "No existing container to backup."
           fi
-
-      - name: Build container image
-        run: |
-          # ensure Podman can access the built dist directory
-          ls -la dist || true
-          podman build -f dockerfile.development -t energi-fe:dev .
 
       - name: Remove existing container
         run: |
