@@ -23,12 +23,11 @@ WORKDIR /app
 # Copy only necessary runtime files from build stage or context
 # Copy the pre-built `dist` artifact from the build context downloaded by CI.
 COPY dist ./dist
+COPY .env.development ./.env.development
 COPY server.js ./server.js
 COPY --from=build /app/node_modules ./node_modules
 # Copy package metadata so `npm run` scripts and `cross-env` are available at runtime
 COPY package*.json ./
-# Do not COPY local `.env.development` into the image (may be gitignored/secrets).
-# Provide runtime configuration via environment variables or `--env-file` when running.
 
 # Ensure non-root user owns the files
 RUN chown -R app:appgroup /app

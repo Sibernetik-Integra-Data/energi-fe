@@ -9,6 +9,9 @@ energi-fe-dev.tar
 *.log
 **/__pycache__
 
+# Allow the development env file to be copied into the runtime image.
+!.env.development
+
 # Include dist in build context (we produce and upload it in CI before building)
 !dist/
 !dist/**
