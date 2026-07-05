@@ -1,0 +1,94 @@
+<template>
+    <div class="overflow-hidden rounded-xl border border-(--border) bg-(--surface)">
+        <div class="overflow-x-auto table-scroll">
+            <table class="min-w-full divide-y divide-(--border)">
+                <thead>
+                    <tr
+                        class="text-left text-xs font-medium uppercase tracking-wide text-(--text-muted) bg-(--surface-muted)">
+                        <th class="px-6 py-4">ID Pengiriman</th>
+                        <th class="px-6 py-4">Date Pengiriman</th>
+                        <th class="px-6 py-4">Qty Pengiriman</th>
+                        <th class="px-6 py-4">Sensus ID</th>
+                        <th class="px-6 py-4">ID Penerimaan</th>
+                        <th class="px-6 py-4">Date Penerimaan</th>
+                        <th class="px-6 py-4">Qty Penerimaan</th>
+                        <th class="px-6 py-4 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-(--border)">
+                    <tr v-for="item in items" :key="item.idPengiriman" class="text-sm text-(--text-muted)">
+                        <td class="px-6 py-4 font-medium text-(--text)">{{ item.idPengiriman }}</td>
+                        <td class="px-6 py-4">{{ item.datePengiriman }}</td>
+                        <td class="px-6 py-4">{{ item.qtyPengiriman }}</td>
+                        <td class="px-6 py-4 text-(--text-muted)">{{ item.sensusId }}</td>
+                        <td class="px-6 py-4">{{ item.idPenerimaan ?? '-' }}</td>
+                        <td class="px-6 py-4">{{ item.datePenerimaan ?? '-' }}</td>
+                        <td class="px-6 py-4">{{ item.qtyPenerimaan ?? '-' }}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center justify-end gap-2">
+                                <button v-if="!item.idPenerimaan" type="button"
+                                    class="rounded-md bg-(--text) px-3.5 py-1.5 text-sm font-medium text-(--surface) opacity-90 hover:opacity-100 hover:cursor-pointer"
+                                    @click="$emit('terima', item)">
+                                    Terima
+                                </button>
+                                <button type="button"
+                                    class="rounded-md border border-(--border) px-3.5 py-1.5 text-sm font-medium text-(--text) hover:bg-(--surface-muted) hover:cursor-pointer"
+                                    @click="$emit('view', item)">
+                                    View
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</template>
+
+<script setup>
+defineProps({
+    items: {
+        type: Array,
+        default: () => [],
+    },
+})
+
+defineEmits(['terima', 'view'])
+</script>
+
+<style>
+.table-scroll {
+    /* Untuk Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-muted) var(--surface-muted);
+
+    /* Untuk Webkit (Chrome, Edge, Safari) */
+    &::-webkit-scrollbar {
+        height: 8px;
+        /* tinggi scrollbar horizontal */
+        width: 8px;
+        /* lebar scrollbar vertikal (jika digunakan) */
+    }
+
+    &::-webkit-scrollbar-track {
+        background: var(--surface-muted);
+        border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--text-muted);
+        border-radius: 4px;
+        transition: background 0.2s;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: var(--text);
+    }
+}
+
+.table-scroll {
+    max-height: 600px;
+    /* sesuaikan */
+    overflow-y: auto;
+}
+</style>

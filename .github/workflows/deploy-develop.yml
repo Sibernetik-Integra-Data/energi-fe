@@ -1,0 +1,136 @@
+name: Deploy Develop Frontend
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-develop-frontend
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --progress=false
+
+      - name: Build frontend dist
+        run: |
+          rm -rf dist
+          npm run staging
+
+      - name: Upload `dist` artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: energi-fe-dist
+          path: dist
+
+  deploy:
+    runs-on: energi-fe
+    needs: build
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: energi-fe-dist
+          path: ./dist
+
+      - name: Build container image
+        run: |
+          IMAGE=energi-fe:dev
+          ls -la dist || true
+          podman build -f dockerfile.development -t $IMAGE .
+
+      - name: Prune old Podman images
+        run: podman image prune -f --filter until=24h
+
+      - name: Backup current Podman container
+        run: |
+          set -euo pipefail
+
+          backup_container='energi-fe-dev-backup'
+
+          if podman container exists 'energi-fe-dev'; then
+            if podman container exists "$backup_container"; then
+              echo "Removing existing backup container $backup_container before creating a fresh one"
+              podman rm -f "$backup_container" || true
+            fi
+
+            echo "Creating backup container $backup_container from current image"
+            current_image_id=$(podman inspect --format '{{.Image}}' energi-fe-dev 2>/dev/null || true)
+            if [ -n "$current_image_id" ]; then
+              podman create --name "$backup_container" "$current_image_id" || true
+              echo "Backup created: $backup_container (status should be 'Created')"
+            else
+              echo "Unable to determine current image id for energi-fe-dev; skipping backup creation"
+            fi
+          else
+            echo "No existing container to backup."
+          fi
+
+      - name: Remove existing container
+        run: |
+          if podman ps -a --format '{{.Names}}' | grep -qx 'energi-fe-dev'; then
+            podman rm -f energi-fe-dev
+          fi
+
+      - name: Run container
+        run: |
+          podman run -d --name energi-fe-dev --restart=always \
+            --log-driver=k8s-file --log-opt max-size=50m --log-opt max-file=10 \
+            --network host -e PORT=10001 -e HOST=0.0.0.0 energi-fe:dev
+
+      - name: Verify container health
+        run: |
+          # Try to curl the exposed port (adjust if your app uses different port)
+          for i in {1..12}; do
+            sleep 2
+            if curl -sS --fail http://127.0.0.1:10001/ >/dev/null; then
+              echo "Application responded"
+              break
+            fi
+            echo "Waiting for application... ($i)"
+          done
+
+      - name: Save image artifact (tar)
+        run: |
+          podman save -o energi-fe-dev.tar energi-fe:dev || true
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: energi-fe-image
+          path: energi-fe-dev.tar
