@@ -1,0 +1,32 @@
+{
+	"servers": {
+		"Figma": {
+			"url": "https://mcp.figma.com/mcp",
+			"type": "http",
+			"description": "Official Figma MCP proxy"
+		}
+	},
+	"defaults": {
+		"figmaFileKey": "4iyGlWAJXMiJAmMatLlDXV",
+		"figmaNodeId": "325:4086",
+		"outputDir": "src/assets/figma"
+	},
+	"auth": {
+		"tokenEnvVar": "figd_Gj9cbouzVvm7_3J-i5X4YPlJbNYbMwOhmxkV_Z5O",
+		"tokenFile": ".mcp-figma/config.json"
+	},
+	"inputs": [
+		{
+			"name": "fileKey",
+			"label": "Figma file key",
+			"type": "string",
+			"default": "4iyGlWAJXMiJAmMatLlDXV"
+		},
+		{
+			"name": "nodeId",
+			"label": "Figma node id",
+			"type": "string",
+			"default": "325:4086"
+		}
+	]
+}
