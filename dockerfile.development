@@ -1,16 +1,3 @@
-# Build stage: installs dependencies (uses full node to allow building if needed)
-FROM node:22-alpine AS build
-WORKDIR /app
-
-# Install dependencies (prefer package-lock for deterministic install)
-COPY package*.json ./
-RUN if [ -f package-lock.json ]; then \
-      npm ci --silent; \
-    else \
-      npm install --silent; \
-    fi
-
-
 # Runtime stage: minimal image, non-root user for rootless Podman
 FROM node:22-alpine AS runtime
 
@@ -20,17 +7,16 @@ RUN addgroup -S appgroup && adduser -S app -G appgroup
 # Use /app as requested
 WORKDIR /app
 
-# Copy only necessary runtime files from build stage or context
-# Copy the pre-built `dist` artifact from the build context downloaded by CI.
-COPY dist ./dist
-COPY .env.development ./.env.development
-COPY server.js ./server.js
-COPY --from=build /app/node_modules ./node_modules
-# Copy package metadata so `npm run` scripts and `cross-env` are available at runtime
-COPY package*.json ./
+# Copy only necessary runtime files from build context.
+# The CI job downloads the pre-built dist artifact before this image build.
+COPY --chown=app:appgroup dist ./dist
+COPY --chown=app:appgroup .env.development ./.env.development
+COPY --chown=app:appgroup server.js ./server.js
+COPY --chown=app:appgroup package*.json ./
 
-# Ensure non-root user owns the files
-RUN chown -R app:appgroup /app
+# Install only production dependencies to keep the image small and avoid
+# copying the full build-time dependency tree into the runtime layer.
+RUN npm ci --omit=dev --silent
 
 USER app
 
