@@ -20,6 +20,8 @@ export const navigation = [
       { label: 'Group of Work', icon: 'calendar', to: '/master-data/group-of-work' },
       { label: 'Nomor Petak', icon: 'location-pin', to: '/master-data/petak' },
       { label: 'Sensus Progress Status', icon: 'database', to: '/master-data/sensus-progress-status' },
+      { label: 'Type of Accept', icon: 'database', to: '/master-data/type-of-accept' },
+      { label: 'Type of Component', icon: 'database', to: '/master-data/type-of-component' },
       { label: 'Locations', icon: 'location-pin', to: '/master-data/locations' }
     ]
   }

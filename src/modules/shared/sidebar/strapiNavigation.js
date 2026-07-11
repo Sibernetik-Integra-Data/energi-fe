@@ -1,7 +1,7 @@
 const STRAPI_SIDEBAR_ENDPOINT = (import.meta.env.VITE_STRAPI_SIDEBAR_ENDPOINT || '/api/sidebar-navigation').trim()
 const STRAPI_SIDEBAR_POPULATE = (import.meta.env.VITE_STRAPI_SIDEBAR_POPULATE || 'populate=icons').trim()
 const STRAPI_SIDEBAR_MEDIA_ENDPOINT = (import.meta.env.VITE_STRAPI_SIDEBAR_MEDIA_ENDPOINT || '/api/sidebar-items').trim()
-const STRAPI_SIDEBAR_MEDIA_POPULATE = (import.meta.env.VITE_STRAPI_SIDEBAR_MEDIA_POPULATE || 'populate=icons&pagination[pageSize]=250').trim()
+const STRAPI_SIDEBAR_MEDIA_POPULATE = (import.meta.env.VITE_STRAPI_SIDEBAR_MEDIA_POPULATE || 'pagination[pageSize]=250').trim()
 const STRAPI_API_TOKEN = (import.meta.env.VITE_STRAPI_API_TOKEN || '').trim()
 
 let sidebarNavigationPromise = null

@@ -13,6 +13,8 @@ import AktifitasKebunModule from '../modules/masterdata/aktifitas-kebun'
 import GroupOfWorkModule from '../modules/masterdata/group-of-work'
 import SensusProgressStatusModule from '../modules/masterdata/sensus-progress-status'
 import LocationsModule from '../modules/masterdata/locations'
+import TypeOfAcceptModule from '../modules/masterdata/type-of-accept'
+import TypeOfComponentModule from '../modules/masterdata/type-of-component'
 import ProfileModule from '../modules/profile'
 import navigation from '../modules/shared/navigation'
 import ComingSoon from '../components/ComingSoon.vue'
@@ -93,6 +95,18 @@ const routes = [
       : { requiresAuth: true }
   })),
   ...SensusProgressStatusModule.routes.map(route => ({
+    ...route,
+    meta: route.meta
+      ? { ...route.meta, requiresAuth: true }
+      : { requiresAuth: true }
+  })),
+  ...TypeOfAcceptModule.routes.map(route => ({
+    ...route,
+    meta: route.meta
+      ? { ...route.meta, requiresAuth: true }
+      : { requiresAuth: true }
+  })),
+  ...TypeOfComponentModule.routes.map(route => ({
     ...route,
     meta: route.meta
       ? { ...route.meta, requiresAuth: true }
