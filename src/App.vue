@@ -141,7 +141,11 @@ watch(
 )
 
 onMounted(async () => {
-  clearAllLoginRetryFlags()
+  // OAuth callback: handleAuthCode owns login — don't race refresh before the
+  // httpOnly cookie exists (would 401 "No refresh token cookie present").
+  const hasAuthCode = typeof route.query.code === 'string' && route.query.code
+  if (hasAuthCode || exchangeInFlight) return
+
   if (!isAuthenticated()) {
     await tryRestoreSession()
   }

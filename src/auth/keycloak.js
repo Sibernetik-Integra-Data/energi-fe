@@ -222,6 +222,15 @@ if (typeof globalThis.addEventListener === 'function') {
  */
 export async function tryRestoreSession() {
   if (isAuthenticated()) return true
+  // OAuth redirect still has ?code= — cookie is not set until exchange finishes.
+  // Calling refresh here races login and produces a spurious 401.
+  if (typeof globalThis.location !== 'undefined') {
+    try {
+      if (new URLSearchParams(globalThis.location.search).get('code')) return false
+    } catch {
+      // ignore URL parse errors
+    }
+  }
   if (_restorePromise) return _restorePromise
 
   _restorePromise = (async () => {
@@ -239,18 +248,18 @@ export async function tryRestoreSession() {
         access_token: data.access_token,
         expires_in: data.expires_in || 0,
         server_time: data.server_time || 0,
-            id_token: data.id_token || ''
+        id_token: data.id_token || ''
       })
-          // After restoring token, attempt to populate app store profile so UI shows user info
-          if (appStoreInstance) {
-            try {
-              const fetched = await fetchUserProfile()
-              appStoreInstance.setProfile(fetched)
-            } catch (e) {
-              // ignore profile fetch errors during restore
-            }
-            appStoreInstance.setReady(true)
-          }
+      // After restoring token, attempt to populate app store profile so UI shows user info
+      if (appStoreInstance) {
+        try {
+          const fetched = await fetchUserProfile()
+          appStoreInstance.setProfile(fetched)
+        } catch {
+          // ignore profile fetch errors during restore
+        }
+        appStoreInstance.setReady(true)
+      }
       return true
     } catch {
       return false
