@@ -15,6 +15,8 @@ import SensusProgressStatusModule from '../modules/masterdata/sensus-progress-st
 import LocationsModule from '../modules/masterdata/locations'
 import TypeOfAcceptModule from '../modules/masterdata/type-of-accept'
 import TypeOfComponentModule from '../modules/masterdata/type-of-component'
+import TypeOfNeedModule from '../modules/masterdata/type-of-need'
+import TypeOfUnitModule from '../modules/masterdata/type-of-unit'
 import ProfileModule from '../modules/profile'
 import navigation from '../modules/shared/navigation'
 import ComingSoon from '../components/ComingSoon.vue'
@@ -107,6 +109,18 @@ const routes = [
       : { requiresAuth: true }
   })),
   ...TypeOfComponentModule.routes.map(route => ({
+    ...route,
+    meta: route.meta
+      ? { ...route.meta, requiresAuth: true }
+      : { requiresAuth: true }
+  })),
+  ...TypeOfNeedModule.routes.map(route => ({
+    ...route,
+    meta: route.meta
+      ? { ...route.meta, requiresAuth: true }
+      : { requiresAuth: true }
+  })),
+  ...TypeOfUnitModule.routes.map(route => ({
     ...route,
     meta: route.meta
       ? { ...route.meta, requiresAuth: true }

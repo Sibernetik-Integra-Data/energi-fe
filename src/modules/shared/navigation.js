@@ -22,6 +22,8 @@ export const navigation = [
       { label: 'Sensus Progress Status', icon: 'database', to: '/master-data/sensus-progress-status' },
       { label: 'Type of Accept', icon: 'database', to: '/master-data/type-of-accept' },
       { label: 'Type of Component', icon: 'database', to: '/master-data/type-of-component' },
+      { label: 'Type of Need', icon: 'database', to: '/master-data/type-of-need' },
+      { label: 'Type of Unit', icon: 'database', to: '/master-data/type-of-unit' },
       { label: 'Locations', icon: 'location-pin', to: '/master-data/locations' }
     ]
   }
