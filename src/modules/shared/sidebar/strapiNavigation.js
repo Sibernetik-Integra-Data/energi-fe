@@ -251,20 +251,6 @@ async function fetchSidebarMediaMap() {
   }
 }
 
-function extractRelationId(value) {
-  const relation = value?.data ?? value
-  if (Array.isArray(relation)) {
-    const first = relation[0]
-    return extractRelationId(first)
-  }
-
-  if (!relation || typeof relation !== 'object') {
-    return relation ?? null
-  }
-
-  return relation.id ?? relation.documentId ?? null
-}
-
 function createSidebarItem(attributes = {}, id = null) {
   let key = ''
   if (hasText(attributes.key)) key = attributes.key
@@ -283,6 +269,7 @@ function createSidebarItem(attributes = {}, id = null) {
 
   return {
     id: id ?? undefined,
+    documentId: hasText(attributes.documentId) ? attributes.documentId : undefined,
     key: toText(key, ''),
     label: toText(attributes.label || attributes.title || attributes.name, 'Untitled'),
     icon,
@@ -292,6 +279,7 @@ function createSidebarItem(attributes = {}, id = null) {
     defaultExpanded: toBoolean(attributes.defaultExpanded),
     badge: attributes.badge ?? '',
     order: toNumber(attributes.order, 0),
+    isVisible: attributes.isVisible === undefined ? true : toBoolean(attributes.isVisible),
     children: []
   }
 }
@@ -308,9 +296,44 @@ function sortNavigation(items = []) {
     }))
 }
 
+function registerNodeAliases(map, node, aliases = []) {
+  for (const alias of aliases) {
+    if (alias == null || alias === '') continue
+    map.set(String(alias), node)
+  }
+}
+
+function extractParentLookupIds(value) {
+  const relation = value?.data ?? value
+  if (Array.isArray(relation)) {
+    return relation.flatMap((entry) => extractParentLookupIds(entry))
+  }
+
+  if (!relation || typeof relation !== 'object') {
+    return relation == null || relation === '' ? [] : [String(relation)]
+  }
+
+  return [
+    relation.id,
+    relation.documentId,
+    relation.key,
+    relation.attributes?.id,
+    relation.attributes?.documentId,
+    relation.attributes?.key
+  ]
+    .filter((entry) => entry != null && entry !== '')
+    .map(String)
+}
+
+function isSidebarItemVisible(attributes = {}) {
+  if (attributes.isVisible === undefined || attributes.isVisible === null) return true
+  return toBoolean(attributes.isVisible)
+}
+
 function normalizeNestedItem(entry, seen = new Set()) {
   const unwrapped = extractEntry(entry)
   if (!unwrapped) return null
+  if (!isSidebarItemVisible(unwrapped.attributes)) return null
 
   const item = createSidebarItem(unwrapped.attributes, unwrapped.id)
   if (item.key && seen.has(item.key)) {
@@ -329,52 +352,63 @@ function normalizeNestedItem(entry, seen = new Set()) {
 }
 
 function normalizeFlatItems(entries) {
-  const nodesById = new Map()
+  const nodesByLookup = new Map()
+  const nodes = []
   const parentLinks = []
 
   for (const entry of entries) {
     const unwrapped = extractEntry(entry)
     if (!unwrapped) continue
+    if (!isSidebarItemVisible(unwrapped.attributes)) continue
 
     const node = createSidebarItem(unwrapped.attributes, unwrapped.id)
-    let nodeId = node.key
-    if (typeof node.id === 'string' || typeof node.id === 'number') {
-      nodeId = String(node.id)
-    }
-    if (!nodeId) continue
+    if (!node.key && node.id == null && !node.documentId) continue
 
     node.children = []
-    nodesById.set(nodeId, node)
+    nodes.push(node)
+    registerNodeAliases(nodesByLookup, node, [
+      node.key,
+      node.id,
+      node.documentId,
+      unwrapped.attributes?.documentId
+    ])
 
-    const parentId = extractRelationId(unwrapped.attributes.parent)
-    if (parentId != null && parentId !== '') {
-      parentLinks.push([nodeId, String(parentId)])
+    const parentIds = extractParentLookupIds(unwrapped.attributes.parent)
+    if (parentIds.length > 0) {
+      parentLinks.push([node, parentIds])
     }
   }
 
-  const childIds = new Set()
-  for (const [nodeId, parentId] of parentLinks) {
-    const node = nodesById.get(nodeId)
-    const parent = nodesById.get(parentId)
-    if (!node || !parent) continue
+  const childNodes = new Set()
+  for (const [node, parentIds] of parentLinks) {
+    let parent = null
+    for (const parentId of parentIds) {
+      parent = nodesByLookup.get(parentId)
+      if (parent) break
+    }
+    if (!parent || parent === node) continue
 
     parent.children.push(node)
-    childIds.add(nodeId)
+    childNodes.add(node)
   }
 
-  const roots = []
-  for (const [nodeId, node] of nodesById.entries()) {
-    if (!childIds.has(nodeId)) {
-      roots.push(node)
-    }
-  }
-
+  const roots = nodes.filter((node) => !childNodes.has(node))
   return sortNavigation(roots)
 }
 
 function normalizeSidebarPayload(payload) {
   const entries = extractEntries(payload)
   if (entries.length === 0) return []
+
+  // Prefer parent relations so CMS `order` wins over relation drag-order / API entry order.
+  // Mixing nested `children` with flat sibling entries previously shuffled Master Data items.
+  const hasParentRelations = entries.some((entry) => {
+    const attributes = extractEntry(entry)?.attributes
+    return extractParentLookupIds(attributes?.parent).length > 0
+  })
+  if (hasParentRelations) {
+    return normalizeFlatItems(entries)
+  }
 
   const hasNestedChildren = entries.some((entry) => toArray(extractEntry(entry)?.attributes?.children).length > 0)
   if (hasNestedChildren) {
@@ -384,11 +418,6 @@ function normalizeSidebarPayload(payload) {
         .map((entry) => normalizeNestedItem(entry, seen))
         .filter(Boolean)
     )
-  }
-
-  const hasParentRelations = entries.some((entry) => extractRelationId(extractEntry(entry)?.attributes?.parent) != null)
-  if (hasParentRelations) {
-    return normalizeFlatItems(entries)
   }
 
   return sortNavigation(

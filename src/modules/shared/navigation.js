@@ -10,21 +10,23 @@ export const navigation = [
   {
     label: 'Master Data',
     icon: 'settings',
-    key: 'settings',
+    key: 'master-data',
+    to: '/master-data',
     defaultExpanded: false,
+    // Keep fallback order aligned with Strapi CMS `order` values.
     children: [
-      { label: 'Blocks', icon: 'database', to: '/master-data/blocks' },
-      { label: 'Driver', icon: 'users', to: '/master-data/driver' },
-      { label: 'Vehicle', icon: 'database', to: '/master-data/vehicle' },
-      { label: 'Aktifitas Kebun', icon: 'calendar', to: '/master-data/aktifitas-kebun' },
-      { label: 'Group of Work', icon: 'calendar', to: '/master-data/group-of-work' },
-      { label: 'Nomor Petak', icon: 'location-pin', to: '/master-data/petak' },
-      { label: 'Sensus Progress Status', icon: 'database', to: '/master-data/sensus-progress-status' },
-      { label: 'Type of Accept', icon: 'database', to: '/master-data/type-of-accept' },
-      { label: 'Type of Component', icon: 'database', to: '/master-data/type-of-component' },
-      { label: 'Type of Need', icon: 'database', to: '/master-data/type-of-need' },
-      { label: 'Type of Unit', icon: 'database', to: '/master-data/type-of-unit' },
-      { label: 'Locations', icon: 'location-pin', to: '/master-data/locations' }
+      { label: 'Blocks', icon: 'database', to: '/master-data/blocks', order: 10 },
+      { label: 'Aktifitas Kebun', icon: 'calendar', to: '/master-data/aktifitas-kebun', order: 20 },
+      { label: 'Pengemudi', icon: 'users', to: '/master-data/driver', order: 30 },
+      { label: 'Vehicle', icon: 'database', to: '/master-data/vehicle', order: 40 },
+      { label: 'Group of Work', icon: 'calendar', to: '/master-data/group-of-work', order: 50 },
+      { label: 'Nomor Petak', icon: 'location-pin', to: '/master-data/petak', order: 60 },
+      { label: 'Sensus Progress Status', icon: 'database', to: '/master-data/sensus-progress-status', order: 70 },
+      { label: 'Locations', icon: 'location-pin', to: '/master-data/locations', order: 80 },
+      { label: 'Type of Accept', icon: 'calendar', to: '/master-data/type-of-accept', order: 90 },
+      { label: 'Type of Component', icon: 'database', to: '/master-data/type-of-component', order: 100 },
+      { label: 'Type of Need', icon: 'calendar', to: '/master-data/type-of-need', order: 110 },
+      { label: 'Type of Unit', icon: 'database', to: '/master-data/type-of-unit', order: 120 }
     ]
   }
 ]

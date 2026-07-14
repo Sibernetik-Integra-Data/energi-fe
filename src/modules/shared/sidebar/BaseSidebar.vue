@@ -156,9 +156,51 @@ const isCollapsed = ref(false);
 const router = useRouter();
 const route = useRoute();
 const expandedGroups = ref(new Set());
+/** Groups the user explicitly collapsed — wins over auto-expand when a child route is active. */
+const userCollapsedGroups = ref(new Set());
 const resolvedItems = ref([]);
 const hasLoadedRemoteNavigation = ref(false);
 let refreshTimerId = null;
+let lastNavigationSignature = "";
+
+function navigationSignature(items = []) {
+  return JSON.stringify(
+    (Array.isArray(items) ? items : []).map((item) => ({
+      key: item?.key ?? "",
+      label: item?.label ?? "",
+      to: item?.to ?? "",
+      order: item?.order ?? 0,
+      icon: item?.icon ?? "",
+      iconUrl: item?.iconUrl ?? "",
+      defaultExpanded: Boolean(item?.defaultExpanded),
+      badge: item?.badge ?? "",
+      children: Array.isArray(item?.children)
+        ? item.children.map((child) => ({
+            key: child?.key ?? "",
+            label: child?.label ?? "",
+            to: child?.to ?? "",
+            order: child?.order ?? 0,
+            icon: child?.icon ?? "",
+            iconUrl: child?.iconUrl ?? "",
+            badge: child?.badge ?? "",
+          }))
+        : [],
+    })),
+  );
+}
+
+function applyResolvedItems(items, { fromRemote = false } = {}) {
+  const nextItems = Array.isArray(items) ? items : [];
+  const signature = navigationSignature(nextItems);
+  if (signature === lastNavigationSignature) return false;
+
+  lastNavigationSignature = signature;
+  resolvedItems.value = nextItems;
+  if (fromRemote) {
+    hasLoadedRemoteNavigation.value = true;
+  }
+  return true;
+}
 
 function refreshRemoteNavigation() {
   hydrateRemoteNavigation();
@@ -238,25 +280,32 @@ function isItemActive(item) {
 
 function isExpanded(item) {
   const key = getItemKey(item);
-  return expandedGroups.value.has(key) || isItemActive(item);
+  if (userCollapsedGroups.value.has(key)) return false;
+  return expandedGroups.value.has(key);
 }
 
 function toggleGroup(item) {
   const key = getItemKey(item);
-  const next = new Set(expandedGroups.value);
-  if (next.has(key)) {
-    next.delete(key);
+  const nextExpanded = new Set(expandedGroups.value);
+  const nextCollapsed = new Set(userCollapsedGroups.value);
+
+  if (isExpanded(item)) {
+    nextExpanded.delete(key);
+    nextCollapsed.add(key);
   } else {
-    next.add(key);
+    nextExpanded.add(key);
+    nextCollapsed.delete(key);
   }
-  expandedGroups.value = next;
+
+  expandedGroups.value = nextExpanded;
+  userCollapsedGroups.value = nextCollapsed;
 }
 
 watch(
   () => props.items,
   (items) => {
     if (!hasLoadedRemoteNavigation.value) {
-      resolvedItems.value = cloneNavigation(items)
+      applyResolvedItems(cloneNavigation(items));
     }
   },
   { immediate: true, deep: true }
@@ -265,8 +314,7 @@ watch(
 async function hydrateRemoteNavigation() {
   const remoteItems = await loadStrapiSidebarNavigation()
   if (Array.isArray(remoteItems) && remoteItems.length > 0) {
-    resolvedItems.value = remoteItems
-    hasLoadedRemoteNavigation.value = true
+    applyResolvedItems(remoteItems, { fromRemote: true })
   }
 }
 
@@ -300,14 +348,27 @@ function handleVisibilityChange() {
 watch(
   [() => route.path, resolvedItems],
   () => {
-    const next = new Set();
+    const nextExpanded = new Set(expandedGroups.value);
+    const nextCollapsed = new Set(userCollapsedGroups.value);
+
     resolvedItems.value.forEach((item) => {
       if (!hasChildren(item)) return;
-      if (item.defaultExpanded || isItemActive(item)) {
-        next.add(getItemKey(item));
+
+      const key = getItemKey(item);
+      const active = isItemActive(item);
+
+      // Leaving a section clears the manual collapse so the next visit can auto-open.
+      if (!active) {
+        nextCollapsed.delete(key);
+      }
+
+      if (item.defaultExpanded || (active && !nextCollapsed.has(key))) {
+        nextExpanded.add(key);
       }
     });
-    expandedGroups.value = next;
+
+    expandedGroups.value = nextExpanded;
+    userCollapsedGroups.value = nextCollapsed;
   },
   { immediate: true },
 );
