@@ -21,39 +21,13 @@
           <p class="max-w-130 m-0 text-(--text-muted) text-sm leading-relaxed">{{ intro.description }}</p>
         </section>
 
-        <!-- Tabs (pill/toggle style matching Sensus Detail) -->
-        <div
-          class="flex gap-2 bg-(--surface-muted) border border-(--border) p-1.5 rounded-full items-center w-full"
-          role="tablist"
-          aria-label="Planning tabs"
-        >
-          <button
-            v-for="tab in TABS"
-            :key="tab.key"
-            type="button"
-            role="tab"
-            :aria-selected="activeTab === tab.key"
-            @click="activeTab = tab.key"
-            :class="[
-              'flex-1 flex items-center justify-center gap-2 py-2 px-5 rounded-full text-sm font-semibold transition-colors cursor-pointer',
-              activeTab === tab.key
-                ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)'
-                : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'
-            ]"
-          >
-            <span aria-hidden="true">{{ tab.icon }}</span>
-            {{ tab.label }}
-          </button>
-        </div>
-
         <!-- Error banner -->
         <div v-if="fetchError" class="px-4 py-3 rounded-lg bg-red-50 text-red-600 text-sm border border-red-200">
           {{ fetchError }}
         </div>
 
-        <!-- Perencanaan tab -->
-        <div v-if="activeTab === 'perencanaan'" class="flex-1 min-h-0">
-
+        <!-- Perencanaan Gantt Chart -->
+        <div class="flex-1 min-h-0">
           <PlanningGanttChart
             v-model:filterSensusId="filterSensusId"
             :sensus-options="sensusOptions"
@@ -62,15 +36,6 @@
             @editItem="openDrawer"
             @remove-plan="handleRemove"
           />
-        </div>
-
-        <!-- Realisasi tab placeholder -->
-        <div
-          v-else
-          class="flex-1 min-h-0 flex flex-col items-center justify-center gap-3 border border-(--border) rounded-xl bg-(--surface) text-(--text-muted)"
-        >
-          <span class="text-4xl">📋</span>
-          <p class="text-sm font-medium m-0">Fitur Realisasi segera hadir.</p>
         </div>
       </main>
     </div>
@@ -118,13 +83,6 @@ const plannings = ref([])
 const sensusOptions = ref([])
 const fetchError = ref(null)
 const filterSensusId = ref('')
-
-const TABS = [
-  { key: 'perencanaan', label: 'Perencanaan', icon: '📅' },
-  { key: 'realisasi',   label: 'Realisasi',   icon: '📋' }
-]
-
-const activeTab = ref('perencanaan')
 
 // Drawer state
 const drawerOpen = ref(false)

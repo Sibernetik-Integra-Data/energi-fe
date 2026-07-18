@@ -91,12 +91,28 @@
                       : 'text-(--text) hover:bg-(--surface-muted)'
               ]"
             >{{ cell.day }}</span>
+
+            <!-- Job indicator dot -->
+            <span
+              v-if="cell.hasJob"
+              :class="[
+                'absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full z-20',
+                cell.isStart || cell.isEnd ? 'bg-white' : 'bg-orange-500'
+              ]"
+              aria-hidden="true"
+            ></span>
           </div>
         </div>
 
         <!-- Footer: max warning + clear -->
         <div class="flex items-center justify-between px-4 py-3 border-t border-(--border) bg-(--surface-muted)">
-          <span class="text-xs text-(--text-muted)">Min. 7 hari · Maks. 28 hari</span>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs text-(--text-muted)">Min. 7 hari · Maks. 31 hari</span>
+            <span class="flex items-center gap-1.5 text-[10px] text-(--text-muted)">
+              <span class="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0"></span>
+              Ada rencana job
+            </span>
+          </div>
           <button
             @click="clearRange"
             class="text-xs font-semibold text-(--text-muted) hover:text-red-500 cursor-pointer border-0 bg-transparent transition-colors"
@@ -110,16 +126,28 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useToast } from '../../../utils/toast'
+import {
+  addDays,
+  createDefaultPlanningDateRange,
+  getTodayInJakarta,
+  isoDate,
+  toDateOnly
+} from '../../../utils/planningDateRange'
 
 const props = defineProps({
   modelValue: {
     type: Object,
     default: () => ({ start: null, end: null })
+  },
+  /** Planning rows used to mark dates that have active job types */
+  plans: {
+    type: Array,
+    default: () => []
   }
 })
 const emit = defineEmits(['update:modelValue'])
 
-const MAX_DAYS = 28
+const MAX_DAYS = 31
 const MIN_DAYS = 7
 
 const { show: showToast } = useToast()
@@ -177,7 +205,21 @@ const leadingBlanks = computed(() =>
   new Date(viewYear.value, viewMonth.value, 1).getDay()
 )
 
-const todayIso = new Date().toISOString().slice(0, 10)
+const todayIso = getTodayInJakarta()
+
+const jobDatesSet = computed(() => {
+  const set = new Set()
+  for (const plan of props.plans) {
+    if (!plan?.startDate || !plan?.endDate) continue
+    let current = toDateOnly(plan.startDate)
+    const end = toDateOnly(plan.endDate)
+    while (current <= end) {
+      set.add(isoDate(current))
+      current = addDays(current, 1)
+    }
+  }
+  return set
+})
 
 const dayCells = computed(() => {
   const cells = []
@@ -212,7 +254,8 @@ const dayCells = computed(() => {
       isToday: iso === todayIso,
       isStart,
       isEnd,
-      inRange
+      inRange,
+      hasJob: jobDatesSet.value.has(iso)
     })
   }
   return cells
@@ -266,7 +309,7 @@ function hoverDay(cell) {
 }
 
 function clearRange() {
-  emit('update:modelValue', { start: null, end: null })
+  emit('update:modelValue', createDefaultPlanningDateRange())
   open.value = false
   picking.value = 'start'
   tempStart.value = null

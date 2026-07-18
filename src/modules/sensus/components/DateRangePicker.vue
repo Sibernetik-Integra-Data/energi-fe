@@ -96,7 +96,7 @@
 
         <!-- Footer: max warning + clear -->
         <div class="flex items-center justify-between px-4 py-3 border-t border-(--border) bg-(--surface-muted)">
-          <span class="text-xs text-(--text-muted)">Min. 7 hari · Maks. 28 hari</span>
+          <span class="text-xs text-(--text-muted)">Min. 7 hari · Maks. 31 hari</span>
           <button
             @click="clearRange"
             class="text-xs font-semibold text-(--text-muted) hover:text-red-500 cursor-pointer border-0 bg-transparent transition-colors"
@@ -110,6 +110,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useToast } from '../../../utils/toast'
+import { createDefaultPlanningDateRange } from '../../../utils/planningDateRange';
 
 const props = defineProps({
   modelValue: {
@@ -119,7 +120,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:modelValue'])
 
-const MAX_DAYS = 28
+const MAX_DAYS = 31
 const MIN_DAYS = 7
 
 const { show: showToast } = useToast()
@@ -266,11 +267,11 @@ function hoverDay(cell) {
 }
 
 function clearRange() {
-  emit('update:modelValue', { start: null, end: null })
-  open.value = false
-  picking.value = 'start'
-  tempStart.value = null
-  hoverIso.value = null
+  emit('update:modelValue', createDefaultPlanningDateRange());
+  open.value = false;
+  picking.value = 'start';
+  tempStart.value = null;
+  hoverIso.value = null;
 }
 
 // ─── Cell styling ──────────────────────────────────────────────────────────
