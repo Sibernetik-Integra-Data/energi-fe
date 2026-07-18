@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 @source "../index.html";
 @source "./";
@@ -77,9 +78,13 @@ html:not(.theme-dark) {
 
 body {
   margin: 0;
-  font-family: 'Aptos', 'Segoe UI', 'Trebuchet MS', sans-serif;
+  font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
   background: transparent;
   color: var(--text);
+}
+
+html, body, #app {
+  font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
 }
 
 * {

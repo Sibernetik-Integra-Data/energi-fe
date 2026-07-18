@@ -16,7 +16,7 @@
         <section class="flex justify-between gap-6 items-end max-[920px]:flex-col max-[920px]:items-start shrink-0">
           <div>
             <p class="text-[12px] font-bold uppercase tracking-[0.16em] text-(--brand) mb-2">Perencanaan Kebun</p>
-            <h1 class="m-0 text-[clamp(24px,2.5vw,36px)] font-extrabold leading-tight tracking-[-0.04em]">{{ intro.title }}</h1>
+            <h1 class="m-0 text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em]">{{ intro.title }}</h1>
           </div>
           <p class="max-w-130 m-0 text-(--text-muted) text-sm leading-relaxed">{{ intro.description }}</p>
         </section>

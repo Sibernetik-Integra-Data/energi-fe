@@ -2,7 +2,7 @@
   <div>
     <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
       <div>
-        <h2 class="text-2xl font-extrabold tracking-tight text-(--text) m-0 mb-1">Type of Component</h2>
+        <h2 class="text-2xl font-semibold tracking-tight text-(--text) m-0 mb-1">Type of Component</h2>
         <p class="text-sm text-(--text-muted) m-0">Manage type of component entries</p>
       </div>
       <button type="button" class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl cursor-pointer hover:bg-green-700 transition-colors shadow-sm" @click="openCreate">

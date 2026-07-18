@@ -18,7 +18,7 @@
                         <p class="text-[12px] font-bold uppercase tracking-[0.16em] text-(--brand) mb-2">
                             Operasional Kebun
                         </p>
-                        <h1 class="m-0 text-[clamp(24px,2.5vw,36px)] font-extrabold leading-tight tracking-[-0.04em]">
+                        <h1 class="m-0 text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em]">
                             {{ intro.title }}
                         </h1>
                     </div>

@@ -3,7 +3,7 @@
     <!-- Title and filters (stacked, filters below subtitle) -->
     <div class="mb-3">
       <div>
-        <h2 class="text-2xl font-extrabold tracking-tight text-(--text) m-0 mb-1.5">{{ title }}</h2>
+        <h2 class="text-2xl font-semibold tracking-tight text-(--text) m-0 mb-1.5">{{ title }}</h2>
         <p class="text-sm text-(--text-muted) m-0">{{ subtitle }}</p>
       </div>
       <div class="mt-3 grid grid-cols-1 md:grid-cols-4 gap-2 bg-(--surface-muted) border border-(--border) p-2 rounded-xl items-center">

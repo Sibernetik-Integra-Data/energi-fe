@@ -193,8 +193,8 @@ export function createSensusModel() {
   const header = { title: 'Sensus', notifications: 0 }
 
   const list = {
-    title: 'Daftar Sensus',
-    subtitle: 'Laporan terbaru'
+    title: 'Sensus',
+    subtitle: 'Meninjau dan memverifikasi laporan lapangan pekerja'
   }
 
   const stats = { total: 0, today: 0, pending: 0 }

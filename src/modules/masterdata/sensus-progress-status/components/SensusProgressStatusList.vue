@@ -3,7 +3,7 @@
         <!-- Header row -->
         <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
             <div>
-                <h2 class="text-2xl font-extrabold tracking-tight text-(--text) m-0 mb-1">Sensus Progress Status</h2>
+                <h2 class="text-2xl font-semibold tracking-tight text-(--text) m-0 mb-1">Sensus Progress Status</h2>
                 <p class="text-sm text-(--text-muted) m-0">Manage sensus progress status entries</p>
             </div>
             <button
