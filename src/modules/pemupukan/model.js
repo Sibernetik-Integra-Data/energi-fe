@@ -199,7 +199,7 @@ export function createPemupukanModel() {
 }
 
 export async function loadPemupukanList(filters = {}) {
-  return loadPaginatedAssignmentList({
+  const result = await loadPaginatedAssignmentList({
     groupOfWork: 3,
     page: filters.page,
     limit: filters.limit,
@@ -208,6 +208,23 @@ export async function loadPemupukanList(filters = {}) {
     search: filters.search,
     mapSensusToListItems,
   })
+
+  // Load labor data for each item to display worker count
+  result.items = await Promise.all(
+    result.items.map(async (item) => {
+      try {
+        const planningRows = await loadPlanningRowsBySensusDetail(item.sensusId, item.sensusDetailId)
+        // Flatten all labors from all planning rows
+        const allLabors = planningRows.flatMap((plan) => Array.isArray(plan.labors) ? plan.labors : [])
+        return { ...item, labors: allLabors }
+      } catch (error) {
+        console.error(`Failed to load labors for item ${item.sensusId}:`, error)
+        return item
+      }
+    })
+  )
+
+  return result
 }
 
 export async function loadPemupukanDetail(sensusId, detailId = null) {

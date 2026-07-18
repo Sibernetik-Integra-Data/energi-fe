@@ -185,6 +185,8 @@ const props = defineProps({
   editItem: { type: Object, default: null },
   prefillSensusId: { type: String, default: '' },
   prefillSensusDetailId: { type: Number, default: null },
+  prefillStartDate: { type: String, default: '' },
+  prefillEndDate: { type: String, default: '' },
   onFetchSensusDetails: { type: Function, default: null },
   onSave: { type: Function, default: null }
 })
@@ -245,6 +247,8 @@ watch(
     if (!props.editItem && props.prefillSensusId) {
       form.value = createEmptyForm()
       form.value.sensusId = props.prefillSensusId
+      form.value.startDate = props.prefillStartDate || ''
+      form.value.endDate = props.prefillEndDate || ''
       await onSensusChange()
       if (props.prefillSensusDetailId) {
         form.value.sensusDetailId = props.prefillSensusDetailId

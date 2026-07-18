@@ -115,8 +115,8 @@
                         </button>
                         <button
                             type="button"
-                            class="text-xs font-semibold py-2 px-3 rounded-full border-0 bg-(--text) text-(--surface) opacity-80 cursor-not-allowed"
-                            disabled>
+                            class="text-xs font-semibold py-2 px-3 rounded-full border-0 bg-(--text) text-(--surface) hover:opacity-80 transition-opacity cursor-pointer"
+                            @click="$emit('add-to-plan', item)">
                             + Tambahkan ke Perencanaan
                         </button>
                     </div>
@@ -150,7 +150,7 @@ defineProps({
     visiblePages: { type: Array, default: () => [] },
 });
 
-const emit = defineEmits(["view-detail", "update:currentPage", "update:pageSize", "filters-change"]);
+const emit = defineEmits(["view-detail", "add-to-plan", "update:currentPage", "update:pageSize", "filters-change"]);
 
 const searchQuery = ref("");
 const statusFilter = ref("all");

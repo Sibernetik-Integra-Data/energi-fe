@@ -48,6 +48,8 @@
       :sensus-options="sensusOptions"
       :prefill-sensus-id="prefillSensusId"
       :prefill-sensus-detail-id="prefillSensusDetailId"
+      :prefill-start-date="prefillStartDate"
+      :prefill-end-date="prefillEndDate"
       :on-fetch-sensus-details="handleFetchSensusDetails"
       :on-save="handleSave"
       @saved="refreshPlannings"
@@ -90,6 +92,8 @@ const drawerItem = ref(null)
 const drawerTitle = computed(() => drawerItem.value ? 'Edit Rencana' : 'Rencana Baru')
 const prefillSensusId = ref('')
 const prefillSensusDetailId = ref(null)
+const prefillStartDate = ref('')
+const prefillEndDate = ref('')
 
 async function refreshPlannings() {
   try {
@@ -118,10 +122,12 @@ onMounted(async () => {
     fetchError.value = err?.message || 'Gagal memuat data.'
   }
 
-  // Auto-open drawer if navigated from Sensus Detail
+  // Auto-open drawer if navigated from Sensus Detail or from Pembersihan/Pemupukan
   if (route.query.openDrawer === '1' && route.query.sensusId) {
     prefillSensusId.value = String(route.query.sensusId)
     prefillSensusDetailId.value = route.query.sensusDetailId ? Number(route.query.sensusDetailId) : null
+    prefillStartDate.value = route.query.startDate ? String(route.query.startDate) : ''
+    prefillEndDate.value = route.query.endDate ? String(route.query.endDate) : ''
     if (route.query.sensusId) filterSensusId.value = String(route.query.sensusId)
     openDrawer(null)
     // Clear query params from URL without re-navigation
@@ -138,6 +144,8 @@ watch(drawerOpen, (open) => {
   if (!open) {
     prefillSensusId.value = ''
     prefillSensusDetailId.value = null
+    prefillStartDate.value = ''
+    prefillEndDate.value = ''
   }
 })
 

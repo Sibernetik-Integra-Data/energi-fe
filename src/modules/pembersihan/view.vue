@@ -51,6 +51,7 @@
                     :total-pages="totalPages"
                     :visible-pages="visiblePages"
                     @view-detail="handleViewDetail"
+                    @add-to-plan="handleAddToPlan"
                     @update:current-page="currentPage = $event"
                     @update:page-size="pageSize = $event"
                     @filters-change="handleFiltersChange" />
@@ -61,6 +62,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
+import { useRouter } from "vue-router";
 import BaseHeader from "../shared/header";
 import BaseSidebar from "../shared/sidebar";
 import PembersihanList from "./components/PembersihanList.vue";
@@ -74,6 +76,7 @@ const props = defineProps({
 });
 
 const appStore = useAppStore();
+const router = useRouter();
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser());
 const navigation = computed(() => props.controller.getNavigation());
 const header = computed(() => props.controller.getHeader());
@@ -157,5 +160,21 @@ async function handleViewDetail(item) {
 function handleBack() {
     selectedPlan.value = null;
     detailError.value = null;
+}
+
+function handleAddToPlan(item) {
+    // Build query params for planning page
+    const params = {
+        openDrawer: '1',
+        sensusId: item.sensusId,
+        sensusDetailId: item.sensusDetailId,
+        startDate: item.startDate,
+        endDate: item.endDate,
+        blocks: item.blocks.join(','),
+    };
+    
+    // Navigate to planning page with query params
+    const queryString = new URLSearchParams(params).toString();
+    router.push(`/planning?${queryString}`);
 }
 </script>
