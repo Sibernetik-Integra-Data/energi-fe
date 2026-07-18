@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { resolve } from 'path'
 
 function parseListEnv(value = '') {
   return value
@@ -26,6 +27,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [vue()],
+    resolve: {
+      alias: {
+        '@': resolve(__dirname, 'src')
+      }
+    },
     server: {
       port: 10001,
       proxy: {
