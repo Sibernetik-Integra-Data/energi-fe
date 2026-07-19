@@ -13,11 +13,12 @@ import VehicleModule from '../modules/masterdata/vehicle'
 import AktifitasKebunModule from '../modules/masterdata/aktifitas-kebun'
 import GroupOfWorkModule from '../modules/masterdata/group-of-work'
 import SensusProgressStatusModule from '../modules/masterdata/sensus-progress-status'
-import LocationsModule from '../modules/masterdata/locations'
+import DestinationModule from '../modules/masterdata/destination'
 import TypeOfAcceptModule from '../modules/masterdata/type-of-accept'
 import TypeOfComponentModule from '../modules/masterdata/type-of-component'
 import TypeOfNeedModule from '../modules/masterdata/type-of-need'
 import TypeOfUnitModule from '../modules/masterdata/type-of-unit'
+import MasterDataPekerjaModule from '../modules/masterdata/pekerja'
 import ProfileModule from '../modules/profile'
 import navigation from '../modules/shared/navigation'
 import ComingSoon from '../components/ComingSoon.vue'
@@ -133,7 +134,13 @@ const routes = [
       ? { ...route.meta, requiresAuth: true }
       : { requiresAuth: true }
   })),
-  ...LocationsModule.routes.map(route => ({
+  ...MasterDataPekerjaModule.routes.map(route => ({
+    ...route,
+    meta: route.meta
+      ? { ...route.meta, requiresAuth: true }
+      : { requiresAuth: true }
+  })),
+  ...DestinationModule.routes.map(route => ({
     ...route,
     meta: route.meta
       ? { ...route.meta, requiresAuth: true }

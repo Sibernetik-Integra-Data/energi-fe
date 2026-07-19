@@ -1,6 +1,5 @@
 <template>
     <div>
-        <!-- Header row -->
         <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
             <div>
                 <h2 class="text-2xl font-semibold tracking-tight text-(--text) m-0 mb-1">Destination List</h2>
@@ -14,7 +13,6 @@
             </button>
         </div>
 
-        <!-- Search bar -->
         <div class="flex flex-wrap gap-3 mb-4">
             <input
                 v-model="searchName"
@@ -23,17 +21,14 @@
                 class="border border-(--border) rounded-lg px-3.5 py-2 text-sm text-(--text) bg-(--surface) outline-none focus:border-green-500 transition-colors w-56" />
         </div>
 
-        <!-- Loading -->
         <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">
             Loading data&hellip;
         </div>
 
-        <!-- Error -->
         <div v-else-if="fetchError" class="flex justify-center items-center py-16 text-sm text-red-600">
             {{ fetchError }}
         </div>
 
-        <!-- Table desktop -->
         <template v-else>
             <div class="bg-(--surface) rounded-xl overflow-hidden border border-(--border) shadow-sm max-[920px]:hidden">
                 <table class="w-full border-collapse">
@@ -87,7 +82,6 @@
                 </table>
             </div>
 
-            <!-- Mobile cards -->
             <div class="hidden gap-3 max-[920px]:flex max-[920px]:flex-col">
                 <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">No data.</div>
                 <div
@@ -122,10 +116,8 @@
             </div>
         </template>
 
-        <!-- Action Error (outside modal) -->
         <div v-if="actionError && !showDeleteConfirm" class="mt-3 text-xs text-red-500">{{ actionError }}</div>
 
-        <!-- Location Form Modal -->
         <LocationForm
             :visible="showForm"
             :location="editingLocation"
@@ -133,7 +125,6 @@
             @submit="onFormSubmit"
             @cancel="closeForm" />
 
-        <!-- Delete Confirmation Modal -->
         <Teleport to="body">
             <div
                 v-if="showDeleteConfirm"
@@ -211,8 +202,8 @@ async function loadData() {
     try {
         rows.value = await listLocations()
     } catch (err) {
-        console.error('[Locations] Failed to load:', err)
-        fetchError.value = err?.message || 'Failed to load locations.'
+        console.error('[Destination] Failed to load:', err)
+        fetchError.value = err?.message || 'Failed to load destinations.'
     } finally {
         loading.value = false
     }
@@ -243,15 +234,15 @@ async function onFormSubmit(formData) {
             const updated = await updateLocation(editingLocation.value.id, formData)
             const idx = rows.value.findIndex(r => r.id === editingLocation.value.id)
             if (idx !== -1) rows.value[idx] = updated || { ...rows.value[idx], ...formData }
-            showToast('Location updated successfully.')
+            showToast('Destination updated successfully.')
         } else {
             const created = await createLocation(formData)
             if (created) rows.value.unshift(created)
-            showToast('Location created successfully.')
+            showToast('Destination created successfully.')
         }
         closeForm()
     } catch (err) {
-        console.error('[Locations] Save failed:', err)
+        console.error('[Destination] Save failed:', err)
         actionError.value = err?.message || 'Failed to save data.'
     } finally {
         submitting.value = false
@@ -273,9 +264,9 @@ async function onDeleteConfirm() {
         rows.value = rows.value.filter(r => r.id !== deletingLocation.value.id)
         showDeleteConfirm.value = false
         deletingLocation.value = null
-        showToast('Location deleted successfully.')
+        showToast('Destination deleted successfully.')
     } catch (err) {
-        console.error('[Locations] Delete failed:', err)
+        console.error('[Destination] Delete failed:', err)
         actionError.value = err?.message || 'Failed to delete destination.'
     } finally {
         submitting.value = false

@@ -18,7 +18,6 @@
                 </div>
 
                 <form @submit.prevent="onSubmit" class="flex flex-col gap-4" novalidate>
-                    <!-- Name -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="loc-name">
                             Name <span class="text-red-500">*</span>
@@ -38,7 +37,6 @@
                         <span v-if="errors.name" class="text-xs text-red-500">{{ errors.name }}</span>
                     </div>
 
-                    <!-- Nomor -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="loc-nomor">Nomor</label>
                         <input
@@ -51,7 +49,6 @@
                         <span class="text-xs text-(--text-muted)">Enter a numeric identifier for this destination.</span>
                     </div>
 
-                    <!-- Location -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="loc-location">Destination</label>
                         <input
@@ -63,7 +60,6 @@
                             autocomplete="off" />
                     </div>
 
-                    <!-- Type of Destination -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="loc-type">Type of Destination</label>
                         <div v-if="typeOfLocationsLoading" class="text-xs text-(--text-muted)">Loading types&hellip;</div>
@@ -77,7 +73,6 @@
                         </select>
                     </div>
 
-                    <!-- Latitude -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="loc-lat">Latitude</label>
                         <input
@@ -89,7 +84,6 @@
                             autocomplete="off" />
                     </div>
 
-                    <!-- Longitude -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="loc-lng">Longitude</label>
                         <input
@@ -101,7 +95,6 @@
                             autocomplete="off" />
                     </div>
 
-                    <!-- Notes -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="loc-notes">Notes</label>
                         <textarea
@@ -112,7 +105,6 @@
                             class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors resize-none" />
                     </div>
 
-                    <!-- Actions -->
                     <div class="flex justify-end gap-3 pt-1">
                         <button
                             type="button"
@@ -170,7 +162,7 @@ async function loadTypeOfLocations() {
     try {
         typeOfLocations.value = await listTypeOfLocations()
     } catch (err) {
-        console.error('[LocationForm] Failed to load type_of_location:', err)
+        console.error('[DestinationForm] Failed to load type_of_location:', err)
     } finally {
         typeOfLocationsLoading.value = false
     }
@@ -224,12 +216,10 @@ function onSubmit() {
         notes: form.value.notes
     }
 
-    // include nomor only when user provided a value
     if (form.value.nomor !== null && form.value.nomor !== undefined && form.value.nomor !== '') {
         payload.nomor = form.value.nomor
     }
 
-    // Strip undefined keys for partial update on edit
     const cleaned = Object.fromEntries(
         Object.entries(payload).filter(([, v]) => v !== undefined && v !== '')
     )

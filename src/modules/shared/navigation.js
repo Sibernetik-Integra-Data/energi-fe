@@ -1,6 +1,5 @@
 export const navigation = [
   { label: 'Dashboard', icon: 'dashboard', to: '/dashboard', compact: true },
-  { label: 'Pekerja', icon: 'users', to: '/pekerja', compact: true },
   { label: 'Sensus', icon: 'note', to: '/sensus', compact: true },
   { label: 'Planning', icon: 'calendar', to: '/planning', compact: true },
   { label: 'Pembersihan', icon: 'broom', to: '/pembersihan', compact: true },
@@ -22,11 +21,12 @@ export const navigation = [
       { label: 'Group of Work', icon: 'calendar', to: '/master-data/group-of-work', order: 50 },
       { label: 'Nomor Petak', icon: 'location-pin', to: '/master-data/petak', order: 60 },
       { label: 'Sensus Progress Status', icon: 'database', to: '/master-data/sensus-progress-status', order: 70 },
-      { label: 'Locations', icon: 'location-pin', to: '/master-data/locations', order: 80 },
+      { label: 'Destination', icon: 'location-pin', to: '/master-data/destination', order: 80 },
       { label: 'Type of Accept', icon: 'calendar', to: '/master-data/type-of-accept', order: 90 },
       { label: 'Type of Component', icon: 'database', to: '/master-data/type-of-component', order: 100 },
       { label: 'Type of Need', icon: 'calendar', to: '/master-data/type-of-need', order: 110 },
-      { label: 'Type of Unit', icon: 'database', to: '/master-data/type-of-unit', order: 120 }
+      { label: 'Type of Unit', icon: 'database', to: '/master-data/type-of-unit', order: 120 },
+      { label: 'Pekerja', icon: 'users', to: '/master-data/pekerja', order: 130 },
     ]
   }
 ]

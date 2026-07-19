@@ -20,17 +20,22 @@
           <p class="dashboard-description">{{ intro.description }}</p>
         </section>
 
-        <section class="dashboard-metrics" aria-label="Ringkasan aktivitas">
-          <DashboardMetricCard
-            v-for="metric in metrics"
-            :key="metric.title"
-            :metric="metric"
-          />
+        <!-- Metrics filter + cards section -->
+        <section aria-label="Filter & ringkasan aktivitas">
+          <div class="dashboard-metrics-header">
+            <DashboardMetricsFilter @change="onFilterChange" />
+          </div>
+          <div class="dashboard-metrics">
+            <DashboardMetricCard
+              v-for="metric in metrics"
+              :key="metric.title"
+              :metric="metric"
+            />
+          </div>
         </section>
 
         <section class="dashboard-grid">
           <PendingVerificationsSection :section="pendingVerification" />
-
           <RecentVerifiedSection :section="recentVerified" />
         </section>
       </main>
@@ -42,6 +47,7 @@
 import { computed, ref, watch } from 'vue'
 import BaseHeader from '../shared/header'
 import DashboardMetricCard from './components/DashboardMetricCard.vue'
+import DashboardMetricsFilter from './components/DashboardMetricsFilter.vue'
 import BaseSidebar from '../shared/sidebar'
 import PendingVerificationsSection from './components/PendingVerificationsSection.vue'
 import RecentVerifiedSection from './components/RecentVerifiedSection.vue'
@@ -57,6 +63,14 @@ const props = defineProps({
 
 const appStore = useAppStore()
 
+// Current filter state — default to current month/year
+const now = new Date()
+const activeFilter = ref({
+  mode: 'monthly',
+  year: now.getFullYear(),
+  month: now.getMonth() + 1
+})
+
 const metricsData = ref(null)
 const metricsLoading = ref(false)
 
@@ -65,28 +79,41 @@ const header = computed(() => props.controller.getHeader())
 const intro = computed(() => props.controller.getIntro())
 const pendingVerification = computed(() => props.controller.getPendingVerification())
 const recentVerified = computed(() => props.controller.getRecentVerified())
+const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
+
 const metrics = computed(() => {
   if (metricsData.value) {
     return metricsData.value
   }
-  return props.controller.getMetrics()
+  return props.controller.getMetrics(activeFilter.value)
 })
-const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 
+async function loadMetricsForFilter(filter) {
+  metricsLoading.value = true
+  metricsData.value = null // clear to show placeholders while loading
+  try {
+    const loaded = await props.controller.loadMetrics(filter)
+    metricsData.value = loaded
+  } catch (error) {
+    console.error('[Dashboard] Failed to load metrics:', error)
+  } finally {
+    metricsLoading.value = false
+  }
+}
+
+function onFilterChange(filter) {
+  activeFilter.value = filter
+  if (appStore.ready) {
+    loadMetricsForFilter(filter)
+  }
+}
+
+// Load on ready
 watch(
   () => appStore.ready,
   async (ready) => {
-    if (!ready || metricsLoading.value || metricsData.value) return
-
-    metricsLoading.value = true
-    try {
-      const loadedMetrics = await props.controller.loadMetrics()
-      metricsData.value = loadedMetrics
-    } catch (error) {
-      console.error('[Dashboard] Failed to load metrics:', error)
-    } finally {
-      metricsLoading.value = false
-    }
+    if (!ready || metricsLoading.value) return
+    loadMetricsForFilter(activeFilter.value)
   },
   { immediate: true }
 )
@@ -146,6 +173,13 @@ watch(
   color: var(--text-muted);
   font-size: 14px;
   line-height: 22px;
+}
+
+.dashboard-metrics-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 14px;
 }
 
 .dashboard-metrics {

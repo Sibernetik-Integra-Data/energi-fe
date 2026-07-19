@@ -23,6 +23,8 @@ function parseIsoDate(dateString) {
   return date
 }
 
+// ── Weekly (per-month) helpers ─────────────────────────────────────────────
+
 function getCurrentMonthWeekLabels(referenceDate = new Date()) {
   const year = referenceDate.getFullYear()
   const month = referenceDate.getMonth()
@@ -79,6 +81,58 @@ function buildWeeklyMetric(config, sensusList, referenceDate = new Date()) {
   }
 }
 
+// ── Yearly (12-month) helpers ──────────────────────────────────────────────
+
+const MONTH_NAMES_ID = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+]
+
+function getYearlyMonthLabels(year) {
+  return MONTH_NAMES_ID.map((name) => `${name} ${year}`)
+}
+
+function buildYearlyMetric(config, sensusList, year) {
+  const pointLabels = getYearlyMonthLabels(year)
+  const monthlyTotals = Array(12).fill(0)
+
+  for (const sensus of sensusList) {
+    const sensusDate = parseIsoDate(sensus?.sensus_date)
+    if (!sensusDate) continue
+    if (sensusDate.getFullYear() !== year) continue
+
+    const monthIndex = sensusDate.getMonth() // 0-based
+    monthlyTotals[monthIndex] += 1
+  }
+
+  const yearTotal = monthlyTotals.reduce((sum, v) => sum + v, 0)
+
+  // Delta: last non-zero month vs the one before it
+  let lastIdx = -1
+  for (let i = 11; i >= 0; i--) {
+    if (monthlyTotals[i] > 0) { lastIdx = i; break }
+  }
+  const lastValue = lastIdx >= 0 ? monthlyTotals[lastIdx] : 0
+  const prevValue = lastIdx > 0 ? monthlyTotals[lastIdx - 1] : 0
+  const deltaPercent = prevValue > 0
+    ? Math.round(((lastValue - prevValue) / prevValue) * 100)
+    : (lastValue > 0 ? 100 : 0)
+  const deltaSign = deltaPercent >= 0 ? '+' : ''
+
+  return {
+    title: config.title,
+    value: String(yearTotal),
+    delta: `${deltaSign}${deltaPercent}%`,
+    detail: `Total tahun ${year}`,
+    tone: config.tone,
+    points: monthlyTotals,
+    pointLabels,
+    tooltipLabel: config.tooltipLabel
+  }
+}
+
+// ── Config ─────────────────────────────────────────────────────────────────
+
 const DASHBOARD_METRIC_CONFIGS = [
   {
     title: 'Sensus',
@@ -110,8 +164,10 @@ const DASHBOARD_METRIC_CONFIGS = [
   }
 ]
 
-function buildEmptyMetric(config, referenceDate = new Date(), value = '0') {
-  const pointLabels = getCurrentMonthWeekLabels(referenceDate)
+function buildEmptyMetric(config, referenceDate = new Date(), value = '0', mode = 'monthly') {
+  const pointLabels = mode === 'yearly'
+    ? getYearlyMonthLabels(referenceDate.getFullYear())
+    : getCurrentMonthWeekLabels(referenceDate)
   return {
     title: config.title,
     value,
@@ -124,22 +180,37 @@ function buildEmptyMetric(config, referenceDate = new Date(), value = '0') {
   }
 }
 
-async function fetchWeeklyMetric(config, referenceDate = new Date()) {
+/**
+ * Fetch metrics for a given filter.
+ * @param {Object} filter - { mode: 'monthly'|'yearly', year: number, month: number (1-based, only for monthly) }
+ */
+async function fetchMetricWithFilter(config, filter) {
+  const { mode, year, month } = filter
+  const referenceDate = mode === 'monthly'
+    ? new Date(year, month - 1, 1)
+    : new Date(year, 0, 1)
+
   try {
     const params = new URLSearchParams()
-    params.set('limit', '200')
+    params.set('limit', '500')
     if (config.groupOfWork !== null && config.groupOfWork !== undefined) {
       params.set('group_of_work', String(config.groupOfWork))
     }
 
     const response = await signedApiFetch(`/sensus?${params.toString()}`, { method: 'GET' })
     const sensusList = Array.isArray(response.data) ? response.data : []
+
+    if (mode === 'yearly') {
+      return buildYearlyMetric(config, sensusList, year)
+    }
     return buildWeeklyMetric(config, sensusList, referenceDate)
   } catch (error) {
     console.error(`[Dashboard] Failed to fetch ${config.title} metrics:`, error)
-    return buildEmptyMetric(config, referenceDate)
+    return buildEmptyMetric(config, referenceDate, '0', mode)
   }
 }
+
+// ── Main factory ───────────────────────────────────────────────────────────
 
 export function createDashboardModel() {
   const navigation = cloneNavigation(sharedNavigation)
@@ -243,28 +314,6 @@ export function createDashboardModel() {
     ]
   }
 
-  // Store metrics in variable to be populated asynchronously
-  let metricsCache = null
-  let metricsLoadingPromise = null
-  let metricsMonthKey = ''
-
-  // Load metrics asynchronously
-  function loadMetricsAsync() {
-    const referenceDate = new Date()
-    const monthKey = getMonthKey(referenceDate)
-
-    if (!metricsLoadingPromise || metricsMonthKey !== monthKey) {
-      metricsMonthKey = monthKey
-      metricsLoadingPromise = Promise.all(
-        DASHBOARD_METRIC_CONFIGS.map((config) => fetchWeeklyMetric(config, referenceDate))
-      ).then((loadedMetrics) => {
-        metricsCache = loadedMetrics
-        return metricsCache
-      })
-    }
-    return metricsLoadingPromise
-  }
-
   return {
     getNavigation() {
       return cloneNavigation(navigation)
@@ -295,20 +344,31 @@ export function createDashboardModel() {
         }))
       }
     },
-    getMetrics() {
-      const referenceDate = new Date()
-      const monthKey = getMonthKey(referenceDate)
-
-      // Return cached metrics or placeholder while loading
-      if (metricsCache && metricsMonthKey === monthKey) {
-        return metricsCache.map((item) => ({ ...item, points: [...item.points] }))
+    getMetrics(filter) {
+      const now = new Date()
+      const safeFilter = filter || {
+        mode: 'monthly',
+        year: now.getFullYear(),
+        month: now.getMonth() + 1
       }
-
-      // Return placeholder metrics while loading
-      return DASHBOARD_METRIC_CONFIGS.map((config) => buildEmptyMetric(config, referenceDate, '-'))
+      const referenceDate = safeFilter.mode === 'yearly'
+        ? new Date(safeFilter.year, 0, 1)
+        : new Date(safeFilter.year, safeFilter.month - 1, 1)
+      return DASHBOARD_METRIC_CONFIGS.map((config) =>
+        buildEmptyMetric(config, referenceDate, '-', safeFilter.mode)
+      )
     },
-    loadMetrics() {
-      return loadMetricsAsync()
+    async loadMetrics(filter) {
+      const now = new Date()
+      const safeFilter = filter || {
+        mode: 'monthly',
+        year: now.getFullYear(),
+        month: now.getMonth() + 1
+      }
+      const results = await Promise.all(
+        DASHBOARD_METRIC_CONFIGS.map((config) => fetchMetricWithFilter(config, safeFilter))
+      )
+      return results
     }
   }
 }

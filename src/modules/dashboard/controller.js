@@ -23,12 +23,12 @@ export function createDashboardController() {
     return model.getRecentVerified()
   }
 
-  function getMetrics() {
-    return model.getMetrics()
+  function getMetrics(filter) {
+    return model.getMetrics(filter)
   }
 
-  async function loadMetrics() {
-    return model.loadMetrics()
+  async function loadMetrics(filter) {
+    return model.loadMetrics(filter)
   }
 
   return {
