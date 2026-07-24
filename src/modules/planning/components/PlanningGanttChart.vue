@@ -10,7 +10,6 @@
                 aria-label="Filter bulan"
                 @change="applyMonthFilter"
             >
-                <option value="">Semua Bulan</option>
                 <option v-for="month in monthOptions" :key="month.value" :value="month.value">{{ month.label }}</option>
             </select>
 
@@ -69,10 +68,10 @@
                     <div v-else class="divide-y divide-(--border)">
                         <div v-for="plan in filteredItems" :key="plan.id"
                             class="flex items-center px-4 gap-3 group cursor-pointer hover:bg-(--surface-muted) transition-colors"
-                            style="height: 70px" @click="$emit('editItem', plan)"
+                            style="height: 96px" @click="$emit('editItem', plan)"
                             @mouseenter="handlePlanHoverStart($event, plan)" @mouseleave="handlePlanHoverEnd">
                             <div class="shrink-0 w-1 rounded-full self-stretch my-3"
-                                :style="{ backgroundColor: jobColor(plan.jobType).bar }"></div>
+                                :style="{ backgroundColor: jobColor(plan.groupOfWork).bar }"></div>
                             <div class="flex-1 min-w-0">
                                 <div class="text-sm font-semibold text-(--text) truncate">{{ plan.jobType }}</div>
                                 <div class="text-xs text-(--text-muted) truncate mt-0.5">{{ plan.sensusId || '-' }}
@@ -81,7 +80,7 @@
                                     <template v-if="plan.blocks.slice(0, 3).length">
                                         <span v-for="b in plan.blocks.slice(0, 3)" :key="b"
                                             class="inline-block text-xs rounded px-1.5 py-0.5 font-medium"
-                                            :style="{ backgroundColor: jobColor(plan.jobType).chipBg, color: jobColor(plan.jobType).chipText }">{{
+                                            :style="{ backgroundColor: jobColor(plan.groupOfWork).chipBg, color: jobColor(plan.groupOfWork).chipText }">{{
                                                 b }}</span>
                                         <span v-if="plan.blocks.length > 3"
                                             class="inline-block text-xs rounded px-1.5 py-0.5 font-medium text-(--text-muted) bg-(--surface-muted)">+{{
@@ -157,11 +156,11 @@
                             <!-- Bars -->
                             <template v-else>
                                 <div v-for="(item, idx) in filteredItems" :key="'bar-' + item.id" class="relative z-20"
-                                    style="height: 70px">
+                                    style="height: 96px">
                                     <div v-if="barVisible(item)"
                                         class="absolute top-1/2 -translate-y-1/2 rounded-lg flex items-center px-3 text-xs font-semibold truncate shadow-sm"
                                         style="height:38px"
-                                        :style="[barStyle(item), { backgroundColor: jobColor(item.jobType).bar, color: '#fff' }]">
+                                        :style="[barStyle(item), { backgroundColor: jobColor(item.groupOfWork).bar, color: '#fff' }]">
                                         {{ item.jobType }} · {{ item.blocks.length }} block{{ item.blocks.length !== 1 ?
                                             's' : '' }}
                                     </div>
@@ -234,6 +233,8 @@ import PlanningDateRangePicker from "./PlanningDateRangePicker.vue";
 import {
     addDays,
     createDefaultPlanningDateRange,
+    createPlanningMonthDateRange,
+    getCurrentPlanningMonth,
     getTodayInJakarta,
     isoDate,
     isSamePlanningDateRange,
@@ -243,7 +244,7 @@ import {
 
 const props = defineProps({
     items: { type: Array, default: () => [] },
-    /** ISO date string for the first visible day; defaults to 10 days before today */
+    /** ISO date string for the first visible day; defaults to the current Jakarta month */
     startDate: { type: String, default: null },
     daysCount: { type: Number, default: 31 },
     sensusOptions: { type: Array, default: () => [] },
@@ -260,9 +261,9 @@ const localSensusId = computed({
 
 // ─── Date range filter ─────────────────────────────────────────────────────
 const dateRange = ref(createDefaultPlanningDateRange());
-const selectedMonth = ref('');
+const selectedMonth = ref(getCurrentPlanningMonth());
 const monthOptions = computed(() => {
-    const year = new Date().getFullYear();
+    const year = Number(getTodayInJakarta().slice(0, 4));
     return Array.from({ length: 12 }, (_, index) => ({
         value: `${year}-${String(index + 1).padStart(2, '0')}`,
         label: new Date(year, index, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
@@ -270,16 +271,7 @@ const monthOptions = computed(() => {
 });
 
 function applyMonthFilter() {
-    if (!selectedMonth.value) {
-        dateRange.value = createDefaultPlanningDateRange();
-        return;
-    }
-
-    const [year, month] = selectedMonth.value.split('-').map(Number);
-    const start = new Date(year, month - 1, 1);
-    const end = new Date(year, month, 0);
-    const toIso = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    dateRange.value = { start: toIso(start), end: toIso(end) };
+    dateRange.value = createPlanningMonthDateRange(selectedMonth.value);
 }
 
 // Show Reset Filter button when any non-default filter is active
@@ -302,7 +294,7 @@ const filteredItems = computed(() => {
 
 function resetFilters() {
     dateRange.value = createDefaultPlanningDateRange();
-    selectedMonth.value = '';
+    selectedMonth.value = getCurrentPlanningMonth();
     emit('update:filterSensusId', '');
 }
 
@@ -487,11 +479,18 @@ const PALETTE = [
     { bar: "#4fa8a0", chipBg: "rgba(79,168,160,0.15)", chipText: "#1e5e5a" },
 ];
 
-function jobColor(jobType) {
-    if (!jobType) return PALETTE[0];
-    let hash = 0;
-    for (const ch of jobType) hash = (hash * 31 + ch.charCodeAt(0)) & 0xffffffff;
-    return PALETTE[Math.abs(hash) % PALETTE.length];
+function jobColor(groupOfWork) {
+    const normalized = String(groupOfWork || '').trim().toLowerCase();
+    if (normalized.includes('pembersihan')) {
+        return { bar: '#3B82F6', chipBg: 'rgba(59,130,246,0.15)', chipText: '#2563EB' };
+    }
+    if (normalized.includes('pemupukan')) {
+        return { bar: '#16A34A', chipBg: 'rgba(22,163,74,0.15)', chipText: '#15803D' };
+    }
+    if (normalized.includes('panen') || normalized.includes('pemanen')) {
+        return { bar: '#F97316', chipBg: 'rgba(249,115,22,0.15)', chipText: '#EA580C' };
+    }
+    return PALETTE[0];
 }
 </script>
 

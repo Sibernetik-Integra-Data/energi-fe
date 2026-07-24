@@ -1,6 +1,3 @@
-export const PLANNING_DEFAULT_DAYS_COUNT = 31
-export const PLANNING_DEFAULT_DAYS_BACK = 10
-
 export function getTodayInJakarta() {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Jakarta',
@@ -32,15 +29,27 @@ export function addDaysToIso(iso, n) {
   return isoDate(addDays(toDateOnly(iso), n))
 }
 
-/** Default Gantt / date-filter window: N days back from today (Jakarta), total 31 days inclusive. */
-export function createDefaultPlanningDateRange({
-  daysBack = PLANNING_DEFAULT_DAYS_BACK,
-  totalDays = PLANNING_DEFAULT_DAYS_COUNT,
-  todayIso = getTodayInJakarta()
-} = {}) {
-  const start = addDaysToIso(todayIso, -daysBack)
-  const end = addDaysToIso(start, totalDays - 1)
-  return { start, end }
+export function getCurrentPlanningMonth(todayIso = getTodayInJakarta()) {
+  return String(todayIso).slice(0, 7)
+}
+
+/** Returns the complete calendar month for a YYYY-MM value. */
+export function createPlanningMonthDateRange(monthIso = getCurrentPlanningMonth()) {
+  const [year, month] = String(monthIso).split('-').map(Number)
+  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) {
+    return createPlanningMonthDateRange(getCurrentPlanningMonth())
+  }
+
+  const lastDay = new Date(year, month, 0).getDate()
+  return {
+    start: `${year}-${String(month).padStart(2, '0')}-01`,
+    end: `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+  }
+}
+
+/** Default Gantt / date-filter window: the complete current month in Jakarta time. */
+export function createDefaultPlanningDateRange() {
+  return createPlanningMonthDateRange(getCurrentPlanningMonth())
 }
 
 export function isSamePlanningDateRange(a, b) {

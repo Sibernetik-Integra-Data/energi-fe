@@ -61,7 +61,7 @@
             <div
               v-else
               class="grid gap-4"
-              style="grid-template-columns: repeat(auto-fill, minmax(360px, 1fr))"
+              style="grid-template-columns: repeat(auto-fill, minmax(380px, 1fr))"
             >
               <SensusJobCard
                 v-for="item in items"

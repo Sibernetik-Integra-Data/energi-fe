@@ -35,32 +35,30 @@
                     <thead>
                         <tr class="border-b border-(--border) bg-(--surface-muted)">
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Name</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">No.</th>
+                            <!-- <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">No.</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Destination</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Type</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Type</th> -->
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Latitude</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Longitude</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Created By</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Updated By</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Notes</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="filteredRows.length === 0">
-                            <td colspan="9" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
+                            <td colspan="6" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
                         </tr>
                         <tr
                             v-for="row in filteredRows"
                             :key="row.id"
                             class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted) transition-colors">
                             <td class="py-4 px-6 align-middle text-sm font-semibold text-(--text)">{{ row.name }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.nomor }}</td>
+                            <!-- <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.nomor }}</td>
                             <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.location || '' }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.type_of_location || '' }}</td>
+                            <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.type_of_location || '' }}</td> -->
                             <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.latitude || '' }}</td>
                             <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.longitude || '' }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.created_by || '-' }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.updated_by || '-' }}</td>
+                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.notes || '-' }}</td>
                             <td class="py-4 px-6 align-middle">
                                 <div class="flex gap-2 items-center">
                                     <button
@@ -90,13 +88,12 @@
                     class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2">
                     <div class="font-bold text-sm text-(--text)">{{ row.name }}</div>
                     <div class="text-xs text-(--text-muted) flex flex-wrap gap-x-4 gap-y-1">
-                        <span v-if="row.nomor">No: {{ row.nomor }}</span>
-                        <span v-if="row.location">Destination: {{ row.location }}</span>
-                        <span v-if="row.type_of_location">Type: {{ row.type_of_location }}</span>
+                        <!-- <span v-if="row.nomor">No: {{ row.nomor }}</span> -->
+                        <!-- <span v-if="row.location">Destination: {{ row.location }}</span> -->
+                        <!-- <span v-if="row.type_of_location">Type: {{ row.type_of_location }}</span> -->
                         <span v-if="row.latitude">Lat: {{ row.latitude }}</span>
                         <span v-if="row.longitude">Lng: {{ row.longitude }}</span>
-                        <span>Created by: {{ row.created_by || '-' }}</span>
-                        <span>Updated by: {{ row.updated_by || '-' }}</span>
+                        <span>Notes: {{ row.notes || '-' }}</span>
                     </div>
                     <div class="flex justify-end gap-2 mt-1">
                         <button

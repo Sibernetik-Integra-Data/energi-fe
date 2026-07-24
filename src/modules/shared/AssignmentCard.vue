@@ -1,5 +1,5 @@
 <template>
-  <article class="bg-(--surface) border border-(--border) rounded-xl overflow-hidden shadow-sm flex flex-col min-w-0 min-h-[237px]">
+  <article class="bg-(--surface) border border-(--border) rounded-xl overflow-hidden shadow-sm flex flex-col min-w-0 h-fit self-start">
     <div class="p-4 pb-3 flex items-start justify-between gap-3">
       <div class="min-w-0">
         <h3 class="text-sm font-bold text-(--text) leading-snug truncate">{{ jobType || 'Pekerjaan' }}</h3>
@@ -26,12 +26,12 @@
       </div>
     </div>
 
-    <div class="px-4 pb-4">
-      <div class="flex gap-2">
-        <button type="button" class="flex-1 h-16 text-base px-3 rounded-full border border-(--border) bg-transparent text-(--text) hover:bg-(--surface-muted) transition-colors cursor-pointer" @click="$emit('view-detail')">
+    <div class="px-2 pb-4">
+      <div class="flex gap-3">
+        <button type="button" class="shrink-0 flex-none h-10 whitespace-nowrap text-xs leading-none px-4 rounded-full border border-(--border) bg-transparent text-(--text) hover:bg-(--surface-muted) transition-colors cursor-pointer" @click="$emit('view-detail')">
           Lihat Detail
         </button>
-        <button type="button" class="flex-[1.8] h-16 text-base font-semibold px-3 rounded-full bg-(--text) text-(--surface) hover:opacity-80 transition-opacity cursor-pointer" @click="$emit('add-to-plan')">
+        <button type="button" class="shrink-0 w-[250px] h-10 whitespace-nowrap text-xs leading-none font-semibold px-3 rounded-full bg-(--text) text-(--surface) hover:opacity-80 transition-opacity cursor-pointer" @click="$emit('add-to-plan')">
           +&nbsp; Tambahkan ke Perencanaan
         </button>
       </div>

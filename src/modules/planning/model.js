@@ -55,6 +55,7 @@ function mapPlanningItem(p) {
     sensusDetailId: p.sensus_detail_id,
     sensusId: p.id_sensus || '',
     jobType: p.sensus_detail?.type_of_work?.name || '',
+    groupOfWork: p.sensus_detail?.type_of_work?.group_of_work_name || '',
     blocks: normalizeBlockNames(rawBlocks),
     startDate: toDateOnlyString(p.start_date),
     endDate: toDateOnlyString(p.end_date),
