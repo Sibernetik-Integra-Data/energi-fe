@@ -17,7 +17,15 @@
 
       <div ref="userMenuRef" class="header__user-menu" :class="{ 'is-open': isUserMenuOpen }">
         <button class="header__user-trigger" type="button" @click="toggleUserMenu" :aria-expanded="isUserMenuOpen" aria-haspopup="menu">
-          <div class="header__avatar">{{ user.initials }}</div>
+          <div class="header__avatar">
+            <img
+              v-if="user.avatarUrl"
+              :src="user.avatarUrl"
+              :alt="user.name"
+              class="header__avatar-img"
+            />
+            <span v-else>{{ user.initials }}</span>
+          </div>
           <div class="header__user-copy">
             <strong>{{ user.name }}</strong>
             <span v-if="user.jobs">{{ user.jobs }}</span>
@@ -200,7 +208,6 @@ onBeforeUnmount(() => {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--text-soft);
 }
 
@@ -296,6 +303,14 @@ onBeforeUnmount(() => {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0;
+  overflow: hidden;
+}
+
+.header__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .header__user-copy {

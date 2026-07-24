@@ -68,6 +68,7 @@ function mapSensusDetailItem(sensus, detail) {
     jobType: detail?.type_of_work?.name || detail?.description || 'Panen',
     groupOfWork: detail?.type_of_work?.group_of_work_name || '',
     blocks: normalizeBlockNames(rawBlocks),
+    photo: detail?.photo1 || '',
     startDate: sensusDate,
     endDate: sensusDate,
     startDateFormatted: formatDate(sensusDate),
@@ -96,6 +97,7 @@ function mapSensusToListItems(sensus) {
         jobType: 'Panen',
         groupOfWork: 'Panen',
         blocks: [],
+        photo: '',
         startDate: toDateOnlyString(sensus?.sensus_date),
         endDate: toDateOnlyString(sensus?.sensus_date),
         startDateFormatted: formatDate(sensus?.sensus_date),
@@ -164,6 +166,7 @@ function mapLaborItem(laborRow, plansById) {
     id: laborRow?.id,
     planId: Number.isInteger(planId) ? planId : null,
     userId: laborRow?.user_id || '',
+    avatar_uri: laborRow?.avatar_uri || '',
     username: laborRow?.user_id || '',
     firstName: laborRow?.first_name || '',
     lastName: laborRow?.last_name || '',
@@ -244,6 +247,11 @@ export async function loadPanenDetail(sensusId, detailId = null) {
   const planningRows = await loadPlanningRowsBySensusDetail(baseItem.sensusId, selectedDetail?.id)
   const plansById = new Map(planningRows.map((row) => [Number(row.id), row]))
   const laborRows = await loadLaborsByPlanIds(planningRows.map((row) => row.id))
+  const planningLaborsById = new Map(
+    planningRows
+      .flatMap((row) => Array.isArray(row?.labors) ? row.labors : [])
+      .map((labor) => [Number(labor?.id), labor])
+  )
   const dateRange = pickDateRangeFromPlans(planningRows)
 
   return {
@@ -253,6 +261,9 @@ export async function loadPanenDetail(sensusId, detailId = null) {
     startDateFormatted: formatDate(dateRange.startDate || baseItem.startDate),
     endDateFormatted: formatDate(dateRange.endDate || baseItem.endDate),
     plans: planningRows,
-    labors: laborRows.map((row) => mapLaborItem(row, plansById))
+    labors: laborRows.map((row) => mapLaborItem({
+      ...row,
+      avatar_uri: row?.avatar_uri || planningLaborsById.get(Number(row?.id))?.avatar_uri || ''
+    }, plansById))
   }
 }

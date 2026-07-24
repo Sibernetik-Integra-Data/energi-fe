@@ -293,3 +293,40 @@ export async function signedApiFetch(path, opts = {}) {
   if (!res.ok) throw new Error(res.statusText)
   return res.text()
 }
+
+// Same authenticated/signed request as signedApiFetch, but preserves binary
+// responses such as images instead of attempting to decode them as text.
+export async function signedApiFetchBlob(path, opts = {}) {
+  const method = (opts.method || 'GET').toUpperCase()
+  const url = resolveRequestUrl(path)
+  const signature = await createSignature(extractPath(`${API_PREFIX}${path}`), method)
+  const headers = {
+    Authorization: `Bearer ${getAccessToken()}`,
+    'X-Signature': signature.signature,
+    'X-Signature-Timestamp': String(signature.timestamp),
+    'X-Signature-UUID': signature.uuid
+  }
+
+  if (opts.headers) {
+    Object.assign(headers, opts.headers)
+  }
+
+  const res = await fetch(url, {
+    ...opts,
+    method,
+    cache: 'no-store',
+    credentials: 'include',
+    headers
+  })
+
+  if (!res.ok) {
+    const contentType = res.headers.get('content-type') || ''
+    if (contentType.includes('application/json')) {
+      const body = await res.json()
+      throw body
+    }
+    throw new Error(res.statusText || `Request failed with status ${res.status}`)
+  }
+
+  return res.blob()
+}

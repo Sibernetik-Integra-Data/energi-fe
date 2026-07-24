@@ -4,6 +4,16 @@
         <div class="flex flex-wrap items-center gap-3">
             <PlanningDateRangePicker v-model="dateRange" :plans="items" />
 
+            <select
+                v-model="selectedMonth"
+                class="h-9 pl-3 pr-8 border border-(--border) rounded-lg bg-(--surface) text-(--text) text-sm outline-none transition-colors focus:border-(--brand) cursor-pointer"
+                aria-label="Filter bulan"
+                @change="applyMonthFilter"
+            >
+                <option value="">Semua Bulan</option>
+                <option v-for="month in monthOptions" :key="month.value" :value="month.value">{{ month.label }}</option>
+            </select>
+
             <!-- Sensus filter -->
             <div class="flex items-center gap-2">
                 <!-- <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide whitespace-nowrap">ID Sensus</label> -->
@@ -250,6 +260,27 @@ const localSensusId = computed({
 
 // ─── Date range filter ─────────────────────────────────────────────────────
 const dateRange = ref(createDefaultPlanningDateRange());
+const selectedMonth = ref('');
+const monthOptions = computed(() => {
+    const year = new Date().getFullYear();
+    return Array.from({ length: 12 }, (_, index) => ({
+        value: `${year}-${String(index + 1).padStart(2, '0')}`,
+        label: new Date(year, index, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+    }));
+});
+
+function applyMonthFilter() {
+    if (!selectedMonth.value) {
+        dateRange.value = createDefaultPlanningDateRange();
+        return;
+    }
+
+    const [year, month] = selectedMonth.value.split('-').map(Number);
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0);
+    const toIso = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    dateRange.value = { start: toIso(start), end: toIso(end) };
+}
 
 // Show Reset Filter button when any non-default filter is active
 const hasActiveFilter = computed(() =>
@@ -271,6 +302,7 @@ const filteredItems = computed(() => {
 
 function resetFilters() {
     dateRange.value = createDefaultPlanningDateRange();
+    selectedMonth.value = '';
     emit('update:filterSensusId', '');
 }
 

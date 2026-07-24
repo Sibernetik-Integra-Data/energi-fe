@@ -1,4 +1,4 @@
-import { buildSignatureHeaders, signedApiFetch } from '../api/fetch'
+import { buildSignatureHeaders, signedApiFetch, signedApiFetchBlob } from '../api/fetch'
 import { getAccessToken, setAccessToken, clearAccessToken } from './tokenMemory'
 
 // ---------------------------------------------------------------------------
@@ -439,6 +439,26 @@ export async function fetchUserProfile() {
   console.log('Fetching account profile from backend')
   const body = await signedApiFetch('/account/profile', { method: 'GET' })
   const profile = body && typeof body === 'object' ? body.data || body : body
+
+  if (profile && typeof profile === 'object' && typeof profile.avatar_uri === 'string' && profile.avatar_uri.trim()) {
+    try {
+      // avatar_uri may already contain escaped slashes (%2F). Normalize it
+      // before encoding so the storage request contains %2F, not %252F.
+      let avatarPath = profile.avatar_uri.trim()
+      try {
+        avatarPath = decodeURIComponent(avatarPath)
+      } catch {
+        // Keep the original value if it contains malformed escape sequences.
+      }
+      const path = `/storage?path=${encodeURIComponent(avatarPath)}`
+      const avatarBlob = await signedApiFetchBlob(path, { method: 'GET' })
+      profile.avatarUrl = URL.createObjectURL(avatarBlob)
+    } catch (error) {
+      // The profile remains usable when the optional avatar cannot be loaded.
+      console.warn('Failed to load profile avatar', error)
+    }
+  }
+
   console.log('Account profile fetch succeeded', profile)
   return profile
 }

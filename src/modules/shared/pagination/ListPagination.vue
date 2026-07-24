@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="totalItems > 0"
-    class="mt-5 flex items-center justify-between gap-3 flex-wrap"
+    class="mt-auto pt-5 flex items-center justify-between gap-3 flex-wrap"
   >
     <p class="text-xs text-(--text-muted) font-medium m-0 shrink-0">
       Menampilkan

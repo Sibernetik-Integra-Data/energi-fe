@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="flex min-h-full flex-col">
         <!-- Filters -->
         <div class="mb-5 flex flex-col gap-3">
             <div
@@ -42,12 +42,15 @@
         </div>
 
         <!-- Card grid (main page) -->
-        <div v-else>
-            <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr))">
+        <div v-else class="flex flex-1 flex-col">
+            <AssignmentTable :items="items" task-type="Panen" @view-detail="$emit('view-detail', $event)" />
+            <div v-if="false" class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr))">
                 <div
                     v-for="item in items"
                     :key="`${item.id}-${item.detailId || 'none'}`"
-                    class="bg-(--surface) border border-(--border) rounded-2xl overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-shadow">
+                    class="contents">
+                    <AssignmentCard :job-type="item.jobType" :group-of-work="item.groupOfWork" :date="item.startDateFormatted" :sensus-ref="`Sensus ${item.sensusId || '—'}`" :blocks="item.blocks" :photo="item.photo" @view-detail="$emit('view-detail', item)" @add-to-plan="$emit('add-to-plan', item)" />
+                    <div v-if="false">
                     <div class="p-5 pb-3 flex justify-between items-start gap-3">
                         <div class="min-w-0 flex flex-col gap-1">
                             <div class="flex items-center gap-2">
@@ -107,18 +110,19 @@
                         </div>
                     </div>
 
-                    <div class="px-2 pb-2 mt-auto pt-2 flex items-center gap-2">
+                    <div class="px-2 pb-2 mt-auto pt-2 flex flex-nowrap items-center gap-2">
                         <button
-                            class="text-xs font-semibold py-2 px-3 rounded-full border border-(--border) bg-transparent text-(--text) hover:bg-(--surface-muted) transition-colors cursor-pointer"
+                            class="h-8 text-xs font-semibold py-0 px-3 rounded-full border border-(--border) bg-transparent text-(--text) hover:bg-(--surface-muted) transition-colors cursor-pointer whitespace-nowrap"
                             @click="$emit('view-detail', item)">
                             Lihat Detail
                         </button>
                         <button
                             type="button"
-                            class="text-xs font-semibold py-2 px-3 rounded-full border-0 bg-(--text) text-(--surface) hover:opacity-80 transition-opacity cursor-pointer"
+                            class="h-8 text-xs font-semibold py-0 px-3 rounded-full border-0 bg-(--text) text-(--surface) hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap"
                             @click="$emit('add-to-plan', item)">
                             + Tambahkan ke Perencanaan
                         </button>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -139,6 +143,8 @@
 <script setup>
 import { ref, watch } from "vue";
 import { ListPagination } from "../../shared/pagination";
+import AssignmentCard from "../../shared/AssignmentCard.vue";
+import AssignmentTable from "../../shared/AssignmentTable.vue";
 
 defineProps({
     items: { type: Array, default: () => [] },

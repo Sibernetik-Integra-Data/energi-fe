@@ -254,7 +254,7 @@ const localAvatarUrl = ref('')
 
 watch(
   () => appStore.profile?.avatarUrl,
-  (val) => { if (val && !localAvatarUrl.value) localAvatarUrl.value = val },
+  (val) => { localAvatarUrl.value = val || '' },
   { immediate: true }
 )
 

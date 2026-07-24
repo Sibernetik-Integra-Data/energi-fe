@@ -113,14 +113,14 @@
                                 >
                                 <span
                                     class="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-(--border) text-(--text-muted)"
-                                    :class="{ 'rotate-180': expandedGroupKey === group.key }"
+                                    :class="{ 'rotate-180': expandedGroupKeys.has(group.key) }"
                                     aria-hidden="true"
                                     >⌃</span
                                 >
                             </div>
                         </button>
 
-                        <div v-if="expandedGroupKey === group.key" class="px-4 pb-4 pt-1 border-t border-(--border)">
+                        <div v-if="expandedGroupKeys.has(group.key)" class="px-4 pb-4 pt-1 border-t border-(--border)">
                             <div
                                 class="grid gap-2"
                                 style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr))">
@@ -182,24 +182,30 @@ const laborGroups = computed(() => {
     return Array.from(grouped.values()).sort((a, b) => b.sortKey.localeCompare(a.sortKey));
 });
 
-const expandedGroupKey = ref("");
+const expandedGroupKeys = ref(new Set());
 
 watch(
     laborGroups,
     (groups) => {
         if (!groups.length) {
-            expandedGroupKey.value = "";
+            expandedGroupKeys.value = new Set();
             return;
         }
 
-        const stillExists = groups.some((g) => g.key === expandedGroupKey.value);
-        if (!stillExists) expandedGroupKey.value = groups[0].key;
+        const validKeys = new Set(
+            [...expandedGroupKeys.value].filter((key) => groups.some((group) => group.key === key)),
+        );
+        if (validKeys.size === 0) validKeys.add(groups[0].key);
+        expandedGroupKeys.value = validKeys;
     },
     { immediate: true },
 );
 
 function toggleGroup(key) {
-    expandedGroupKey.value = expandedGroupKey.value === key ? "" : key;
+    const nextKeys = new Set(expandedGroupKeys.value);
+    if (nextKeys.has(key)) nextKeys.delete(key);
+    else nextKeys.add(key);
+    expandedGroupKeys.value = nextKeys;
 }
 
 function statusLabel(status) {

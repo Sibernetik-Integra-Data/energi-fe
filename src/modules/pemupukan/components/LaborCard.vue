@@ -7,9 +7,10 @@
             @click="togglePopup">
             <!-- Avatar -->
             <div
-                class="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center shrink-0 text-xl"
+                class="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center shrink-0 text-xl overflow-hidden"
                 aria-hidden="true">
-                👷
+                <img v-if="avatarUrl" :src="avatarUrl" :alt="fullName" class="w-full h-full object-cover" />
+                <span v-else>👷</span>
             </div>
 
             <!-- Info -->
@@ -32,8 +33,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import LaborActionPopup from "./LaborActionPopup.vue";
+import { signedApiFetchBlob } from "../../../api/fetch";
 
 const props = defineProps({
     labor: { type: Object, required: true },
@@ -43,6 +45,7 @@ const props = defineProps({
 });
 
 const popupOpen = ref(false);
+const avatarUrl = ref("");
 
 const shortUserId = computed(() => {
     const value = String(props.labor.userId || "").trim();
@@ -60,5 +63,29 @@ const fullName = computed(() => {
 function togglePopup() {
     popupOpen.value = !popupOpen.value;
 }
+
+async function loadAvatar() {
+    const rawUri = String(props.labor.avatar_uri || "").trim();
+    if (!rawUri) return;
+
+    let avatarPath = rawUri;
+    try {
+        avatarPath = decodeURIComponent(avatarPath);
+    } catch {
+        // Keep the original path if it contains malformed escape sequences.
+    }
+
+    try {
+        const blob = await signedApiFetchBlob(`/storage?path=${encodeURIComponent(avatarPath)}`);
+        avatarUrl.value = URL.createObjectURL(blob);
+    } catch (error) {
+        console.warn("Failed to load labor avatar", error);
+    }
+}
+
+onMounted(loadAvatar);
+onBeforeUnmount(() => {
+    if (avatarUrl.value.startsWith("blob:")) URL.revokeObjectURL(avatarUrl.value);
+});
 </script>
 

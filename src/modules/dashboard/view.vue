@@ -157,7 +157,6 @@ watch(
   line-height: 16px;
   font-weight: 700;
   letter-spacing: 0.16em;
-  text-transform: uppercase;
 }
 
 .dashboard-intro h1 {

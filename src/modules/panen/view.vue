@@ -15,7 +15,7 @@
                 <section
                     class="flex justify-between gap-6 items-end max-[920px]:flex-col max-[920px]:items-start shrink-0">
                     <div>
-                        <p class="text-[12px] font-bold uppercase tracking-[0.16em] text-(--brand) mb-2">
+                        <p class="text-[12px] font-bold tracking-[0.16em] text-(--brand) mb-2">
                             Operasional Kebun
                         </p>
                         <h1 class="m-0 text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em]">

@@ -46,30 +46,6 @@
             class="mb-5"
           />
 
-          <!-- Tabs -->
-          <div
-            class="flex gap-2 bg-(--surface-muted) border border-(--border) p-1.5 rounded-full items-center mb-6"
-            role="tablist"
-            aria-label="Sensus detail tabs"
-          >
-            <button
-              v-for="tab in TABS"
-              :key="tab.key"
-              role="tab"
-              :aria-selected="activeTab === tab.key"
-              @click="activeTab = tab.key"
-              :class="[
-                'flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-full text-sm font-semibold transition-colors cursor-pointer',
-                activeTab === tab.key
-                  ? 'bg-(--surface) text-(--text) shadow-sm border border-(--border)'
-                  : 'bg-transparent border-0 text-(--text-muted) hover:text-(--text)'
-              ]"
-            >
-              <span aria-hidden="true">{{ tab.icon }}</span>
-              {{ tab.label }}
-            </button>
-          </div>
-
           <!-- Tab: List Pekerjaan -->
           <div v-show="activeTab === 'pekerjaan'" role="tabpanel">
             <!-- Empty state -->
@@ -91,6 +67,7 @@
                 v-for="item in items"
                 :key="item.id"
                 :job-type="item.jobType"
+                :group-of-work="item.groupOfWork"
                 :date="item.date"
                 :sensus-ref="'Sensus ' + item.sensusId"
                 :blocks="item.blocks"
@@ -228,11 +205,6 @@ function handleEditPlan(plan) {
   // Future: pre-fill form with plan data for editing
   console.log('[SensusDetail] edit plan', plan.id)
 }
-
-const TABS = [
-  { key: 'pekerjaan',   label: 'List Pekerjaan', icon: '📋' },
-  { key: 'perencanaan', label: 'Perencanaan',     icon: '📅' }
-]
 
 onMounted(async () => {
   if (!props.id) {
