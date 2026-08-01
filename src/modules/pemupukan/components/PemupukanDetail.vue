@@ -38,7 +38,7 @@
                 </div>
 
                 <div class="mb-4" v-if="plan.sensusDateFormatted || plan.sensusDate">
-                    <span class="text-[10px] font-bold uppercase tracking-widest text-(--text-muted)"
+                    <span class="text-[10px] font-bold tracking-widest text-(--text-muted)"
                         >Tanggal Sensus</span
                     >
                     <span class="text-sm font-semibold text-(--text) ml-2">{{
@@ -47,7 +47,7 @@
                 </div>
 
                 <div v-if="plan.blocks && plan.blocks.length > 0">
-                    <p class="text-[10px] font-bold uppercase tracking-widest text-(--text-muted) mb-2">Nomor Petak</p>
+                    <p class="text-[10px] font-bold tracking-widest text-(--text-muted) mb-2">Nomor Petak</p>
                     <div class="flex flex-wrap gap-1.5">
                         <span
                             v-for="(block, i) in plan.blocks"
@@ -80,7 +80,7 @@
                 </div>
 
                 <div class="mb-4 w-fit min-w-50 bg-(--surface) border border-(--border) rounded-xl px-4 py-3">
-                    <p class="text-[10px] uppercase tracking-wide text-(--text-muted) m-0">Total Pekerja Terdaftar</p>
+                    <p class="text-[10px] tracking-wide text-(--text-muted) m-0">Total Pekerja Terdaftar</p>
                     <p class="text-2xl font-extrabold text-(--text) m-0 mt-1">{{ effectiveLabors.length }}</p>
                 </div>
 
