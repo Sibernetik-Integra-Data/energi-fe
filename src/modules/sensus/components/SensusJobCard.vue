@@ -5,10 +5,10 @@
     :date="date"
     :sensus-ref="sensusRef"
     :blocks="blocks"
-    :photo="photo"
-    :extra-photos="extraPhotos"
+    :progress-status="progressStatus"
+    :show-photo="false"
+    :show-add-to-plan="false"
     @view-detail="$emit('view')"
-    @add-to-plan="$emit('plan')"
   />
 </template>
 
@@ -22,8 +22,9 @@ defineProps({
   sensusRef: { type: String, default: '' },
   blocks: { type: Array, default: () => [] },
   photo: { type: String, default: '' },
-  extraPhotos: { type: Number, default: 0 }
+  extraPhotos: { type: Number, default: 0 },
+  progressStatus: { type: String, default: '' }
 })
 
-defineEmits(['view', 'plan'])
+defineEmits(['view'])
 </script>

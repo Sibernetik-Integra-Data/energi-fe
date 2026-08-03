@@ -10,6 +10,8 @@ export function createSensusController() {
     getStats: () => model.getStats(),
     loadRows: () => model.loadRows(),
     loadSensusDetail: (numericId) => model.loadSensusDetail(numericId),
+    loadSensusRecord: (numericId) => model.loadSensusRecord(numericId),
+    loadSensusTaskDetail: (sensusId, detailId) => model.loadSensusTaskDetail(sensusId, detailId),
     loadSensusPlanning: (idSensus) => model.loadSensusPlanning(idSensus),
     saveSensusPlanning: (payload) => model.saveSensusPlanning(payload)
   }

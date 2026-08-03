@@ -2,6 +2,7 @@ import { getAuthenticatedUser, getAccessToken } from '../../auth/keycloak'
 import { navigation as sharedNavigation } from '../shared/navigation'
 import { apiFetch, signedApiFetch } from '../../api/fetch'
 import { resolveUsernames } from '../../utils/userCache'
+import { loadPanenDetail } from '../panen/model'
 
 // ─── signed GET helper ────────────────────────────────────────────────────────
 async function signedGet(path) {
@@ -90,8 +91,11 @@ function mapDetailItem(d, parentSensus = {}) {
     jobType:         d.type_of_work?.name || '',
     jobTypeDetail:   d.type_of_work?.detail || '',
     groupOfWork:     d.type_of_work?.group_of_work_name || '',
-    date:            formatDate(parentSensus.sensus_date || ''),
-    blocks:          (d.blocks || []).map(b => b.name || `Block ${b.id}`),
+    date:            toDateOnlyString(parentSensus.sensus_date || ''),
+    blocks:          (d.blocks || []).map(b => {
+      const name = b.name || `Blok ${b.id}`
+      return String(name).replace(/^Block\b/i, 'Blok')
+    }),
     blocksRaw:       d.blocks || [],
     photo:           d.photo1 || '',
     extraPhotos:     0,
@@ -171,7 +175,7 @@ function mapPlanningItem(p) {
   }
 }
 
-async function loadSensusPlanning(idSensus) {
+  async function loadSensusPlanning(idSensus) {
   const params = new URLSearchParams()
   if (idSensus) params.set('idSensus', idSensus)
   const query = params.toString() ? `?${params.toString()}` : ''
@@ -196,6 +200,27 @@ export function createSensusModel() {
   const list = {
     title: 'Sensus',
     subtitle: 'Meninjau dan memverifikasi laporan lapangan pekerja'
+  }
+
+  async function loadSensusRecord(numericId) {
+    const resp = await signedGet(`/sensus/${numericId}`)
+    const sensusData = resp.data || {}
+    let reporter = ''
+
+    try {
+      if (sensusData.created_by) {
+        const usernameMap = await resolveUsernames([sensusData.created_by])
+        reporter = usernameMap.get(sensusData.created_by) || ''
+      }
+    } catch {
+      reporter = ''
+    }
+
+    return { ...sensusData, reporter }
+  }
+
+  async function loadSensusTaskDetail(sensusId, detailId) {
+    return loadPanenDetail(sensusId, detailId)
   }
 
   const stats = { total: 0, today: 0, pending: 0 }
@@ -344,6 +369,8 @@ export function createSensusModel() {
     getStats()       { return { ...stats } },
     loadRows,
     loadSensusDetail,
+    loadSensusRecord,
+    loadSensusTaskDetail,
     loadSensusPlanning,
     saveSensusPlanning
   }

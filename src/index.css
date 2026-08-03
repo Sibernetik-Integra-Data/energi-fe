@@ -29,6 +29,14 @@ html {
   --warning-soft: rgba(217, 119, 6, 0.12);
   --danger: #dc2626;
   --danger-soft: rgba(220, 38, 38, 0.12);
+  --status-wip-bg: #fff7e6;
+  --status-wip-text: #e89e00;
+  --status-plan-bg: #e7f6fb;
+  --status-plan-text: #0fa2d3;
+  --status-overtime-bg: #fde9eb;
+  --status-overtime-text: #ed2637;
+  --status-done-bg: #e6f3ea;
+  --status-done-text: #00842a;
   --table-row-text: #475569;
   --shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
   --radius-lg: 24px;
@@ -56,6 +64,14 @@ html {
   --warning-soft: rgba(245, 158, 11, 0.16);
   --danger: #ef4444;
   --danger-soft: rgba(239, 68, 68, 0.16);
+  --status-wip-bg: rgba(245, 158, 11, 0.16);
+  --status-wip-text: #fbbf24;
+  --status-plan-bg: rgba(14, 147, 192, 0.18);
+  --status-plan-text: #67d5f4;
+  --status-overtime-bg: rgba(239, 68, 68, 0.18);
+  --status-overtime-text: #f87171;
+  --status-done-bg: rgba(34, 197, 94, 0.18);
+  --status-done-text: #4ade80;
   --table-row-text: #94a3b8;
   --shadow: 0 14px 34px rgba(0, 0, 0, 0.36);
 }

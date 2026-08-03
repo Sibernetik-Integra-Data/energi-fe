@@ -1,37 +1,44 @@
 <template>
-  <article class="bg-(--surface) border border-(--border) rounded-xl overflow-hidden shadow-sm flex flex-col min-w-0 h-fit self-start">
-    <div class="p-4 pb-3 flex items-start justify-between gap-3">
+  <article class="bg-(--surface) border border-(--border) rounded-[14px] overflow-hidden flex flex-col min-w-0 h-fit self-start p-[20px]">
+    <div class="flex items-start justify-between gap-3">
       <div class="min-w-0">
-        <h3 class="text-sm font-bold text-(--text) leading-snug truncate">{{ jobType || 'Pekerjaan' }}</h3>
-        <p class="text-xs font-semibold text-(--text) mt-1">{{ date || '—' }}</p>
-        <p class="text-xs text-(--text-muted) mt-1 truncate">{{ sensusRef }}</p>
+        <h3 class="text-base font-bold text-(--text) leading-6 truncate">{{ jobType || 'Pekerjaan' }}</h3>
+        <p class="text-sm font-bold text-(--text) leading-6">{{ date || '—' }}</p>
+        <p class="text-sm text-(--text-muted) leading-6 truncate">{{ sensusRef }}</p>
       </div>
       <img :src="iconSrc" :alt="`Ikon ${jobType || 'pekerjaan'}`" class="w-[46px] h-[46px] shrink-0" />
     </div>
 
-    <div class="px-4 pb-3">
-      <p class="text-[10px] text-(--text-muted) mb-1.5">Nomor Petak</p>
-      <div class="flex flex-wrap gap-1.5">
-        <span v-for="(block, index) in visibleBlocks" :key="index" class="bg-(--surface-muted) text-(--text) rounded-full px-2.5 py-1 text-[10px] font-medium">
+    <div class="flex flex-col gap-2 mt-4">
+      <div class="flex flex-col gap-2">
+        <p class="text-xs text-(--text-muted) leading-4 m-0">Status</p>
+        <span v-if="statusMeta" :class="statusMeta.className">{{ statusMeta.label }}</span>
+      </div>
+
+      <div class="flex flex-col gap-2 mt-3">
+        <p class="text-xs text-(--text-muted) leading-4 m-0">Nomor Petak</p>
+        <div class="flex flex-wrap gap-2">
+        <span v-for="(block, index) in visibleBlocks" :key="index" class="bg-(--surface-muted) text-(--text) rounded-xl px-2 py-1 text-xs leading-4 font-medium tracking-[0.4px]">
           {{ block }}
         </span>
-        <span v-if="hiddenCount" class="bg-orange-50 text-orange-500 rounded-full px-2.5 py-1 text-[10px] font-medium">+ {{ hiddenCount }} more</span>
+        <span v-if="hiddenCount" class="bg-(--status-wip-bg) text-(--status-wip-text) rounded-xl px-2 py-1 text-xs leading-4 font-medium tracking-[0.4px]">+ {{ hiddenCount }} more</span>
+        </div>
       </div>
     </div>
 
-    <div v-if="photo" class="px-4 pb-3 mt-auto">
+    <div v-if="photo && showPhoto" class="pb-3 mt-auto">
       <div class="relative h-28 rounded-lg overflow-hidden bg-(--surface-muted)">
         <ProtectedImage :src="photo" alt="Foto pekerjaan" container-class="w-full h-full" image-class="w-full h-full object-cover" />
         <span v-if="extraPhotos > 0" class="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">+{{ extraPhotos }} more</span>
       </div>
     </div>
 
-    <div class="px-2 pb-4">
+    <div class="mt-4">
       <div class="flex gap-3">
-        <button type="button" class="shrink-0 flex-none h-10 whitespace-nowrap text-xs leading-none px-4 rounded-full border border-(--border) bg-transparent text-(--text) hover:bg-(--surface-muted) transition-colors cursor-pointer" @click="$emit('view-detail')">
+        <button type="button" class="shrink-0 w-full min-w-20 h-10 inline-flex items-center justify-center whitespace-nowrap text-sm leading-5 font-medium p-2.5 rounded-3xl border border-(--border-strong) bg-transparent text-(--text-muted) hover:bg-(--surface-muted) transition-colors cursor-pointer" @click="$emit('view-detail')">
           Lihat Detail
         </button>
-        <button type="button" class="shrink-0 w-[250px] h-10 whitespace-nowrap text-xs leading-none font-semibold px-3 rounded-full bg-(--text) text-(--surface) hover:opacity-80 transition-opacity cursor-pointer" @click="$emit('add-to-plan')">
+        <button v-if="showAddToPlan" type="button" class="shrink-0 w-[250px] h-10 whitespace-nowrap text-xs leading-none font-semibold px-3 rounded-full bg-(--text) text-(--surface) hover:opacity-80 transition-opacity cursor-pointer" @click="$emit('add-to-plan')">
           +&nbsp; Tambahkan ke Perencanaan
         </button>
       </div>
@@ -54,7 +61,10 @@ const props = defineProps({
   blocks: { type: Array, default: () => [] },
   photo: { type: String, default: '' },
   extraPhotos: { type: Number, default: 0 },
-  maxVisible: { type: Number, default: 5 }
+  maxVisible: { type: Number, default: 7 },
+  showAddToPlan: { type: Boolean, default: true },
+  progressStatus: { type: String, default: '' },
+  showPhoto: { type: Boolean, default: true }
 })
 
 defineEmits(['view-detail', 'add-to-plan'])
@@ -67,4 +77,15 @@ const iconSrc = computed(() => {
 })
 const visibleBlocks = computed(() => props.blocks.slice(0, props.maxVisible))
 const hiddenCount = computed(() => Math.max(0, props.blocks.length - props.maxVisible))
+const statusMeta = computed(() => {
+  const status = String(props.progressStatus || '').toLowerCase()
+  const statuses = {
+    wip: { label: 'On Progress', className: 'self-start bg-(--status-wip-bg) text-(--status-wip-text) rounded-xl px-2 py-1 text-xs leading-4' },
+    submitted: { label: 'On Plan', className: 'self-start bg-(--status-plan-bg) text-(--status-plan-text) rounded-xl px-2 py-1 text-xs leading-4' },
+    planned: { label: 'On Plan', className: 'self-start bg-(--status-plan-bg) text-(--status-plan-text) rounded-xl px-2 py-1 text-xs leading-4' },
+    overtime: { label: 'Overtime', className: 'self-start bg-(--status-overtime-bg) text-(--status-overtime-text) rounded-xl px-2 py-1 text-xs leading-4' },
+    done: { label: 'Done', className: 'self-start bg-(--status-done-bg) text-(--status-done-text) rounded-xl px-2 py-1 text-xs leading-4' }
+  }
+  return statuses[status] || null
+})
 </script>

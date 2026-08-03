@@ -60,8 +60,7 @@
             <!-- Card grid -->
             <div
               v-else
-              class="grid gap-4"
-              style="grid-template-columns: repeat(auto-fill, minmax(380px, 1fr))"
+              class="grid grid-cols-1 gap-3 min-[720px]:grid-cols-2 min-[1120px]:grid-cols-3"
             >
               <SensusJobCard
                 v-for="item in items"
@@ -72,10 +71,8 @@
                 :sensus-ref="'Sensus ' + item.sensusId"
                 :blocks="item.blocks"
                 :photo="item.photo"
-                :extra-photos="item.extraPhotos"
                 :progress-status="item.progressStatus"
                 @view="handleView(item)"
-                @plan="handlePlan(item)"
               />
             </div>
           </div>
@@ -119,7 +116,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import BaseHeader from '../shared/header'
 import BaseSidebar from '../shared/sidebar'
 import SensusDetailInfo from './components/SensusDetailInfo.vue'
@@ -138,6 +135,7 @@ const props = defineProps({
 })
 
 const appStore = useAppStore()
+const router = useRouter()
 const navigation = computed(() => props.controller.getNavigation())
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 const { show: showToast } = useToast()
@@ -226,9 +224,7 @@ onMounted(async () => {
 })
 
 function handleView(item) {
-  // The card detail action stays on the Sensus detail/pekerjaan tab.
-  // Planning is opened only through the dedicated "Tambahkan ke Perencanaan" action.
-  activeTab.value = 'pekerjaan'
+  router.push(`/sensus/${props.id}/record`)
 }
 
 function openPlanModal(item) {
@@ -238,8 +234,4 @@ function openPlanModal(item) {
   showPlanModal.value = true
 }
 
-function handlePlan(item) {
-  activeTab.value = 'perencanaan'
-  openPlanModal(item)
-}
 </script>

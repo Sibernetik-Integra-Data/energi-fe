@@ -46,8 +46,8 @@
                     }}</span>
                 </div>
 
-                <div v-if="plan.blocks && plan.blocks.length > 0">
-                    <p class="text-[10px] font-bold tracking-widest text-(--text-muted) mb-2">Nomor Petak</p>
+                <div v-if="plan.blocks && plan.blocks.length > 0" class="flex items-start gap-3">
+                    <p class="text-[10px] font-bold tracking-widest text-(--text-muted) m-0 pt-1 shrink-0">Nomor Petak</p>
                     <div class="flex flex-wrap gap-1.5">
                         <span
                             v-for="(block, i) in plan.blocks"
@@ -62,8 +62,8 @@
 
                 <div
                     v-if="plan.startDate || plan.endDate"
-                    class="mt-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-sky-50 border border-sky-200">
-                    <span class="text-base shrink-0" aria-hidden="true">ℹ️</span>
+                    class="mt-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-[#cce9ff] border border-[#18a0fb] text-[#123b5d]">
+                    <img :src="infoIcon" alt="" aria-hidden="true" class="w-6 h-6 shrink-0" />
                     <p class="text-sm font-semibold text-sky-800 m-0">
                         Rencana Pengerjaan :
                         <span class="font-bold">{{ plan.startDate || "—" }}</span>
@@ -146,6 +146,7 @@
 import { computed, ref, watch } from "vue";
 import LaborCard from "./LaborCard.vue";
 import ProtectedImage from "../../shared/ProtectedImage.vue";
+import infoIcon from "@/assets/icons/info-square-rounded-filled.svg";
 
 const props = defineProps({
     plan: { type: Object, default: null },
