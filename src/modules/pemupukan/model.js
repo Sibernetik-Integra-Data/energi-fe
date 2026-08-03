@@ -217,8 +217,11 @@ export async function loadPemupukanList(filters = {}) {
     result.items.map(async (item) => {
       try {
         const planningRows = await loadPlanningRowsBySensusDetail(item.sensusId, item.sensusDetailId)
-        // Flatten all labors from all planning rows
-        const allLabors = planningRows.flatMap((plan) => Array.isArray(plan.labors) ? plan.labors : [])
+        // Use the same labor endpoint as the detail page so the table count matches it.
+        const laborRows = await loadLaborsByPlanIds(planningRows.map((plan) => plan.id))
+        const allLabors = laborRows.length
+          ? laborRows
+          : planningRows.flatMap((plan) => Array.isArray(plan.labors) ? plan.labors : [])
         return { ...item, labors: allLabors }
       } catch (error) {
         console.error(`Failed to load labors for item ${item.sensusId}:`, error)

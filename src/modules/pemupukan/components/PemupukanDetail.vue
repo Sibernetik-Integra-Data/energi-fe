@@ -58,6 +58,8 @@
                     </div>
                 </div>
 
+                <ProtectedImage v-if="plan.photo" :src="plan.photo" alt="Foto pemupukan" container-class="mt-4 rounded-xl overflow-hidden bg-(--surface-muted)" image-class="w-full max-h-72 object-cover" />
+
                 <div
                     v-if="plan.startDate || plan.endDate"
                     class="mt-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-sky-50 border border-sky-200">
@@ -143,6 +145,7 @@
 <script setup>
 import { computed, ref, watch } from "vue";
 import LaborCard from "./LaborCard.vue";
+import ProtectedImage from "../../shared/ProtectedImage.vue";
 
 const props = defineProps({
     plan: { type: Object, default: null },

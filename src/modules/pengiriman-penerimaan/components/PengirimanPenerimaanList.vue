@@ -16,8 +16,8 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-(--border)">
-                    <tr v-for="item in items" :key="item.idPengiriman" class="text-sm text-(--text-muted)">
-                        <td class="px-6 py-4 font-medium text-(--text)">{{ item.idPengiriman }}</td>
+                    <tr v-for="item in items" :key="item.idPengiriman" class="text-sm text-[#94A3B8]">
+                        <td class="px-6 py-4 font-medium text-[#94A3B8]">{{ item.idPengiriman }}</td>
                         <td class="px-6 py-4">{{ item.datePengiriman }}</td>
                         <td class="px-6 py-4">{{ item.qtyPengiriman }}</td>
                         <td class="px-6 py-4 text-(--text-muted)">{{ item.sensusId }}</td>

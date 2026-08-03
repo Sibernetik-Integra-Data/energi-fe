@@ -2,7 +2,7 @@
     <div>
         <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
             <div>
-                <h2 class="text-2xl font-semibold tracking-tight text-(--text) m-0 mb-1">Destination List</h2>
+                <h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Destination List</h2>
                 <p class="text-sm text-(--text-muted) m-0">Manage destinations</p>
             </div>
             <button

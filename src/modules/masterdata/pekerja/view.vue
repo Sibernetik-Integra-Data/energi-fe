@@ -12,7 +12,7 @@
                 <div class="flex flex-col gap-6 p-6 max-[920px]:p-4">
                     <!-- Page Heading -->
                     <div>
-                        <h1 class="text-2xl font-semibold text-(--text) tracking-[0.07px] m-0">
+                        <h1 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0">
                             Daftar Pekerja
                         </h1>
                     </div>

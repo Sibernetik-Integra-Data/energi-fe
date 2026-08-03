@@ -21,7 +21,7 @@
 
     <div v-if="photo" class="px-4 pb-3 mt-auto">
       <div class="relative h-28 rounded-lg overflow-hidden bg-(--surface-muted)">
-        <img :src="photo" alt="Foto pekerjaan" class="w-full h-full object-cover" />
+        <ProtectedImage :src="photo" alt="Foto pekerjaan" container-class="w-full h-full" image-class="w-full h-full object-cover" />
         <span v-if="extraPhotos > 0" class="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">+{{ extraPhotos }} more</span>
       </div>
     </div>
@@ -44,6 +44,7 @@ import { computed } from 'vue'
 import cleaningIcon from '@/assets/icons/pembersihan.svg'
 import fertilizeIcon from '@/assets/icons/pemupukan.svg'
 import harvestIcon from '@/assets/icons/panen.svg'
+import ProtectedImage from './ProtectedImage.vue'
 
 const props = defineProps({
   jobType: { type: String, default: '' },

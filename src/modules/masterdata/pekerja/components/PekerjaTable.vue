@@ -167,7 +167,8 @@ function onView(_row) {
     vertical-align: middle;
     font-size: 14px;
     font-weight: 500;
-    color: var(--text);
+    color: var(--table-row-text);
+    font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
 }
 
 .pekerja-btn-view {

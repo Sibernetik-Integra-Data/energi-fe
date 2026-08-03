@@ -226,7 +226,9 @@ onMounted(async () => {
 })
 
 function handleView(item) {
-  activeTab.value = 'perencanaan'
+  // The card detail action stays on the Sensus detail/pekerjaan tab.
+  // Planning is opened only through the dedicated "Tambahkan ke Perencanaan" action.
+  activeTab.value = 'pekerjaan'
 }
 
 function openPlanModal(item) {

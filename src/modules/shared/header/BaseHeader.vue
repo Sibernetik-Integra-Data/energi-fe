@@ -6,12 +6,13 @@
     </div>
 
     <div class="header__actions">
-      <button class="header__button" type="button" aria-label="Notifications">
+      <!-- Notification button intentionally hidden until notifications are supported. -->
+      <!-- <button class="header__button" type="button" aria-label="Notifications">
         <span class="header__button-icon">
           <BaseIcon name="notifications" />
         </span>
         <span class="header__button-badge">{{ notifications }}</span>
-      </button>
+      </button> -->
 
       <span class="header__divider" aria-hidden="true"></span>
 

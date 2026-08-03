@@ -14,10 +14,9 @@
       <main class="dashboard-content">
         <section class="dashboard-intro">
           <div>
-            <p class="dashboard-kicker">POV Kepala Kebun</p>
             <h1>{{ intro.title }}</h1>
+            <p class="dashboard-description">{{ intro.description }}</p>
           </div>
-          <p class="dashboard-description">{{ intro.description }}</p>
         </section>
 
         <!-- Metrics filter + cards section -->
@@ -145,9 +144,9 @@ watch(
 
 .dashboard-intro {
   display: flex;
-  justify-content: space-between;
-  gap: 24px;
-  align-items: end;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
 }
 
 .dashboard-kicker {
@@ -168,7 +167,7 @@ watch(
 
 .dashboard-description {
   max-width: 560px;
-  margin: 0;
+  margin: 6px 0 0;
   color: var(--text-muted);
   font-size: 14px;
   line-height: 22px;
@@ -205,11 +204,6 @@ watch(
 
   .dashboard-content {
     padding: 18px;
-  }
-
-  .dashboard-intro {
-    flex-direction: column;
-    align-items: start;
   }
 
   .dashboard-metrics {
