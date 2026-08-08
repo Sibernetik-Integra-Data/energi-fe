@@ -24,7 +24,7 @@
                   <h2 class="text-xl font-bold text-(--text) leading-6 m-0 truncate">{{ plan.jobType || 'Pekerjaan' }}</h2>
                   <p class="text-sm text-(--text-muted) m-0">Sensus {{ plan.sensusId || '—' }}</p>
                 </div>
-                <img :src="workIcon" :alt="`Ikon ${plan.groupOfWork || plan.jobType}`" class="w-[46px] h-[46px] shrink-0" />
+                <img :src="workIcon" :alt="`Ikon ${plan.groupOfWork || plan.jobType}`" class="w-46px h-46px shrink-0" />
               </div>
             </div>
 
