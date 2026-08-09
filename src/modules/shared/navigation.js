@@ -27,6 +27,7 @@ export const navigation = [
       { label: 'Type of Need', icon: 'calendar', to: '/master-data/type-of-need', order: 110 },
       { label: 'Type of Unit', icon: 'database', to: '/master-data/type-of-unit', order: 120 },
       { label: 'Pekerja', icon: 'users', to: '/master-data/pekerja', order: 130 },
+      { label: 'Fullfil', icon: 'database', to: '/master-data/fullfil', order: 140 },
     ]
   }
 ]

@@ -14,6 +14,8 @@ import AktifitasKebunModule from '../modules/masterdata/aktifitas-kebun'
 import GroupOfWorkModule from '../modules/masterdata/group-of-work'
 import SensusProgressStatusModule from '../modules/masterdata/sensus-progress-status'
 import DestinationModule from '../modules/masterdata/destination'
+import FullfilModule from '../modules/masterdata/fullfil'
+import MasterDataModule from '../modules/masterdata'
 import TypeOfAcceptModule from '../modules/masterdata/type-of-accept'
 import TypeOfComponentModule from '../modules/masterdata/type-of-component'
 import TypeOfNeedModule from '../modules/masterdata/type-of-need'
@@ -26,6 +28,12 @@ import { isAuthenticated, redirectToKeycloakLogin, tryRestoreSession } from '../
 
 const routes = [
   { path: '/', redirect: '/dashboard', meta: { requiresAuth: true } },
+  ...MasterDataModule.routes.map(route => ({
+    ...route,
+    meta: route.meta
+      ? { ...route.meta, requiresAuth: true }
+      : { requiresAuth: true }
+  })),
   ...DashboardModule.routes.map(route => ({
     ...route,
     meta: route.meta
@@ -145,6 +153,10 @@ const routes = [
     meta: route.meta
       ? { ...route.meta, requiresAuth: true }
       : { requiresAuth: true }
+  })),
+  ...FullfilModule.routes.map(route => ({
+    ...route,
+    meta: { ...(route.meta || {}), requiresAuth: true }
   })),
   ...ProfileModule.routes.map(route => ({
     ...route,

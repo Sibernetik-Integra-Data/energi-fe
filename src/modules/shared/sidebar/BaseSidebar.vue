@@ -29,33 +29,40 @@
       <div v-for="item in resolvedItems" :key="getItemKey(item)">
         <!-- Group item with children -->
         <template v-if="hasChildren(item)">
-          <button type="button" :class="[
-            'sidebar-item-button',
-            'group relative flex w-full items-center appearance-none border-0 bg-transparent text-left outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-orange-300 min-h-10 rounded-[10px] px-3 py-1.5 cursor-pointer',
-            'text-(--text-muted) hover:bg-black/4 hover:text-(--text)',
-            isItemActive(item) ? 'is-active' : '',
-          ]" :title="isCollapsed ? item.label : ''" :aria-expanded="isExpanded(item)" @click="toggleGroup(item)">
-            <span v-if="isItemActive(item)" aria-hidden="true"
-              class="absolute left-0 top-2 bottom-2 w-0.75 rounded-full bg-(--brand)"></span>
+          <div class="flex w-full items-center">
+            <button type="button" :class="[
+              'sidebar-item-button',
+              'group relative flex min-w-0 flex-1 items-center appearance-none border-0 bg-transparent text-left outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-orange-300 min-h-10 rounded-[10px] px-3 py-1.5 cursor-pointer',
+              'text-(--text-muted) hover:bg-black/4 hover:text-(--text)',
+              isItemActive(item) ? 'is-active' : '',
+            ]" :title="isCollapsed ? item.label : ''" @click="onNavigate(item)">
+              <span v-if="isItemActive(item)" aria-hidden="true"
+                class="absolute left-0 top-2 bottom-2 w-0.75 rounded-full bg-(--brand)"></span>
 
-            <span :class="['flex flex-1 items-center gap-2', isCollapsed ? 'justify-center' : '']">
-              <span class="sidebar-icon grid h-7 w-7 shrink-0 place-items-center text-current">
-                <BaseIcon :name="item.icon" :size="22" />
+              <span :class="['flex min-w-0 flex-1 items-center gap-2', isCollapsed ? 'justify-center' : '']">
+                <span class="sidebar-icon grid h-7 w-7 shrink-0 place-items-center text-current">
+                  <BaseIcon :name="item.icon" :size="22" />
+                </span>
+                <span v-show="!isCollapsed"
+                  class="flex-1 truncate text-[15px] font-semibold leading-snug tracking-[-0.01em] text-current">{{
+                  item.label }}</span>
               </span>
-              <span v-show="!isCollapsed"
-                class="flex-1 truncate text-[15px] font-semibold leading-snug tracking-[-0.01em] text-current">{{
-                item.label }}</span>
-            </span>
 
-            <span v-if="item.badge && !isCollapsed"
-              class="ml-auto inline-grid h-5 min-w-5 place-items-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">{{
-              item.badge }}</span>
+              <span v-if="item.badge && !isCollapsed"
+                class="ml-auto inline-grid h-5 min-w-5 place-items-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">{{
+                item.badge }}</span>
+            </button>
 
-            <span v-show="!isCollapsed"
-              :class="['ml-1 inline-grid h-5 w-5 shrink-0 place-items-center text-(--text-muted) transition-transform duration-150', isExpanded(item) ? 'rotate-180' : 'rotate-0']">
-              <BaseIcon name="chevron-down" :size="14" />
-            </span>
-          </button>
+            <button v-if="!isCollapsed" type="button"
+              class="group ml-0.5 inline-grid h-9 w-9 shrink-0 place-items-center rounded-lg border-0 bg-transparent text-(--text-muted) outline-none transition-colors hover:bg-black/4 hover:text-(--text) focus-visible:ring-2 focus-visible:ring-orange-300 cursor-pointer"
+              :aria-label="isExpanded(item) ? `Tutup ${item.label}` : `Buka ${item.label}`"
+              :aria-expanded="isExpanded(item)" @click="toggleGroup(item)">
+              <span
+                :class="['inline-grid h-5 w-5 place-items-center transition-transform duration-150', isExpanded(item) ? 'rotate-180' : 'rotate-0']">
+                <BaseIcon name="chevron-down" :size="14" />
+              </span>
+            </button>
+          </div>
 
           <!-- Sub-items -->
           <div v-if="isExpanded(item) && !isCollapsed"
