@@ -14,7 +14,7 @@ import AktifitasKebunModule from '../modules/masterdata/aktifitas-kebun'
 import GroupOfWorkModule from '../modules/masterdata/group-of-work'
 import SensusProgressStatusModule from '../modules/masterdata/sensus-progress-status'
 import DestinationModule from '../modules/masterdata/destination'
-import FullfilModule from '../modules/masterdata/fullfil'
+import FullfilMappingModule from '../modules/masterdata/fullfil-mapping'
 import MasterDataModule from '../modules/masterdata'
 import TypeOfAcceptModule from '../modules/masterdata/type-of-accept'
 import TypeOfComponentModule from '../modules/masterdata/type-of-component'
@@ -154,7 +154,7 @@ const routes = [
       ? { ...route.meta, requiresAuth: true }
       : { requiresAuth: true }
   })),
-  ...FullfilModule.routes.map(route => ({
+  ...FullfilMappingModule.routes.map(route => ({
     ...route,
     meta: { ...(route.meta || {}), requiresAuth: true }
   })),

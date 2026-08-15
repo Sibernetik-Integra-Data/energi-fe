@@ -2,7 +2,7 @@
   <Teleport to="body">
     <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @mousedown.self="emit('cancel')">
       <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between"><h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Edit Fullfil' : 'Add Fullfil' }}</h3><button type="button" class="border-0 bg-transparent text-(--text-soft) text-xl cursor-pointer" @click="emit('cancel')">&times;</button></div>
+        <div class="flex items-center justify-between"><h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Edit Fullfil Mapping' : 'Add Fullfil Mapping' }}</h3><button type="button" class="border-0 bg-transparent text-(--text-soft) text-xl cursor-pointer" @click="emit('cancel')">&times;</button></div>
         <form class="flex flex-col gap-4" @submit.prevent="submit">
           <label class="flex flex-col gap-1 text-sm font-semibold text-(--text)">Type of Work <span class="text-red-500">*</span>
             <select v-model="form.tow_id" class="border border-(--border) rounded-lg px-3.5 py-2.5 font-normal bg-(--surface-muted)" :class="{ 'border-red-400': errors.tow_id }"><option value="">Select type of work</option><option v-for="item in typeOfWorks" :key="item.id" :value="String(item.id)">{{ item.name || `#${item.id}` }}</option></select><span v-if="errors.tow_id" class="text-xs text-red-500">{{ errors.tow_id }}</span>
@@ -15,7 +15,7 @@
           </label>
           <label class="flex flex-col gap-1 text-sm font-semibold text-(--text)">Notes<textarea v-model.trim="form.notes" rows="3" maxlength="500" class="border border-(--border) rounded-lg px-3.5 py-2.5 font-normal bg-(--surface-muted) resize-none" /></label>
           <label class="flex items-center gap-2 text-sm font-semibold text-(--text)"><input v-model="form.is_view" type="checkbox" class="accent-green-600" /> Visible</label>
-          <div class="flex justify-end gap-3"><button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg" :disabled="submitting" @click="emit('cancel')">Cancel</button><button type="submit" class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg disabled:opacity-60" :disabled="submitting">{{ submitting ? 'Saving…' : (isEdit ? 'Save Changes' : 'Add Fullfil') }}</button></div>
+          <div class="flex justify-end gap-3"><button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg" :disabled="submitting" @click="emit('cancel')">Cancel</button><button type="submit" class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg disabled:opacity-60" :disabled="submitting">{{ submitting ? 'Saving…' : (isEdit ? 'Save Changes' : 'Add Fullfil Mapping') }}</button></div>
         </form>
       </div>
     </div>

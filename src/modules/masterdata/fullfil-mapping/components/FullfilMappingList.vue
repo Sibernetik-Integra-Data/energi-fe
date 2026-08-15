@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="flex flex-wrap justify-between items-center gap-4 mb-4"><div><h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Fullfil</h2><p class="text-sm text-(--text-muted) m-0">Manage fullfil mapping entries</p></div><button type="button" class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl" @click="openCreate">+ Add Fullfil</button></div>
+    <div class="flex flex-wrap justify-between items-center gap-4 mb-4"><div><h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Fullfil Mapping</h2><p class="text-sm text-(--text-muted) m-0">Manage fullfil mapping entries</p></div><button type="button" class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl" @click="openCreate">+ Add Fullfil Mapping</button></div>
     <div class="flex flex-wrap gap-3 mb-4"><input v-model="search" type="search" placeholder="Search type of work or need..." class="border border-(--border) rounded-lg px-3.5 py-2 text-sm text-(--text) bg-(--surface) outline-none w-72" /></div>
     <div v-if="loading" class="flex justify-center py-16 text-sm text-(--text-muted)">Loading data&hellip;</div>
     <div v-else-if="error" class="flex justify-center py-16 text-sm text-red-600">{{ error }}</div>
@@ -9,14 +9,14 @@
       <div class="hidden gap-3 max-[1100px]:flex max-[1100px]:flex-col"><div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">No data.</div><div v-for="row in filteredRows" :key="row.id" class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm"><div class="flex justify-between gap-3"><strong class="text-sm text-(--text)">{{ workName(row.tow_id) }} → {{ needName(row.ton_id) }}</strong><span class="text-xs text-(--text-muted)">ID: {{ row.id }}</span></div><div class="text-xs text-(--text-muted) mt-2">Access: {{ row.access || '-' }} · Visible: {{ row.is_view === 0 ? 'No' : 'Yes' }}<br />Notes: {{ row.notes || '-' }}</div><div class="flex justify-end gap-2 mt-3"><button type="button" class="action" @click="openEdit(row)">Edit</button><button type="button" class="delete-action" @click="confirmDelete(row)">Delete</button></div></div></div>
     </template>
     <div v-if="actionError && !deleteTarget" class="mt-3 text-xs text-red-500">{{ actionError }}</div>
-    <FullfilForm :visible="showForm" :fullfil="editing" :type-of-works="typeOfWorks" :type-of-needs="typeOfNeeds" :submitting="submitting" @submit="save" @cancel="closeForm" />
-    <Teleport to="body"><div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"><div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6"><h3 class="font-bold text-(--text)">Delete Fullfil</h3><p class="text-sm text-(--text-muted) my-4">Delete this mapping? This action cannot be undone.</p><div v-if="actionError" class="text-xs text-red-500 mb-3">{{ actionError }}</div><div class="flex justify-end gap-3"><button type="button" class="action" @click="deleteTarget = null">Cancel</button><button type="button" class="delete-action" :disabled="submitting" @click="remove">Yes, Delete</button></div></div></div></Teleport>
+    <FullfilMappingForm :visible="showForm" :fullfil="editing" :type-of-works="typeOfWorks" :type-of-needs="typeOfNeeds" :submitting="submitting" @submit="save" @cancel="closeForm" />
+    <Teleport to="body"><div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"><div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6"><h3 class="font-bold text-(--text)">Delete Fullfil Mapping</h3><p class="text-sm text-(--text-muted) my-4">Delete this mapping? This action cannot be undone.</p><div v-if="actionError" class="text-xs text-red-500 mb-3">{{ actionError }}</div><div class="flex justify-end gap-3"><button type="button" class="action" @click="deleteTarget = null">Cancel</button><button type="button" class="delete-action" :disabled="submitting" @click="remove">Yes, Delete</button></div></div></div></Teleport>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import FullfilForm from './FullfilForm.vue'
+import FullfilMappingForm from './FullfilMappingForm.vue'
 import { createFullfil, deleteFullfil, listFullfil, listTypeOfNeed, listTypeOfWork, updateFullfil } from '../model'
 import { useToast } from '../../../../utils/toast'
 
@@ -31,9 +31,9 @@ async function load() { loading.value = true; error.value = null; try { const re
 function openCreate() { editing.value = null; actionError.value = null; showForm.value = true }
 function openEdit(row) { editing.value = { ...row }; actionError.value = null; showForm.value = true }
 function closeForm() { showForm.value = false; editing.value = null }
-async function save(payload) { submitting.value = true; actionError.value = null; try { if (editing.value?.id) { await updateFullfil(editing.value.id, payload); showToast('Fullfil updated successfully.') } else { await createFullfil(payload); showToast('Fullfil created successfully.') }; closeForm(); await load() } catch (err) { actionError.value = err?.message || 'Failed to save data.' } finally { submitting.value = false } }
+async function save(payload) { submitting.value = true; actionError.value = null; try { if (editing.value?.id) { await updateFullfil(editing.value.id, payload); showToast('Fullfil Mapping updated successfully.') } else { await createFullfil(payload); showToast('Fullfil Mapping created successfully.') }; closeForm(); await load() } catch (err) { actionError.value = err?.message || 'Failed to save data.' } finally { submitting.value = false } }
 function confirmDelete(row) { deleteTarget.value = row; actionError.value = null }
-async function remove() { submitting.value = true; actionError.value = null; try { await deleteFullfil(deleteTarget.value.id); deleteTarget.value = null; showToast('Fullfil deleted successfully.'); await load() } catch (err) { actionError.value = err?.message || 'Failed to delete data.' } finally { submitting.value = false } }
+async function remove() { submitting.value = true; actionError.value = null; try { await deleteFullfil(deleteTarget.value.id); deleteTarget.value = null; showToast('Fullfil Mapping deleted successfully.'); await load() } catch (err) { actionError.value = err?.message || 'Failed to delete data.' } finally { submitting.value = false } }
 onMounted(load)
 </script>
 
