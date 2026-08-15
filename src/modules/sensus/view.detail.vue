@@ -73,6 +73,7 @@
                 :photo="item.photo"
                 :progress-status="item.progressStatus"
                 @view="handleView(item)"
+                @add-to-plan="openPlanModal(item)"
               />
             </div>
           </div>

@@ -7,8 +7,9 @@
     :blocks="blocks"
     :progress-status="progressStatus"
     :show-photo="false"
-    :show-add-to-plan="false"
+    :show-add-to-plan="true"
     @view-detail="$emit('view')"
+    @add-to-plan="$emit('add-to-plan')"
   />
 </template>
 
@@ -26,5 +27,5 @@ defineProps({
   progressStatus: { type: String, default: '' }
 })
 
-defineEmits(['view'])
+defineEmits(['view', 'add-to-plan'])
 </script>

@@ -84,6 +84,7 @@
                                     class="w-full text-left px-3.5 py-2 text-sm text-(--text) hover:bg-(--surface-muted) transition-colors"
                                     @mousedown.prevent="selectVehicle(v)">
                                     <span class="font-medium">{{ v.name }}</span>
+                                    <span v-if="v.title" class="ml-2 text-xs text-slate-400">{{ v.title }}</span>
                                     <span v-if="v.type" class="ml-2 text-xs text-slate-400">{{ v.type }}</span>
                                 </button>
                             </div>
@@ -113,18 +114,20 @@
                         </span>
                     </div>
 
-                    <!-- Vehicle Number -->
+                    <!-- Plate Number -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="driver-vehicle-number"
-                            >Vehicle Number</label
+                            >Plate Number</label
                         >
                         <input
                             id="driver-vehicle-number"
-                            v-model.trim="form.vehicle_number"
+                            :value="form.vehicle_number"
                             type="text"
-                            placeholder="e.g. B 1234 XYZ"
-                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors"
-                            autocomplete="off" />
+                            placeholder="Select a vehicle first"
+                            readonly
+                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none transition-colors cursor-not-allowed"
+                            autocomplete="off"
+                            aria-readonly="true" />
                     </div>
 
                     <!-- Notes -->
@@ -197,7 +200,9 @@ const vehicleDropdownOpen = ref(false);
 const filteredVehicles = computed(() => {
     const q = vehicleSearch.value.trim().toLowerCase();
     if (!q) return vehicles.value;
-    return vehicles.value.filter((v) => v.name?.toLowerCase().includes(q));
+    return vehicles.value.filter((v) =>
+        [v.name, v.title, v.type, v.plate_number].some((value) => value?.toLowerCase().includes(q)),
+    );
 });
 
 const selectedVehicleName = computed(() => {
@@ -222,6 +227,7 @@ async function loadVehicles() {
 
 function selectVehicle(v) {
     form.value.vehicle_id = v.id;
+    form.value.vehicle_number = v.plate_number?.trim() || "";
     vehicleSearch.value = v.name;
     vehicleDropdownOpen.value = false;
 }
@@ -258,6 +264,16 @@ watch(
         }
     },
     { immediate: true },
+);
+
+// Keep the plate number authoritative from the selected vehicle, including
+// when the vehicle list finishes loading after an edit form is opened.
+watch(
+    [vehicles, () => form.value.vehicle_id],
+    ([vehicleList, vehicleId]) => {
+        const vehicle = vehicleList.find((v) => v.id === vehicleId);
+        if (vehicle) form.value.vehicle_number = vehicle.plate_number?.trim() || "";
+    },
 );
 
 function validate() {

@@ -15,6 +15,8 @@ import GroupOfWorkModule from '../modules/masterdata/group-of-work'
 import SensusProgressStatusModule from '../modules/masterdata/sensus-progress-status'
 import DestinationModule from '../modules/masterdata/destination'
 import FullfilMappingModule from '../modules/masterdata/fullfil-mapping'
+import FullfilParamsModule from '../modules/masterdata/fullfil-params'
+import FullfilPaymentModule from '../modules/masterdata/fullfil-payment'
 import MasterDataModule from '../modules/masterdata'
 import TypeOfAcceptModule from '../modules/masterdata/type-of-accept'
 import TypeOfComponentModule from '../modules/masterdata/type-of-component'
@@ -155,6 +157,14 @@ const routes = [
       : { requiresAuth: true }
   })),
   ...FullfilMappingModule.routes.map(route => ({
+    ...route,
+    meta: { ...(route.meta || {}), requiresAuth: true }
+  })),
+  ...FullfilParamsModule.routes.map(route => ({
+    ...route,
+    meta: { ...(route.meta || {}), requiresAuth: true }
+  })),
+  ...FullfilPaymentModule.routes.map(route => ({
     ...route,
     meta: { ...(route.meta || {}), requiresAuth: true }
   })),

@@ -28,6 +28,8 @@ export const navigation = [
       { label: 'Type of Unit', icon: 'database', to: '/master-data/type-of-unit', order: 120 },
       { label: 'Pekerja', icon: 'users', to: '/master-data/pekerja', order: 130 },
       { label: 'Fullfil Mapping', icon: 'database', to: '/master-data/fullfil-mapping', order: 140 },
+      { label: 'Fullfil Params', icon: 'database', to: '/master-data/fullfil-params', order: 150 },
+      { label: 'Fullfil Payment', icon: 'database', to: '/master-data/fullfil-payment', order: 160 },
     ]
   }
 ]
