@@ -142,7 +142,7 @@ const afterPhotos = computed(() => {
 });
 
 const description = computed(() => {
-    return props.labor.description || props.labor.notes || "Lorem ipsum";
+    return props.labor.description || props.plan?.description || props.plan?.notes || props.labor.notes || "—";
 });
 
 function handleKeydown(event) {

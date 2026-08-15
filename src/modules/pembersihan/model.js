@@ -138,6 +138,7 @@ function mapLaborItem(laborRow, plansById) {
     firstName: laborRow?.first_name || '',
     lastName: laborRow?.last_name || '',
     notes: laborRow?.notes || '',
+    description: laborRow?.planning?.sensus_detail?.description || planning?.sensus_detail?.description || laborRow?.description || '',
     workDate: toIsoDateOrEmpty(laborRow?.point_date),
     pointDate: toIsoDateOrEmpty(laborRow?.point_date),
     status: Number(laborRow?.is_selected) === 0 ? 'pending' : 'submitted',
