@@ -4,7 +4,7 @@
       <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between"><h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Edit Fullfil Payment' : 'Add Fullfil Payment' }}</h3><button type="button" class="border-0 bg-transparent text-(--text-soft) text-xl cursor-pointer" @click="emit('cancel')">&times;</button></div>
         <form class="flex flex-col gap-4" @submit.prevent="submit">
-          <label class="field">Fullfil Mapping <span class="required">*</span><select v-model="form.fullfil_id" :class="{ invalid: errors.fullfil_id }"><option value="">Select fullfil mapping</option><option v-for="item in mappings" :key="item.id" :value="String(item.id)">{{ mappingLabel(item) }}</option></select><span v-if="errors.fullfil_id" class="error">{{ errors.fullfil_id }}</span></label>
+          <label class="field">Fullfil Mapping ID (FK) <span class="required">*</span><select v-model="form.fullfil_id" :class="{ invalid: errors.fullfil_id }"><option value="">Select Fullfil Mapping ID</option><option v-for="item in mappings" :key="item.id" :value="String(item.id)">ID {{ item.id }}</option></select><span v-if="errors.fullfil_id" class="error">{{ errors.fullfil_id }}</span></label>
           <label class="field">Name <span class="required">*</span><input v-model.trim="form.name" maxlength="50" placeholder="Payment name" :class="{ invalid: errors.name }" /><span v-if="errors.name" class="error">{{ errors.name }}</span></label>
           <label class="field">Value <span class="required">*</span><input v-model="form.value" type="number" step="1" placeholder="Value" :class="{ invalid: errors.value }" /><span v-if="errors.value" class="error">{{ errors.value }}</span></label>
           <label class="field">Type of Unit <span class="required">*</span><select v-model="form.unit_id" :class="{ invalid: errors.unit_id }"><option value="">Select type of unit</option><option v-for="item in units" :key="item.id" :value="String(item.id)">{{ item.name || `#${item.id}` }}</option></select><span v-if="errors.unit_id" class="error">{{ errors.unit_id }}</span></label>
@@ -24,7 +24,6 @@ const emit = defineEmits(['submit', 'cancel'])
 const isEdit = computed(() => Boolean(props.item?.id))
 const form = reactive({ fullfil_id: '', name: '', value: '', unit_id: '', notes: '' })
 const errors = reactive({ fullfil_id: '', name: '', value: '', unit_id: '' })
-function mappingLabel(item) { return `${item.id} — Work #${item.tow_id} → Need #${item.ton_id}` }
 watch(() => props.visible, (visible) => {
   if (!visible) return
   Object.assign(form, props.item ? { fullfil_id: String(props.item.fullfil_id || ''), name: props.item.name || '', value: props.item.value ?? '', unit_id: String(props.item.unit_id || ''), notes: props.item.notes || '' } : { fullfil_id: '', name: '', value: '', unit_id: '', notes: '' })
