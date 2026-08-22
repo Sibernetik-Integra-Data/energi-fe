@@ -37,8 +37,8 @@
                     </span>
                 </div>
 
-                <div class="mb-4" v-if="plan.sensusDateFormatted || plan.sensusDate">
-                    <span class="text-[10px] font-bold tracking-widest text-(--text-muted)"
+                <div class="mb-4 font-inter" v-if="plan.sensusDateFormatted || plan.sensusDate">
+                    <span class="text-sm font-semibold text-(--text-muted)"
                         >Tanggal Sensus</span
                     >
                     <span class="text-sm font-semibold text-(--text) ml-2">{{
@@ -60,16 +60,15 @@
 
                 <ProtectedImage v-if="plan.photo" :src="plan.photo" alt="Foto pemupukan" container-class="mt-4 rounded-xl overflow-hidden bg-(--surface-muted)" image-class="w-full max-h-72 object-cover" />
 
-                <div
-                    v-if="plan.startDate || plan.endDate"
-                    class="mt-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-[#cce9ff] border border-[#18a0fb] text-[#123b5d]">
+                <div class="mt-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-[#cce9ff] border border-[#18a0fb] text-[#123b5d]">
                     <img :src="infoIcon" alt="" aria-hidden="true" class="w-6 h-6 shrink-0" />
-                    <p class="text-sm font-semibold text-sky-800 m-0">
+                    <p v-if="plan.planningStartDate || plan.planningEndDate" class="text-sm font-semibold text-sky-800 m-0">
                         Rencana Pengerjaan :
-                        <span class="font-bold">{{ plan.startDate || "—" }}</span>
+                        <span class="font-bold">{{ plan.planningStartDate || "—" }}</span>
                         s.d.
-                        <span class="font-bold">{{ plan.endDate || "—" }}</span>
+                        <span class="font-bold">{{ plan.planningEndDate || "—" }}</span>
                     </p>
+                    <p v-else class="text-sm font-semibold text-sky-800 m-0">Rencana Pengerjaan : <span class="font-bold">Belum Ada Planning</span></p>
                 </div>
             </div>
 

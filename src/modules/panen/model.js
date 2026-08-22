@@ -51,6 +51,11 @@ function normalizeBlockNames(rawBlocks) {
   return [...new Set(names)]
 }
 
+function normalizeRowNumbers(rawRows) {
+  if (!Array.isArray(rawRows)) return []
+  return [...new Set(rawRows.map((row) => row == null ? '' : `Petak ${row}`).filter(Boolean))]
+}
+
 function toIsoDateOrEmpty(value) {
   return toDateOnlyString(value || '')
 }
@@ -68,6 +73,8 @@ function mapSensusDetailItem(sensus, detail) {
     jobType: detail?.type_of_work?.name || detail?.description || 'Panen',
     groupOfWork: detail?.type_of_work?.group_of_work_name || '',
     blocks: normalizeBlockNames(rawBlocks),
+    rowsNo: Array.isArray(detail?.rows_no) ? detail.rows_no : [],
+    fullfilMappings: Array.isArray(detail?.type_of_work?.fullfil_mappings) ? detail.type_of_work.fullfil_mappings : [],
     photo: detail?.photo1 || '',
     startDate: sensusDate,
     endDate: sensusDate,
@@ -172,6 +179,11 @@ function mapLaborItem(laborRow, plansById) {
     lastName: laborRow?.last_name || '',
     notes: laborRow?.notes || '',
     description: laborRow?.planning?.sensus_detail?.description || planning?.sensus_detail?.description || laborRow?.description || '',
+    blocks: normalizeBlockNames(planning?.sensus_detail?.blocks || planning?.blocks),
+    rowsNo: Array.isArray(planning?.sensus_detail?.rows_no) ? planning.sensus_detail.rows_no : [],
+    fullfilMappings: Array.isArray(planning?.sensus_detail?.type_of_work?.fullfil_mappings)
+      ? planning.sensus_detail.type_of_work.fullfil_mappings
+      : [],
     workDate: toIsoDateOrEmpty(laborRow?.point_date),
     pointDate: toIsoDateOrEmpty(laborRow?.point_date),
     status: Number(laborRow?.is_selected) === 0 ? 'pending' : 'submitted',
@@ -264,6 +276,8 @@ export async function loadPanenDetail(sensusId, detailId = null) {
     endDate: dateRange.endDate || baseItem.endDate,
     startDateFormatted: formatDate(dateRange.startDate || baseItem.startDate),
     endDateFormatted: formatDate(dateRange.endDate || baseItem.endDate),
+    planningStartDate: dateRange.startDate,
+    planningEndDate: dateRange.endDate,
     plans: planningRows,
     labors: laborRows.map((row) => mapLaborItem({
       ...row,

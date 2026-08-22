@@ -28,8 +28,11 @@
               </div>
             </div>
 
-            <div class="flex flex-wrap gap-x-8 gap-y-2 text-xs mb-4">
-              <div class="flex items-center gap-3"><span class="text-(--text-muted)">Tanggal Sensus</span><strong class="text-(--text)">{{ plan.sensusDate || '—' }}</strong></div>
+            <div class="flex flex-wrap gap-x-8 gap-y-2 mb-4 font-inter">
+              <div class="flex items-center gap-3">
+                <span class="text-sm font-semibold text-(--text-muted)">Tanggal Sensus</span>
+                <strong class="text-sm font-semibold text-(--text)">{{ plan.sensusDate || '—' }}</strong>
+              </div>
             </div>
             <div v-if="plan.blocks?.length" class="flex items-start gap-3">
               <p class="text-xs text-(--text-muted) m-0 pt-1 shrink-0">Nomor Petak</p>
@@ -37,9 +40,10 @@
                 <span v-for="(block, index) in plan.blocks" :key="index" class="bg-(--surface-muted) border border-(--border) text-(--text) py-1 px-2.5 rounded-full text-xs">{{ block }}</span>
               </div>
             </div>
-            <div v-if="plan.startDate || plan.endDate" class="mt-4 flex items-center gap-3 px-4 py-3 rounded-lg bg-[#cce9ff] border border-[#18a0fb] text-[#123b5d]">
+            <div class="mt-4 flex items-center gap-3 px-4 py-3 rounded-lg bg-[#cce9ff] border border-[#18a0fb] text-[#123b5d]">
               <img :src="infoIcon" alt="" aria-hidden="true" class="w-6 h-6 shrink-0" />
-              <p class="text-xs m-0">Rencana Pengerjaan : <strong>{{ plan.startDate || '—' }} s.d. {{ plan.endDate || '—' }}</strong></p>
+              <p v-if="plan.planningStartDate || plan.planningEndDate" class="text-sm font-semibold text-sky-800 m-0">Rencana Pengerjaan : <strong class="font-bold">{{ plan.planningStartDate || '—' }} s.d. {{ plan.planningEndDate || '—' }}</strong></p>
+              <p v-else class="text-sm font-semibold text-sky-800 m-0">Rencana Pengerjaan : <strong class="font-bold">Belum Ada Planning</strong></p>
             </div>
           </section>
 

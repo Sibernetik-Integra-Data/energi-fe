@@ -121,6 +121,10 @@ a {
   text-decoration: none;
 }
 
+.font-inter {
+  font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
 /* Keep data rows consistent across operational and Master Data tables. */
 table tbody td {
   color: var(--table-row-text);

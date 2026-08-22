@@ -45,8 +45,16 @@
                         >
                     </div>
 
-                    <p class="m-0 text-(--text-muted)">Jumlah Pokok</p>
-                    <p class="m-0 text-(--text) font-medium">{{ plantCount }}</p>
+                    <template v-if="fulfillmentItems.length">
+                        <template v-for="item in fulfillmentItems" :key="item.key">
+                            <p class="m-0 text-(--text-muted)">{{ item.label }}</p>
+                            <p class="m-0 text-(--text) font-medium">{{ item.value }}</p>
+                        </template>
+                    </template>
+                    <template v-else>
+                        <p class="m-0 text-(--text-muted)">Jumlah Pokok</p>
+                        <p class="m-0 text-(--text) font-medium">—</p>
+                    </template>
                 </div>
 
                 <div class="grid grid-cols-[110px_1fr] gap-x-4 gap-y-4 text-xs">
@@ -112,13 +120,29 @@ const formattedWorkDate = computed(() => {
 });
 
 const blocks = computed(() => {
-    const value = Array.isArray(props.plan?.blocks) ? props.plan.blocks : [];
+    const value = Array.isArray(props.labor?.blocks)
+        ? props.labor.blocks
+        : Array.isArray(props.plan?.blocks) ? props.plan.blocks : [];
     if (value.length) return value.slice(0, 8);
-    return ["Blok C1", "Blok C2", "Blok C3"];
+    return [];
 });
 
-const plantCount = computed(() => {
-    return props.labor.plantCount || props.labor.totalPlants || props.plan?.totalPlants || 200;
+const fulfillmentItems = computed(() => {
+    const mappings = Array.isArray(props.labor?.fullfilMappings)
+        ? props.labor.fullfilMappings
+        : Array.isArray(props.plan?.fullfilMappings) ? props.plan.fullfilMappings : [];
+    return mappings
+        .filter((mapping) => mapping && mapping.is_view !== 0)
+        .map((mapping, index) => {
+            const need = mapping.type_of_need || {};
+            const name = need.name || 'Jumlah';
+            const unitName = need.unit_name ? ` (${need.unit_name})` : '';
+            return {
+                key: `${mapping.id ?? index}-${need.unit_id ?? 'unit'}`,
+                label: `${name}${unitName}`,
+                value: mapping.volume ?? '—'
+            };
+        });
 });
 
 const beforePhotos = computed(() => {
@@ -142,6 +166,13 @@ const afterPhotos = computed(() => {
 });
 
 const description = computed(() => {
+    const mappings = Array.isArray(props.labor?.fullfilMappings)
+        ? props.labor.fullfilMappings
+        : Array.isArray(props.plan?.fullfilMappings) ? props.plan.fullfilMappings : [];
+    if (mappings.length) {
+        const notes = mappings.map((mapping) => String(mapping?.notes || '').trim()).filter(Boolean);
+        return notes.length ? notes.join(' • ') : '—';
+    }
     return props.labor.description || props.plan?.description || props.plan?.notes || props.labor.notes || "—";
 });
 

@@ -34,11 +34,11 @@
     </div>
 
     <div class="mt-4">
-      <div class="flex gap-3">
-        <button type="button" class="shrink-0 w-full min-w-20 h-10 inline-flex items-center justify-center whitespace-nowrap text-sm leading-5 font-medium p-2.5 rounded-3xl border border-(--border-strong) bg-transparent text-(--text-muted) hover:bg-(--surface-muted) transition-colors cursor-pointer" @click="$emit('view-detail')">
+      <div class="flex flex-wrap gap-3">
+        <button type="button" class="basis-0 flex-1 min-w-0 h-10 inline-flex items-center justify-center whitespace-nowrap text-sm leading-5 font-medium p-2.5 rounded-3xl border border-(--border-strong) bg-transparent text-(--text-muted) hover:bg-(--surface-muted) transition-colors cursor-pointer" @click="$emit('view-detail')">
           Lihat Detail
         </button>
-        <button v-if="showAddToPlan" type="button" class="shrink-0 w-[250px] h-10 whitespace-nowrap text-xs leading-none font-semibold px-3 rounded-full bg-(--text) text-(--surface) hover:opacity-80 transition-opacity cursor-pointer" @click="$emit('add-to-plan')">
+        <button v-if="showAddToPlan" type="button" class="basis-0 flex-1 min-w-0 h-10 overflow-hidden text-ellipsis whitespace-nowrap text-xs leading-none font-semibold px-3 rounded-full bg-(--text) text-(--surface) hover:opacity-80 transition-opacity cursor-pointer" @click="$emit('add-to-plan')">
           +&nbsp; Tambahkan ke Perencanaan
         </button>
       </div>
