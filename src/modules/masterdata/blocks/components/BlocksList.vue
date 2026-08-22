@@ -46,38 +46,22 @@
                     <thead>
                         <tr class="border-b border-(--border) bg-(--surface-muted)">
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Name</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Rows No</th>
-                            <th class="whitespace-nowrap min-w-24 text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Unit ID</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Created At</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Title</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Information</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="filteredRows.length === 0">
-                            <td colspan="5" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
+                            <td colspan="4" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
                         </tr>
                         <tr
                             v-for="row in filteredRows"
                             :key="row.id"
                             class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted) transition-colors">
                             <td class="py-4 px-6 align-middle text-sm font-semibold text-(--text)">{{ row.name }}</td>
-                            <td class="whitespace-nowrap py-4 px-6 align-middle text-sm text-(--text)">
-                                <div v-if="rowNoItems(row).length" class="flex flex-wrap gap-1.5 min-w-48">
-                                    <span
-                                        v-for="rowNo in rowNoItems(row)"
-                                        :key="rowNo.id ?? rowNo.code"
-                                        :title="rowNo.title || rowNo.code"
-                                        class="inline-flex items-center gap-1 rounded-full bg-(--surface-muted) border border-(--border) px-2 py-1 text-xs">
-                                        <span class="font-semibold text-(--text)">{{ rowNo.code || '-' }}</span>
-                                        <span v-if="rowNo.count != null" class="text-(--text-muted)">({{ rowNo.count }}{{ rowNo.unit?.name ? ` ${rowNo.unit.name}` : '' }})</span>
-                                    </span>
-                                </div>
-                                <span v-else class="text-(--text-muted)">-</span>
-                            </td>
-                            <td class="whitespace-nowrap min-w-24 py-4 px-6 align-middle text-sm text-(--text)">
-                                {{ unitIds(row).length ? unitIds(row).join(', ') : '-' }}
-                            </td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ formatDateTime(row.created_at) }}</td>
+                            <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.title || '-' }}</td>
+                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.information || '-' }}</td>
                             <td class="py-4 px-6 align-middle">
                                 <div class="flex gap-2 items-center">
                                     <button
@@ -108,22 +92,10 @@
                     class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2">
                     <div class="font-bold text-sm text-(--text)">{{ row.name }}</div>
                     <div class="text-xs text-(--text-muted)">
-                        <span class="font-semibold text-(--text)">Rows No:</span>
-                        <span v-if="rowNoItems(row).length" class="inline-flex flex-wrap gap-1.5 ml-1 align-middle">
-                            <span
-                                v-for="rowNo in rowNoItems(row)"
-                                :key="rowNo.id ?? rowNo.code"
-                                :title="rowNo.title || rowNo.code"
-                                class="inline-flex items-center gap-1 rounded-full bg-(--surface-muted) border border-(--border) px-2 py-1">
-                                <span class="font-semibold text-(--text)">{{ rowNo.code || '-' }}</span>
-                                <span v-if="rowNo.count != null">({{ rowNo.count }}{{ rowNo.unit?.name ? ` ${rowNo.unit.name}` : '' }})</span>
-                            </span>
-                        </span>
-                        <span v-else class="ml-1">-</span>
+                        <span class="font-semibold text-(--text)">Title:</span> {{ row.title || '-' }}
                     </div>
                     <div class="text-xs text-(--text-muted)">
-                        <span class="font-semibold text-(--text)">Unit ID:</span>
-                        <span class="ml-1">{{ unitIds(row).length ? unitIds(row).join(', ') : '-' }}</span>
+                        <span class="font-semibold text-(--text)">Information:</span> {{ row.information || '-' }}
                     </div>
                     <div class="text-xs text-(--text-muted) flex flex-wrap gap-x-4 gap-y-1">
                         <span v-if="row.plants_count != null">Plants: {{ row.plants_count }}</span>
@@ -221,29 +193,6 @@ const filteredRows = computed(() => {
         return nameMatch && plantsMatch;
     });
 });
-
-function formatDateTime(value) {
-    if (!value) return "";
-    // Prefer to display the server-provided timestamp without converting to the client's timezone.
-    // If the server returns an ISO string, normalize it to `YYYY-MM-DD HH:mm:ss` by string operations.
-    if (typeof value === 'string') {
-        // remove fractional seconds and trailing Z, then replace T with space
-        return value.replace(/\.\d+/, '').replace(/T/, ' ').replace(/Z$/, '').trim();
-    }
-    if (value instanceof Date) {
-        // to avoid using client-local formatting, use ISO string and strip the T
-        return value.toISOString().replace(/T/, ' ').replace(/Z$/, '').substr(0, 19);
-    }
-    return String(value);
-}
-
-function rowNoItems(block) {
-    return Array.isArray(block?.rows_no) ? block.rows_no : [];
-}
-
-function unitIds(block) {
-    return [...new Set(rowNoItems(block).map((rowNo) => rowNo?.unit_id).filter((unitId) => unitId != null))];
-}
 
 async function loadData() {
     loading.value = true;

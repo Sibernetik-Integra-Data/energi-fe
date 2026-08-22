@@ -20,7 +20,7 @@
                         <th class="pekerja-th whitespace-nowrap">ID Pekerja</th>
                         <th class="pekerja-th">Nama</th>
                         <th class="pekerja-th">Email</th>
-                        <th class="pekerja-th whitespace-nowrap">Jenis Pekerjaan</th>
+                        <th class="pekerja-th whitespace-nowrap">Jabatan</th>
                         <th class="pekerja-th">Aksi</th>
                     </tr>
                 </thead>
@@ -50,9 +50,9 @@
                             {{ row.email || '-' }}
                         </td>
 
-                        <!-- Jenis Pekerjaan: planning.sensus_detail.type_of_work.name -->
+                        <!-- Jabatan: Keycloak role resolved from user_id by the labor API -->
                         <td class="pekerja-td whitespace-nowrap">
-                            {{ row.planning?.sensus_detail?.type_of_work?.name || '-' }}
+                            {{ row.jabatan || '-' }}
                         </td>
 
                         <!-- Aksi: View button -->
