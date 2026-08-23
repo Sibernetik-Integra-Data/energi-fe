@@ -18,7 +18,7 @@
                   <img v-if="avatarUrl" :src="avatarUrl" :alt="fullName" class="h-full w-full object-cover" />
                   <span v-else>{{ initials }}</span>
                 </div>
-                <div class="text-center"><p class="m-0 text-lg font-bold">{{ fullName }}</p><p class="m-0 mt-3 text-sm text-[#6a6a6a]">-</p><p class="m-0 text-sm text-[#6a6a6a]">ID{{ worker?.user_id || '-' }}</p></div>
+                <div class="text-center"><p class="m-0 text-lg font-bold">{{ fullName }}</p><p class="m-0 mt-3 text-sm text-(--text-muted)">{{ worker?.jabatan || '-' }}</p><p class="m-0 text-sm text-(--text-muted)">ID{{ worker?.user_id || '-' }}</p></div>
               </div>
               <div class="mx-6 h-px bg-(--border)"></div>
               <nav class="flex flex-col gap-1 p-6">
