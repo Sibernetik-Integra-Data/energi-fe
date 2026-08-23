@@ -177,7 +177,7 @@ function mapLaborItem(laborRow, plansById) {
     username: laborRow?.user_id || '',
     firstName: laborRow?.first_name || '',
     lastName: laborRow?.last_name || '',
-    notes: laborRow?.notes || '',
+    notes: laborRow?.notes || laborRow?.planning?.notes || '',
     description: laborRow?.planning?.sensus_detail?.description || planning?.sensus_detail?.description || laborRow?.description || '',
     blocks: normalizeBlockNames(planning?.sensus_detail?.blocks || planning?.blocks),
     rowsNo: Array.isArray(planning?.sensus_detail?.rows_no) ? planning.sensus_detail.rows_no : [],

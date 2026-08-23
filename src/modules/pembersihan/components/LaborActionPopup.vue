@@ -23,7 +23,8 @@
                     <div
                         class="w-9 h-9 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center text-lg shrink-0"
                         aria-hidden="true">
-                        👷
+                        <img v-if="avatarUrl" :src="avatarUrl" :alt="displayName" class="w-full h-full object-cover" />
+                        <span v-else>👷</span>
                     </div>
                     <div>
                         <p class="text-sm font-semibold text-(--text) m-0">{{ displayName }}</p>
@@ -87,7 +88,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
+import { signedApiFetchBlob } from "../../../api/fetch";
 
 const props = defineProps({
     labor: { type: Object, required: true },
@@ -97,6 +99,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["close"]);
+const avatarUrl = ref("");
 
 const displayName = computed(() => {
     const first = String(props.labor.firstName || "").trim();
@@ -113,10 +116,12 @@ const workerIdLabel = computed(() => {
 });
 
 const formattedWorkDate = computed(() => {
-    const raw = props.workDate || props.labor.workDate || props.plan?.startDate || "";
-    const dateOnly = String(raw).slice(0, 10);
-    if (!dateOnly) return "—";
-    return dateOnly;
+    const start = props.labor.planningStartDate || props.labor.planning?.start_date || props.plan?.startDate || "";
+    const end = props.labor.planningEndDate || props.labor.planning?.end_date || props.plan?.endDate || "";
+    const startDate = String(start).slice(0, 10);
+    const endDate = String(end).slice(0, 10);
+    if (startDate && endDate) return `${startDate} — ${endDate}`;
+    return startDate || endDate || "—";
 });
 
 const blocks = computed(() => {
@@ -166,25 +171,39 @@ const afterPhotos = computed(() => {
 });
 
 const description = computed(() => {
-    const mappings = Array.isArray(props.labor?.fullfilMappings)
-        ? props.labor.fullfilMappings
-        : Array.isArray(props.plan?.fullfilMappings) ? props.plan.fullfilMappings : [];
-    if (mappings.length) {
-        const notes = mappings.map((mapping) => String(mapping?.notes || '').trim()).filter(Boolean);
-        return notes.length ? notes.join(' • ') : '—';
-    }
-    return props.labor.description || props.plan?.description || props.plan?.notes || props.labor.notes || "—";
+    return String(props.labor?.notes || '').trim() || "—";
 });
+
+async function loadAvatar() {
+    const rawUri = String(props.labor.avatar_uri || "").trim();
+    if (!rawUri) return;
+
+    let avatarPath = rawUri;
+    try {
+        avatarPath = decodeURIComponent(avatarPath);
+    } catch {
+        // Keep the original path if it contains malformed escape sequences.
+    }
+
+    try {
+        const blob = await signedApiFetchBlob(`/storage?path=${encodeURIComponent(avatarPath)}`);
+        avatarUrl.value = URL.createObjectURL(blob);
+    } catch (error) {
+        console.warn("Failed to load labor avatar", error);
+    }
+}
 
 function handleKeydown(event) {
     if (event.key === "Escape") emit("close");
 }
 
 onMounted(() => {
+    loadAvatar();
     document.addEventListener("keydown", handleKeydown);
 });
 
 onUnmounted(() => {
     document.removeEventListener("keydown", handleKeydown);
+    if (avatarUrl.value.startsWith("blob:")) URL.revokeObjectURL(avatarUrl.value);
 });
 </script>
