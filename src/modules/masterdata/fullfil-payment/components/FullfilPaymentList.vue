@@ -4,8 +4,9 @@
     <input v-model="search" type="search" placeholder="Search mapping, name, or notes..." class="search" />
     <div v-if="loading" class="state">Loading data&hellip;</div><div v-else-if="error" class="state error-text">{{ error }}</div>
     <template v-else>
-      <div class="table-wrap"><table><thead><tr><th v-for="header in headers" :key="header">{{ header }}</th></tr></thead><tbody><tr v-if="filteredRows.length === 0"><td colspan="8" class="empty">No data.</td></tr><tr v-for="row in filteredRows" :key="row.id"><td>{{ row.id }}</td><td>{{ mappingName(row.fullfil_id) }}</td><td class="strong">{{ row.name }}</td><td>{{ row.value }}</td><td>{{ unitName(row.unit_id) }}</td><td>{{ row.notes || '-' }}</td><td>{{ formatDate(row.updated_at) }}</td><td><button class="action" @click="openEdit(row)">Edit</button><button class="delete-action" @click="confirmDelete(row)">Delete</button></td></tr></tbody></table></div>
-      <div class="cards"><div v-if="filteredRows.length === 0" class="empty">No data.</div><div v-for="row in filteredRows" :key="row.id" class="card"><div class="flex justify-between"><strong>{{ row.name }}</strong><span>ID: {{ row.id }}</span></div><div class="card-copy">Fullfil Mapping: {{ mappingName(row.fullfil_id) }}<br />Value: {{ row.value }} {{ unitName(row.unit_id) }}<br />Notes: {{ row.notes || '-' }}</div><div class="flex justify-end gap-2"><button class="action" @click="openEdit(row)">Edit</button><button class="delete-action" @click="confirmDelete(row)">Delete</button></div></div></div>
+      <div class="table-wrap"><table><thead><tr><th v-for="header in headers" :key="header">{{ header }}</th></tr></thead><tbody><tr v-if="filteredRows.length === 0"><td colspan="8" class="empty">No data.</td></tr><tr v-for="row in paginatedRows" :key="row.id"><td>{{ row.id }}</td><td>{{ mappingName(row.fullfil_id) }}</td><td class="strong">{{ row.name }}</td><td>{{ row.value }}</td><td>{{ unitName(row.unit_id) }}</td><td>{{ row.notes || '-' }}</td><td>{{ formatDate(row.updated_at) }}</td><td><button class="action" @click="openEdit(row)">Edit</button><button class="delete-action" @click="confirmDelete(row)">Delete</button></td></tr></tbody></table></div>
+      <div class="cards"><div v-if="filteredRows.length === 0" class="empty">No data.</div><div v-for="row in paginatedRows" :key="row.id" class="card"><div class="flex justify-between"><strong>{{ row.name }}</strong><span>ID: {{ row.id }}</span></div><div class="card-copy">Fullfil Mapping: {{ mappingName(row.fullfil_id) }}<br />Value: {{ row.value }} {{ unitName(row.unit_id) }}<br />Notes: {{ row.notes || '-' }}</div><div class="flex justify-end gap-2"><button class="action" @click="openEdit(row)">Edit</button><button class="delete-action" @click="confirmDelete(row)">Delete</button></div></div></div>
+      <MasterDataPagination id="fullfil-payment" :total-items="totalItems" :current-page="currentPage" :page-size="pageSize" :total-pages="totalPages" :visible-pages="visiblePages" @update:current-page="currentPage = $event" @update:page-size="pageSize = $event" />
     </template>
     <div v-if="actionError && !deleteTarget" class="error-text action-error">{{ actionError }}</div>
     <FullfilPaymentForm :visible="showForm" :item="editing" :mappings="mappings" :units="units" :submitting="submitting" @submit="save" @cancel="closeForm" />
@@ -19,6 +20,8 @@ import FullfilPaymentForm from './FullfilPaymentForm.vue'
 import { createFullfilPayment, deleteFullfilPayment, listFullfilMappings, listFullfilPayments, listTypeOfUnits, updateFullfilPayment } from '../model'
 import { getAuthenticatedUser, getTokenClaims } from '../../../../auth/keycloak'
 import { useToast } from '../../../../utils/toast'
+import { useListPagination } from '../../../shared/pagination/useListPagination.js'
+import MasterDataPagination from '../../../shared/pagination/MasterDataPagination.vue'
 
 const { show: showToast } = useToast(); const headers = ['ID', 'Fullfil Mapping', 'Name', 'Value', 'Unit', 'Notes', 'Updated At', 'Actions']
 const rows = ref([]); const mappings = ref([]); const units = ref([]); const loading = ref(false); const submitting = ref(false); const error = ref(null); const actionError = ref(null); const search = ref(''); const showForm = ref(false); const editing = ref(null); const deleteTarget = ref(null)
@@ -26,6 +29,7 @@ const unitName = (id) => units.value.find((item) => Number(item.id) === Number(i
 const mappingName = (id) => mappings.value.find((item) => Number(item.id) === Number(id))?.name || `#${id}`
 const formatDate = (value) => value ? String(value).replace(/\.\d+/, '').replace('T', ' ').replace('Z', '') : '-'
 const filteredRows = computed(() => { const q = search.value.trim().toLowerCase(); return q ? rows.value.filter((row) => `${mappingName(row.fullfil_id)} ${row.name} ${row.notes || ''} ${unitName(row.unit_id)}`.toLowerCase().includes(q)) : rows.value })
+const { currentPage, pageSize, totalItems, totalPages, paginatedItems: paginatedRows, visiblePages } = useListPagination(filteredRows)
 async function load() { loading.value = true; error.value = null; try { const result = await Promise.all([listFullfilPayments(), listFullfilMappings(), listTypeOfUnits()]); rows.value = result[0].data; mappings.value = result[1]; units.value = result[2] } catch (err) { error.value = err?.message || 'Failed to load data.' } finally { loading.value = false } }
 function openCreate() { editing.value = null; actionError.value = null; showForm.value = true }; function openEdit(row) { editing.value = { ...row }; actionError.value = null; showForm.value = true }; function closeForm() { showForm.value = false; editing.value = null }
 function currentUserId() { return getAuthenticatedUser()?.userId || getTokenClaims()?.sub || '' }

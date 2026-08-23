@@ -31,8 +31,8 @@
     </div>
 
     <template v-else>
-      <div class="bg-(--surface) rounded-xl overflow-hidden border border-(--border) shadow-sm max-[1100px]:hidden">
-        <table class="w-full border-collapse table-fixed">
+      <div class="bg-(--surface) rounded-xl overflow-x-auto border border-(--border) shadow-sm max-[1100px]:hidden">
+        <table class="w-full min-w-[1100px] border-collapse table-fixed">
           <colgroup>
             <col style="width:6%" />
             <col style="width:13%" />
@@ -62,7 +62,7 @@
               <td colspan="9" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
             </tr>
             <tr
-              v-for="row in filteredRows"
+              v-for="row in paginatedRows"
               :key="row.id"
               class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted) transition-colors">
               <td class="py-4 px-3 align-middle text-sm text-(--text-muted) text-center">{{ row.id }}</td>
@@ -76,8 +76,8 @@
                 <div>{{ formatDateTime(row.updated_at) || '-' }}</div>
                 <div class="text-xs text-(--text-soft)">{{ displayUser(row.updated_by) }}</div>
               </td>
-              <td class="py-4 px-3 align-middle text-center">
-                <div class="flex gap-2 items-center justify-center">
+              <td class="py-4 pl-3 pr-6 align-middle text-center whitespace-nowrap">
+                <div class="flex gap-2 items-center justify-start">
                   <button
                     type="button"
                     class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border border-(--border) hover:bg-(--surface-muted) transition-colors cursor-pointer"
@@ -100,7 +100,7 @@
       <div class="hidden gap-3 max-[1100px]:flex max-[1100px]:flex-col">
         <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">No data.</div>
         <div
-          v-for="row in filteredRows"
+          v-for="row in paginatedRows"
           :key="row.id"
           class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2">
           <div class="flex items-start justify-between gap-3">
@@ -179,6 +179,7 @@
         </div>
       </div>
     </Teleport>
+    <MasterDataPagination id="type-of-accept" :total-items="totalItems" :current-page="currentPage" :page-size="pageSize" :total-pages="totalPages" :visible-pages="visiblePages" @update:current-page="currentPage = $event" @update:page-size="pageSize = $event" />
   </div>
 </template>
 
@@ -188,6 +189,8 @@ import TypeOfAcceptForm from './TypeOfAcceptForm.vue'
 import { createTypeOfAccept, deleteTypeOfAccept, listTypeOfAccept, updateTypeOfAccept } from '../model'
 import { useToast } from '../../../../utils/toast'
 import { resolveUsernames } from '../../../../utils/userCache'
+import { useListPagination } from '../../../shared/pagination/useListPagination.js'
+import MasterDataPagination from '../../../shared/pagination/MasterDataPagination.vue'
 
 const { show: showToast } = useToast()
 
@@ -212,6 +215,8 @@ const filteredRows = computed(() => {
       .some((value) => String(value || '').toLowerCase().includes(q))
   })
 })
+
+const { currentPage, pageSize, totalItems, totalPages, paginatedItems: paginatedRows, visiblePages } = useListPagination(filteredRows)
 
 function formatDateTime(value) {
   if (!value) return ''

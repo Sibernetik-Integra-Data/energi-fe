@@ -61,7 +61,7 @@
                             <td colspan="6" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
                         </tr>
                         <tr
-                            v-for="(row, index) in filteredRows"
+                            v-for="(row, index) in paginatedRows"
                             :key="row.id"
                             class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted) transition-colors">
                             <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-center">{{ index + 1 }}</td>
@@ -94,7 +94,7 @@
             <div class="hidden gap-3 max-[920px]:flex max-[920px]:flex-col">
                 <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">No data.</div>
                 <div
-                    v-for="row in filteredRows"
+                    v-for="row in paginatedRows"
                     :key="row.id"
                     class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2">
                     <div class="font-bold text-sm text-(--text)">{{ row.name }}</div>
@@ -165,6 +165,7 @@
             </div>
         </Teleport>
     </div>
+    <MasterDataPagination id="sensus-progress-status" :total-items="totalItems" :current-page="currentPage" :page-size="pageSize" :total-pages="totalPages" :visible-pages="visiblePages" @update:current-page="currentPage = $event" @update:page-size="pageSize = $event" />
 </template>
 
 <script setup>
@@ -172,6 +173,8 @@ import { ref, computed, onMounted } from 'vue'
 import SensusProgressStatusForm from './SensusProgressStatusForm.vue'
 import { listSensusProgressStatus, createSensusProgressStatus, updateSensusProgressStatus, deleteSensusProgressStatus } from '../model'
 import { useToast } from '../../../../utils/toast'
+import { useListPagination } from '../../../shared/pagination/useListPagination.js'
+import MasterDataPagination from '../../../shared/pagination/MasterDataPagination.vue'
 
 const { show: showToast } = useToast()
 
@@ -194,6 +197,8 @@ const filteredRows = computed(() => {
     if (!q) return rows.value
     return rows.value.filter(row => row.name?.toLowerCase().includes(q))
 })
+
+const { currentPage, pageSize, totalItems, totalPages, paginatedItems: paginatedRows, visiblePages } = useListPagination(filteredRows)
 
 function formatDateTime(value) {
     if (!value) return ''

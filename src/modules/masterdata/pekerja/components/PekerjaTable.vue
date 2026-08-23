@@ -31,7 +31,7 @@
                         </td>
                     </tr>
                     <tr
-                        v-for="row in rows"
+                        v-for="row in paginatedRows"
                         :key="row.id"
                         class="pekerja-row">
 
@@ -67,6 +67,7 @@
                     </tr>
                 </tbody>
             </table>
+            <MasterDataPagination id="pekerja" :total-items="totalItems" :current-page="currentPage" :page-size="pageSize" :total-pages="totalPages" :visible-pages="visiblePages" @update:current-page="currentPage = $event" @update:page-size="pageSize = $event" />
         </template>
     </div>
 
@@ -101,9 +102,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useListPagination } from '../../../shared/pagination/useListPagination.js'
+import MasterDataPagination from '../../../shared/pagination/MasterDataPagination.vue'
 
-defineProps({
+const props = defineProps({
     rows: {
         type: Array,
         default: () => []
@@ -118,10 +122,15 @@ defineProps({
     }
 })
 
-const showViewAlert = ref(false)
+const rowsForPagination = computed(() => props.rows)
+const { currentPage, pageSize, totalItems, totalPages, paginatedItems: paginatedRows, visiblePages } = useListPagination(rowsForPagination)
 
-function onView(_row) {
-    showViewAlert.value = true
+const showViewAlert = ref(false)
+const router = useRouter()
+
+function onView(row) {
+    if (!row?.user_id) return
+    router.push({ path: `/master-data/pekerja/${encodeURIComponent(row.user_id)}` })
 }
 </script>
 
