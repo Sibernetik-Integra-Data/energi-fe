@@ -11,10 +11,10 @@
           </button>
         </div>
         <div class="flex items-start">
-          <aside class="w-[389px] shrink-0 p-8 max-[1100px]:w-[300px] max-[920px]:hidden">
+          <aside class="w-97.25 shrink-0 p-8 max-[1100px]:w-75 max-[920px]:hidden">
             <div class="overflow-hidden rounded-2xl bg-(--surface)">
               <div class="flex flex-col items-center gap-6 px-6 pb-6 pt-6">
-                <div class="flex h-[120px] w-[120px] items-center justify-center overflow-hidden rounded-full bg-[#fbc66b] text-3xl font-bold text-white">
+                <div class="flex h-30 w-30 items-center justify-center overflow-hidden rounded-full bg-[#fbc66b] text-3xl font-bold text-white">
                   <img v-if="avatarUrl" :src="avatarUrl" :alt="fullName" class="h-full w-full object-cover" />
                   <span v-else>{{ initials }}</span>
                 </div>
@@ -22,9 +22,9 @@
               </div>
               <div class="mx-6 h-px bg-(--border)"></div>
               <nav class="flex flex-col gap-1 p-6">
-                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:!text-(--text)" :class="tab === 'profile' ? 'is-active bg-[#fff4e6]' : ''" @click="tab = 'profile'"><BaseIcon name="profile" :size="16" /> Profile</button>
-                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:!text-(--text)" :class="tab === 'performance' ? 'is-active bg-[#fff4e6]' : ''" @click="tab = 'performance'"><BaseIcon name="dashboard" :size="16" /> Performance Overview</button>
-                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:!text-(--text)" :class="tab === 'account' ? 'is-active bg-[#fff4e6]' : ''" @click="tab = 'account'"><BaseIcon name="settings" :size="16" /> Account Config</button>
+                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'profile' ? 'is-active bg-[#fff4e6]' : ''" @click="tab = 'profile'"><BaseIcon name="profile" :size="16" /> Profile</button>
+                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'performance' ? 'is-active bg-[#fff4e6]' : ''" @click="tab = 'performance'"><BaseIcon name="dashboard" :size="16" /> Performance Overview</button>
+                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'account' ? 'is-active bg-[#fff4e6]' : ''" @click="tab = 'account'"><BaseIcon name="settings" :size="16" /> Account Config</button>
               </nav>
             </div>
           </aside>
@@ -40,7 +40,7 @@
               </div>
             </template>
             <template v-else-if="tab === 'performance'">
-              <div class="flex flex-col gap-6"><div class="rounded-2xl bg-(--surface) p-4"><div class="flex gap-6"><select class="w-[200px] rounded-lg bg-(--surface-muted) p-2.5 text-sm text-(--text)"><option>April</option></select><select class="w-[200px] rounded-lg bg-(--surface-muted) p-2.5 text-sm text-(--text)"><option>2026</option></select></div><div class="mt-4 grid grid-cols-2 gap-4 max-[640px]:grid-cols-1"><MetricCard label="Total Tugas Pekerjaan" value="-" icon="users" /><MetricCard label="Total hari kerja" value="-" icon="calendar" /></div></div><div class="overflow-x-auto rounded-2xl border border-(--border) bg-(--surface)"><table class="w-full min-w-[680px] border-collapse"><thead><tr class="bg-(--surface-muted) text-left text-xs uppercase tracking-[.6px] text-(--text-muted)"><th class="p-3">Tanggal</th><th class="p-3">Pekerjaan</th><th class="p-3">Tipe Pekerjaan</th><th class="p-3">Gender</th><th class="p-3 text-center">Action</th></tr></thead><tbody><tr><td colspan="5" class="border-t border-(--border) p-10 text-center text-sm text-(--text-muted)">-</td></tr></tbody></table></div></div>
+              <div class="flex flex-col gap-6"><div class="rounded-2xl bg-(--surface) p-4"><div class="flex gap-6"><select class="w-50 rounded-lg bg-(--surface-muted) p-2.5 text-sm text-(--text)"><option>April</option></select><select class="w-50 rounded-lg bg-(--surface-muted) p-2.5 text-sm text-(--text)"><option>2026</option></select></div><div class="mt-4 grid grid-cols-2 gap-4 max-[640px]:grid-cols-1"><MetricCard label="Total Tugas Pekerjaan" value="-" icon="users" /><MetricCard label="Total hari kerja" value="-" icon="calendar" /></div></div><div class="overflow-x-auto rounded-2xl border border-(--border) bg-(--surface)"><table class="w-full min-w-170 border-collapse"><thead><tr class="bg-(--surface-muted) text-left text-xs uppercase tracking-[.6px] text-(--text-muted)"><th class="p-3">Tanggal</th><th class="p-3">Pekerjaan</th><th class="p-3">Tipe Pekerjaan</th><th class="p-3">Gender</th><th class="p-3 text-center">Action</th></tr></thead><tbody><tr><td colspan="5" class="border-t border-(--border) p-10 text-center text-sm text-(--text-muted)">-</td></tr></tbody></table></div></div>
             </template>
             <div v-else class="rounded-2xl bg-(--surface) p-8"><h2 class="m-0 text-lg font-bold">Account Config</h2><p class="mt-2 text-sm text-(--text-muted)">-</p></div>
           </section>
