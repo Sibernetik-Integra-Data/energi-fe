@@ -5,7 +5,7 @@ import { signedApiFetch } from '../../../api/fetch'
  * Returns an object { data: [], total: number }.
  */
 export async function listPekerja() {
-  const resp = await signedApiFetch('/users/access?access=Pekerja', { method: 'GET' })
+  const resp = await signedApiFetch('/users/access', { method: 'GET' })
   const data = (Array.isArray(resp.data) ? resp.data : []).map((user) => ({
     user_id: user?.sub || '',
     first_name: user?.first_name || '',

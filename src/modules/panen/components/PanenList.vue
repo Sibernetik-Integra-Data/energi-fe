@@ -36,7 +36,7 @@
         <div
             v-else-if="!loading && items.length === 0"
             class="flex flex-col items-center justify-center py-20 gap-3 text-(--text-muted) border border-(--border) rounded-2xl bg-(--surface)">
-            <span class="text-5xl">🌾</span>
+            <img :src="emptyJobIcon" alt="" class="h-16 w-auto" aria-hidden="true" />
             <p class="text-sm font-semibold m-0">Tidak ada penugasan panen ditemukan.</p>
             <p class="text-xs text-(--text-muted) m-0">Pastikan data perencanaan panen sudah diisi.</p>
         </div>
@@ -145,6 +145,7 @@ import { ref, watch } from "vue";
 import { ListPagination } from "../../shared/pagination";
 import AssignmentCard from "../../shared/AssignmentCard.vue";
 import AssignmentTable from "../../shared/AssignmentTable.vue";
+import emptyJobIcon from "@/assets/icons/empty_job.svg";
 
 defineProps({
     items: { type: Array, default: () => [] },
