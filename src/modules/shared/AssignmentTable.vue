@@ -10,8 +10,8 @@
       </thead>
       <tbody>
         <tr v-for="item in items" :key="`${item.id}-${item.detailId || 'none'}`" class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted) transition-colors">
-          <td class="py-3 px-4 text-sm font-semibold text-(--text) whitespace-nowrap">{{ item.sensusId || '—' }}</td>
           <td class="py-3 px-4 text-sm text-(--text)">{{ item.jobType || '—' }}</td>
+          <td class="py-3 px-4 text-sm font-semibold text-(--text) whitespace-nowrap">{{ item.sensusId || '—' }}</td>
           <td class="py-3 px-4 text-sm text-(--text)">{{ item.groupOfWork || taskType || '—' }}</td>
           <td class="py-3 px-4 text-sm text-(--text)">{{ item.blocks?.length || 0 }}</td>
           <td class="py-3 px-4 text-sm text-(--text) whitespace-nowrap">{{ item.startDateFormatted || item.sensusDateFormatted || '—' }}</td>
@@ -35,7 +35,7 @@ const props = defineProps({
 
 defineEmits(['view-detail'])
 
-const headings = ['Sensus ID', 'Task', 'Task Type', 'Total Block', 'Sensus Date', 'Total Pekerja Terdaftar', 'Status', 'Action']
+const headings = ['Task', 'Sensus ID', 'Task Type', 'Total Block', 'Sensus Date', 'Total Pekerja Terdaftar', 'Status', 'Action']
 
 function statusLabel(status) {
   const map = { draft: 'Draft', wip: 'On Progress', done: 'Done', submitted: 'Submitted', in_progress: 'On Progress' }
