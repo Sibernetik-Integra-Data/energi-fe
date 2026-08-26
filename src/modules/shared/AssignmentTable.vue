@@ -35,7 +35,7 @@ const props = defineProps({
 
 defineEmits(['view-detail'])
 
-const headings = ['Sensus ID', 'Task', 'Task Type', 'Total Block', 'Job Types', 'Total Pekerja Terdaftar', 'Status', 'Action']
+const headings = ['Sensus ID', 'Task', 'Task Type', 'Total Block', 'Sensus Date', 'Total Pekerja Terdaftar', 'Status', 'Action']
 
 function statusLabel(status) {
   const map = { draft: 'Draft', wip: 'On Progress', done: 'Done', submitted: 'Submitted', in_progress: 'On Progress' }
