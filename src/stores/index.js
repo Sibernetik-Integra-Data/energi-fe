@@ -15,7 +15,7 @@ export const useAppStore = defineStore('app', {
   actions: {
     setReady(v = true) { this.ready = v },
     setProfile(profile) {
-      if (this.profile !== profile) revokeAvatarUrl(this.profile)
+      if (this.profile?.avatarUrl !== profile?.avatarUrl) revokeAvatarUrl(this.profile)
       this.profile = profile || null
     },
     clearProfile() {

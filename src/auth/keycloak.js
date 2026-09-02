@@ -1,5 +1,6 @@
 import { buildSignatureHeaders, signedApiFetch, signedApiFetchBlob } from '../api/fetch'
 import { getAccessToken, setAccessToken, clearAccessToken } from './tokenMemory'
+import { normalizeAccess } from './access'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -391,7 +392,8 @@ export function getAuthenticatedUser() {
   const role = getRoleFromClaims(claims)
   const email = typeof claims?.email === 'string' ? claims.email.trim() : ''
   const initials = getInitialsFromName(name)
-  return { name, role, email, jobs: '', initials, userId: '', avatarUrl: '' }
+  const access = normalizeAccess(claims)
+  return { name, role, email, jobs: access, access, initials, userId: claims?.sub || '', avatarUrl: '' }
 }
 
 function getProfileName(profile) {
@@ -429,7 +431,8 @@ export function profileToUser(profile) {
   const initials = getInitialsFromName(name)
   const userId = typeof profile?.id === 'string' ? profile.id : ''
   const avatarUrl = typeof profile?.avatarUrl === 'string' ? profile.avatarUrl : ''
-  return { name, role, email, jobs, initials, userId, avatarUrl }
+  const access = normalizeAccess(profile)
+  return { name, role, email, jobs: jobs || access, access, initials, userId, avatarUrl }
 }
 
 // ---------------------------------------------------------------------------

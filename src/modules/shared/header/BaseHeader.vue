@@ -36,7 +36,7 @@
           </span>
         </button>
 
-        <div v-if="isUserMenuOpen" class="header__user-menu-panel" role="menu" aria-label="User actions">
+        <div v-if="isUserMenuOpen" class="header__user-menu-panel" role="menu" aria-label="User actions" @keydown.esc.stop="closeUserMenu">
           <!-- Compact profile card -->
           <div class="header__profile-card">
             <div class="header__profile-avatar-wrap">
@@ -62,11 +62,11 @@
             Profile
           </button>
 
-          <button class="header__user-menu-item" type="button" role="menuitem" @click="handleChangePassword">
+          <button v-if="isOwner" class="header__user-menu-item" type="button" role="menuitem" @click="handleUserManagement">
             <span class="header__user-menu-item-icon">
-              <BaseIcon name="key" :size="16" />
+              <BaseIcon name="users" :size="16" />
             </span>
-            Ubah Kata Sandi
+            User Management
           </button>
 
           <button
@@ -100,10 +100,11 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseIcon from '../icon'
 import { isDark as isDarkFn, toggleTheme } from '../../../utils/theme'
+import { isOwnerAccess } from '../../../auth/access'
 
 const props = defineProps({
   eyebrow: {
@@ -137,6 +138,7 @@ const isUserMenuOpen = ref(false)
 const userMenuRef = ref(null)
 const isDarkMode = ref(isDarkFn())
 const router = useRouter()
+const isOwner = computed(() => isOwnerAccess(props.user))
 
 function closeUserMenu() {
   isUserMenuOpen.value = false
@@ -166,9 +168,9 @@ function handleProfile() {
   void router.push('/profile').catch(() => {})
 }
 
-function handleChangePassword() {
+function handleUserManagement() {
   closeUserMenu()
-  void router.push('/profile/change-password').catch(() => {})
+  void router.push('/user-management').catch(() => {})
 }
 
 function handleDocumentClick(event) {
@@ -179,12 +181,18 @@ function handleDocumentClick(event) {
   }
 }
 
+function handleDocumentKeydown(event) {
+  if (event.key === 'Escape') closeUserMenu()
+}
+
 onMounted(() => {
   document.addEventListener('click', handleDocumentClick)
+  document.addEventListener('keydown', handleDocumentKeydown)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleDocumentClick)
+  document.removeEventListener('keydown', handleDocumentKeydown)
 })
 </script>
 

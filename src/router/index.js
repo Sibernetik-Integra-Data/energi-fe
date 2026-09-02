@@ -24,9 +24,11 @@ import TypeOfNeedModule from '../modules/masterdata/type-of-need'
 import TypeOfUnitModule from '../modules/masterdata/type-of-unit'
 import MasterDataPekerjaModule from '../modules/masterdata/pekerja'
 import ProfileModule from '../modules/profile'
+import UserManagementModule from '../modules/user-management'
 import navigation from '../modules/shared/navigation'
 import ComingSoon from '../components/ComingSoon.vue'
 import { isAuthenticated, redirectToKeycloakLogin, tryRestoreSession } from '../auth/keycloak'
+import userManagementService from '../modules/user-management/services/userManagementService'
 
 const routes = [
   { path: '/', redirect: '/dashboard', meta: { requiresAuth: true } },
@@ -173,6 +175,10 @@ const routes = [
     meta: route.meta
       ? { ...route.meta, requiresAuth: true }
       : { requiresAuth: true }
+  })),
+  ...UserManagementModule.routes.map(route => ({
+    ...route,
+    meta: { ...(route.meta || {}), requiresAuth: true }
   }))
 ]
 
@@ -223,6 +229,14 @@ router.beforeEach(async (to) => {
   }
 
   if (isAuthenticated()) {
+    if (to.matched.some(record => record.meta?.requiresOwner)) {
+      try {
+        const access = await userManagementService.verifyOwnerAccess()
+        return access?.isOwner === true ? true : '/dashboard'
+      } catch {
+        return '/dashboard'
+      }
+    }
     return true
   }
 
@@ -230,6 +244,14 @@ router.beforeEach(async (to) => {
   // On page reload the in-memory access token is gone, but the cookie may still be valid.
   const restored = await tryRestoreSession()
   if (restored) {
+    if (to.matched.some(record => record.meta?.requiresOwner)) {
+      try {
+        const access = await userManagementService.verifyOwnerAccess()
+        return access?.isOwner === true ? true : '/dashboard'
+      } catch {
+        return '/dashboard'
+      }
+    }
     return true
   }
 
