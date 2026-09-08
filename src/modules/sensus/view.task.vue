@@ -54,10 +54,10 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-              <div v-for="metric in metrics" :key="metric.label" class="bg-white border border-[#e5e5e5] rounded-[14px] min-h-[142px] p-[25px] flex items-start justify-between">
+              <div v-for="metric in metrics" :key="metric.label" class="bg-(--surface) border border-(--border) rounded-[14px] min-h-[142px] p-[25px] flex items-start justify-between">
                 <div class="h-[92px] flex flex-col justify-between min-w-0">
-                  <p class="text-sm leading-5 text-[#525252] m-0 max-w-[146px]">{{ metric.label }}</p>
-                  <p class="text-[30px] leading-9 font-semibold tracking-[0.4px] text-[#171717] m-0">{{ metric.value }}</p>
+                  <p class="text-sm leading-5 text-(--text-muted) m-0 max-w-[146px]">{{ metric.label }}</p>
+                  <p class="text-[30px] leading-9 font-semibold tracking-[0.4px] text-(--text) m-0">{{ metric.value }}</p>
                 </div>
                 <span class="w-14 h-14 rounded-[24px] bg-[#b8a44c] p-[10px] flex items-center justify-center shrink-0">
                   <img :src="metric.icon" alt="" class="w-[34px] h-[34px]" />
@@ -106,7 +106,7 @@ import cleaningIcon from '@/assets/icons/pembersihan.svg'
 import fertilizeIcon from '@/assets/icons/pemupukan.svg'
 import harvestIcon from '@/assets/icons/panen.svg'
 import infoIcon from '@/assets/icons/info-square-rounded-filled.svg'
-import metricUsersIcon from '@/assets/icons/figma/metric-users.svg'
+import metricUsersIcon from '@/assets/icons/figma/metric-users-detail.svg'
 import metricMandaysIcon from '@/assets/icons/figma/metric-mandays.svg'
 import metricCalendarIcon from '@/assets/icons/figma/metric-calendar.svg'
 

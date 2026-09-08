@@ -24,27 +24,27 @@
                 <div class="flex items-center justify-between gap-4">
                     <div class="min-w-0">
                         <div>
-                            <h2 class="text-xl font-bold text-[#212121] leading-5 m-0 truncate">{{ plan.jobType }}</h2>
-                            <p class="text-sm text-[#6a6a6a] mt-1 m-0">Sensus {{ plan.sensusId || "—" }}</p>
+                        <h2 class="text-xl font-bold text-(--text) leading-5 m-0 truncate">{{ plan.jobType }}</h2>
+                            <p class="text-sm text-(--text-muted) mt-1 m-0">Sensus {{ plan.sensusId || "—" }}</p>
                         </div>
                     </div>
                     <img :src="taskIcon" alt="Ikon pembersihan" class="w-14 h-14 shrink-0" />
                 </div>
 
                 <div class="flex items-start gap-2 font-inter" v-if="plan.sensusDateFormatted || plan.sensusDate">
-                    <span class="w-25 shrink-0 text-xs leading-5 text-[#6a6a6a]">Tanggal Sensus</span>
-                    <span class="text-sm leading-5 text-[#212121]">{{
+                    <span class="w-25 shrink-0 text-xs leading-5 text-(--text-muted)">Tanggal Sensus</span>
+                    <span class="text-sm leading-5 text-(--text)">{{
                         plan.sensusDateFormatted || plan.sensusDate || "—"
                     }}</span>
                 </div>
 
                 <div v-if="plan.blocks && plan.blocks.length > 0" class="flex items-start gap-2">
-                    <p class="w-25 shrink-0 text-xs leading-4 text-[#737373] m-0 pt-1">Nomor Petak</p>
+                    <p class="w-25 shrink-0 text-xs leading-4 text-(--text-muted) m-0 pt-1">Nomor Petak</p>
                     <div class="flex flex-wrap gap-2">
                         <span
                             v-for="(block, i) in plan.blocks"
                             :key="i"
-                            class="inline-flex items-center bg-[#f0f0f0] text-[#222e2f] py-1 px-2 rounded-xl text-xs font-medium leading-4"
+                            class="inline-flex items-center bg-(--surface-muted) text-(--text) py-1 px-2 rounded-xl text-xs font-medium leading-4"
                             >{{ block }}</span
                         >
                     </div>
@@ -72,9 +72,14 @@
                     </p>
                 </div>
 
-                <div class="mb-4 w-fit min-w-50 bg-(--surface) border border-(--border) rounded-xl px-4 py-3">
-                    <p class="text-[10px] tracking-wide text-(--text-muted) m-0">Total Pekerja Terdaftar</p>
-                    <p class="text-2xl font-extrabold text-(--text) m-0 mt-1">{{ effectiveLabors.length }}</p>
+                <div class="mb-4 w-full max-w-[272px] h-[142px] bg-(--surface) border border-(--border) rounded-[14px] p-[25px] flex items-start justify-between">
+                    <div class="h-[92px] flex flex-col justify-between min-w-0">
+                        <p class="text-sm leading-5 text-(--text-muted) m-0 max-w-[146px]">Total Pekerja Terdaftar</p>
+                        <p class="text-[30px] leading-9 font-semibold tracking-[0.4px] text-(--text) m-0">{{ effectiveLabors.length }}</p>
+                    </div>
+                    <span class="w-14 h-14 rounded-[24px] bg-[#b8a44c] p-[10px] flex items-center justify-center shrink-0">
+                        <img :src="metricUsersIcon" alt="" class="w-[34px] h-[34px]" />
+                    </span>
                 </div>
 
                 <div
@@ -94,8 +99,8 @@
                             class="w-full mb-6 flex items-center gap-3 text-left bg-transparent border-0 p-0 cursor-pointer hover:bg-(--surface-muted) transition-colors"
                             @click="toggleGroup(group.key)">
                             <div class="min-w-0">
-                                <p class="text-xl font-bold text-[#212121] m-0">{{ group.label }}</p>
-                                <p class="text-sm text-[#6a6a6a] m-0 mt-1">Sensus {{ plan.sensusId || "—" }}</p>
+                                <p class="text-xl font-bold text-(--text) m-0">{{ group.label }}</p>
+                                <p class="text-sm text-(--text-muted) m-0 mt-1">Sensus {{ plan.sensusId || "—" }}</p>
                             </div>
 
                             <div class="ml-auto flex items-center gap-2 shrink-0">
@@ -114,9 +119,7 @@
                         </button>
 
                         <div v-if="expandedGroupKeys.has(group.key)">
-                            <div
-                                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-                                style="grid-template-rows: repeat(3, minmax(64px, auto));">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <LaborCard
                                     v-for="labor in group.labors"
                                     :key="`${group.key}-${labor.id}`"
@@ -139,6 +142,7 @@ import LaborCard from "./LaborCard.vue";
 import ProtectedImage from "../../shared/ProtectedImage.vue";
 import infoIcon from "@/assets/icons/info-square-rounded-filled.svg";
 import taskIcon from "@/assets/icons/figma/detail-task.svg";
+import metricUsersIcon from "@/assets/icons/figma/metric-users-detail.svg";
 import chevronUpIcon from "@/assets/icons/figma/chevron-up.svg";
 
 const props = defineProps({

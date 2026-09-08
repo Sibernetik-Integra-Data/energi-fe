@@ -357,7 +357,7 @@ onBeforeUnmount(() => {
   border-radius: 16px;
   background: var(--surface);
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
-  z-index: 20;
+  z-index: 100;
 }
 
 /* Compact profile card inside dropdown */
@@ -475,6 +475,22 @@ onBeforeUnmount(() => {
   display: inline-grid;
   place-items: center;
   color: var(--text-muted);
+}
+
+:global(.theme-dark) .header__user-menu-panel {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.42);
+}
+
+:global(.theme-dark) .header__user-trigger:hover,
+:global(.theme-dark) .header__user-menu.is-open .header__user-trigger {
+  background: var(--surface-muted);
+}
+
+:global(.theme-dark) .header__user-menu-item {
+  color: var(--text);
 }
 
 @media (max-width: 720px) {
