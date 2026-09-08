@@ -12,7 +12,7 @@
 
             <main class="flex-1 min-w-0 p-6 max-[920px]:p-4.5 overflow-y-auto flex flex-col gap-5">
                 <!-- Page intro -->
-                <section
+                <section v-if="!selectedPlan"
                     class="flex flex-col justify-start gap-1 max-[920px]:items-start shrink-0">
                     <div>
                         <h1 class="m-0 text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em]">

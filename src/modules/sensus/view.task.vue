@@ -53,10 +53,15 @@
               <p class="text-sm text-(--text-muted) m-0 mt-1">Absensi dan laporan dari pekerja untuk setiap kerja.</p>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-              <div v-for="metric in [{ label: 'Total Pekerja Terdaftar', value: effectiveLabors.length, icon: '♧' }, { label: 'Total Hari Pengerjaan', value: workDays, icon: '▣' }, { label: 'Total Mandays', value: mandays, icon: '▤' }]" :key="metric.label" class="bg-(--surface) border border-(--border) rounded-xl p-4 flex items-start justify-between">
-                <div><p class="text-xs text-(--text-muted) m-0">{{ metric.label }}</p><p class="text-2xl font-bold text-(--text) m-0 mt-2">{{ metric.value }}</p></div>
-                <span class="w-10 h-10 rounded-full bg-(--border-strong) text-(--text-muted) flex items-center justify-center text-xl">{{ metric.icon }}</span>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+              <div v-for="metric in metrics" :key="metric.label" class="bg-white border border-[#e5e5e5] rounded-[14px] min-h-[142px] p-[25px] flex items-start justify-between">
+                <div class="h-[92px] flex flex-col justify-between min-w-0">
+                  <p class="text-sm leading-5 text-[#525252] m-0 max-w-[146px]">{{ metric.label }}</p>
+                  <p class="text-[30px] leading-9 font-semibold tracking-[0.4px] text-[#171717] m-0">{{ metric.value }}</p>
+                </div>
+                <span class="w-14 h-14 rounded-[24px] bg-[#b8a44c] p-[10px] flex items-center justify-center shrink-0">
+                  <img :src="metric.icon" alt="" class="w-[34px] h-[34px]" />
+                </span>
               </div>
             </div>
 
@@ -101,6 +106,9 @@ import cleaningIcon from '@/assets/icons/pembersihan.svg'
 import fertilizeIcon from '@/assets/icons/pemupukan.svg'
 import harvestIcon from '@/assets/icons/panen.svg'
 import infoIcon from '@/assets/icons/info-square-rounded-filled.svg'
+import metricUsersIcon from '@/assets/icons/figma/metric-users.svg'
+import metricMandaysIcon from '@/assets/icons/figma/metric-mandays.svg'
+import metricCalendarIcon from '@/assets/icons/figma/metric-calendar.svg'
 
 const props = defineProps({
   controller: { type: Object, required: true },
@@ -132,6 +140,12 @@ const workIcon = computed(() => {
   if (key.includes('pemupukan') || key.includes('pupuk') || key.includes('fertiliz')) return fertilizeIcon
   return cleaningIcon
 })
+
+const metrics = computed(() => [
+  { label: 'Total Pekerja Terdaftar', value: effectiveLabors.value.length, icon: metricUsersIcon },
+  { label: 'Total Hari Pengerjaan', value: workDays.value, icon: metricCalendarIcon },
+  { label: 'Total Mandays', value: mandays.value, icon: metricMandaysIcon }
+])
 
 const laborGroups = computed(() => {
   const grouped = new Map()

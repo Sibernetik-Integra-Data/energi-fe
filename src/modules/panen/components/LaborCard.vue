@@ -2,12 +2,12 @@
     <div class="relative">
         <button
             type="button"
-            class="w-full text-left bg-(--surface) border border-(--border) rounded-2xl p-4 flex items-center gap-3 cursor-pointer hover:bg-(--surface-muted) hover:border-teal-300 transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+            class="w-full h-16 text-left bg-(--surface) border border-[#bababa] rounded-2xl p-3 flex items-center gap-4 cursor-pointer hover:bg-(--surface-muted) hover:border-teal-300 transition-all focus:outline-none focus:ring-2 focus:ring-teal-300"
             :class="{ 'border-teal-400 ring-2 ring-teal-200': popupOpen }"
             @click="togglePopup">
             <!-- Avatar -->
             <div
-                class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0 text-xl overflow-hidden"
+                class="w-8 h-8 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0 text-base overflow-hidden"
                 aria-hidden="true">
                 <img v-if="avatarUrl" :src="avatarUrl" :alt="fullName" class="w-full h-full object-cover" />
                 <span v-else>👷</span>
@@ -15,11 +15,15 @@
 
             <!-- Info -->
             <div class="min-w-0 flex-1">
-                <p class="text-sm font-bold text-(--text) truncate m-0">
+                <p class="text-sm font-medium text-(--text) truncate m-0">
                     {{ fullName }}
                 </p>
-                <p class="text-xs text-(--text-muted) truncate mt-0.5 m-0">ID Pekerja {{ shortUserId }}</p>
+                <p class="text-[10px] text-(--text-muted) truncate mt-0.5 m-0">ID Pekerja {{ shortUserId }}</p>
             </div>
+
+            <span class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" aria-hidden="true">
+                <img :src="clipboardIcon" alt="" class="w-4 h-4" />
+            </span>
         </button>
 
         <LaborActionPopup
@@ -36,6 +40,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import LaborActionPopup from "./LaborActionPopup.vue";
 import { signedApiFetchBlob } from "../../../api/fetch";
+import clipboardIcon from "@/assets/icons/figma/clipboard-text.svg";
 
 const props = defineProps({
     labor: { type: Object, required: true },
