@@ -8,6 +8,6 @@ export function createPengirimanPenerimaanController() {
     getHeader: () => model.getHeader(),
     getIntro: () => model.getIntro(),
     fetchList: (filters = {}) => loadPengirimanPenerimaanList(filters),
-    fetchDetail: (sensusId, detailId) => loadPengirimanPenerimaanDetail(sensusId, detailId)
+    fetchDetail: (tripId) => loadPengirimanPenerimaanDetail(tripId)
   }
 }

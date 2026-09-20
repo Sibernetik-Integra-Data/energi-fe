@@ -15,13 +15,13 @@
     </section>
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <PengirimanPenerimanCard label="Total Pengiriman" :value="summary.totalPengiriman" unit="Kg"
+        <PengirimanPenerimanCard label="Jumlah Trip (halaman ini)" :value="summary.totalTrips" unit="Trip"
             icon-bg-class="bg-[#4674ba]">
             <template #icon>
                 <BaseIcon name="package" :size="20" class="text-white" />
             </template>
         </PengirimanPenerimanCard>
-        <PengirimanPenerimanCard label="Total Penerimaan" :value="summary.totalPenerimaan" unit="Kg"
+        <PengirimanPenerimanCard label="Total Volume (halaman ini)" :value="summary.totalVolume" :unit="summary.volumeUnit"
             icon-bg-class="bg-[#b8a44c]">
             <template #icon>
                 <BaseIcon name="location" :size="20" class="text-white" />
@@ -29,7 +29,11 @@
         </PengirimanPenerimanCard>
     </div>
 
-    <PengirimanPenerimaanList :items="items" @terima="$emit('terima', $event)" @view="$emit('view', $event)" />
+    <PengirimanPenerimaanList :items="items" :loading="loading" :total-items="totalItems"
+        :current-page="currentPage" :page-size="pageSize" :total-pages="totalPages"
+        :visible-pages="visiblePages" @view="$emit('view', $event)"
+        @update:current-page="$emit('update:currentPage', $event)"
+        @update:page-size="$emit('update:pageSize', $event)" />
 </template>
 
 <script setup>
@@ -40,8 +44,14 @@ import PengirimanPenerimaanList from './PengirimanPenerimaanList.vue'
 defineProps({
     intro: { type: Object, required: true },
     summary: { type: Object, required: true },
-    items: { type: Array, default: () => [] }
+    items: { type: Array, default: () => [] },
+    loading: { type: Boolean, default: false },
+    totalItems: { type: Number, default: 0 },
+    currentPage: { type: Number, default: 1 },
+    pageSize: { type: Number, default: 10 },
+    totalPages: { type: Number, default: 1 },
+    visiblePages: { type: Array, default: () => [] }
 })
 
-defineEmits(['tambah-penerimaan', 'terima', 'view'])
+defineEmits(['view', 'update:currentPage', 'update:pageSize'])
 </script>
