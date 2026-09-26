@@ -17,7 +17,7 @@
                                 <th class="px-6 py-4">Volume</th>
                                 <th class="px-6 py-4">Driver</th>
                                 <th class="px-6 py-4">Tanggal Selesai</th>
-                                <th class="px-6 py-4">Catatan</th>
+                                <th class="px-6 py-4">Notes</th>
                                 <th class="px-6 py-4 text-right">Action</th>
                             </tr>
                         </thead>

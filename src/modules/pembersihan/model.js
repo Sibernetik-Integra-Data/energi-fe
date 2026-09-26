@@ -92,6 +92,35 @@ function toIsoDateOrEmpty(value) {
   return toDateOnlyString(value || '')
 }
 
+function normalizeLaborImageUris(images) {
+  if (!Array.isArray(images)) return []
+  return images
+    .map((image) => typeof image === 'string' ? image : image?.image_uri || image?.uri || '')
+    .map((uri) => String(uri || '').trim())
+    .filter(Boolean)
+}
+
+function getLaborPhotoGroups(laborRow) {
+  const grouped = laborRow?.labor_images || laborRow?.laborImages || {}
+  let before = normalizeLaborImageUris(grouped.baseline || grouped.before)
+  let after = normalizeLaborImageUris(grouped.current || grouped.after)
+
+  // Keep compatibility with the older flat `images` response when it includes
+  // the image type identifier.
+  if ((!before.length || !after.length) && Array.isArray(laborRow?.images)) {
+    const typedImages = laborRow.images.reduce((groups, image) => {
+      const typeId = Number(image?.type_image_id)
+      if (typeId === 1) groups.before.push(image)
+      if (typeId === 2) groups.after.push(image)
+      return groups
+    }, { before: [], after: [] })
+    if (!before.length) before = normalizeLaborImageUris(typedImages.before)
+    if (!after.length) after = normalizeLaborImageUris(typedImages.after)
+  }
+
+  return { beforePhotos: before, afterPhotos: after }
+}
+
 function pickDateRangeFromPlans(plans = []) {
   const starts = plans.map((item) => toIsoDateOrEmpty(item?.start_date)).filter(Boolean).sort()
   const ends = plans.map((item) => toIsoDateOrEmpty(item?.end_date)).filter(Boolean).sort()
@@ -135,6 +164,7 @@ async function loadLaborsByPlanIds(planIds = []) {
 function mapLaborItem(laborRow, plansById) {
   const planId = Number(laborRow?.plan_id)
   const planning = laborRow?.planning || plansById.get(planId) || null
+  const photoGroups = getLaborPhotoGroups(laborRow)
 
   return {
     id: laborRow?.id,
@@ -144,6 +174,8 @@ function mapLaborItem(laborRow, plansById) {
     username: laborRow?.user_id || '',
     firstName: laborRow?.first_name || '',
     lastName: laborRow?.last_name || '',
+    beforePhotos: photoGroups.beforePhotos,
+    afterPhotos: photoGroups.afterPhotos,
     notes: laborRow?.notes || '',
     description: laborRow?.planning?.sensus_detail?.description || planning?.sensus_detail?.description || laborRow?.description || '',
     blocks: normalizeBlockNames(planning?.sensus_detail?.blocks || planning?.blocks),
@@ -153,7 +185,7 @@ function mapLaborItem(laborRow, plansById) {
       : [],
     workDate: toIsoDateOrEmpty(laborRow?.point_date),
     pointDate: toIsoDateOrEmpty(laborRow?.point_date),
-    status: Number(laborRow?.is_selected) === 0 ? 'pending' : 'submitted',
+    status: planning?.status ?? laborRow?.status ?? '',
     planningStartDate: toIsoDateOrEmpty(planning?.start_date),
     planningEndDate: toIsoDateOrEmpty(planning?.end_date)
   }

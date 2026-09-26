@@ -25,7 +25,7 @@
                 <span class="text-(--text)">{{ detail.volumeLabel }}</span>
                 <span class="text-(--text-muted)">Driver</span>
                 <span class="text-(--text)">{{ detail.driverName }}</span>
-                <span class="text-(--text-muted)">Catatan</span>
+                <span class="text-(--text-muted)">Notes</span>
                 <span class="text-(--text)">{{ detail.notes }}</span>
             </div>
         </div>

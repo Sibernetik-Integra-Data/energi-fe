@@ -60,7 +60,7 @@
 
                 <div class="grid grid-cols-[110px_1fr] gap-x-4 gap-y-4 text-xs">
                     <p class="m-0 text-(--text-muted)">Foto Sebelum Pengerjaan</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div v-if="beforePhotos.length" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <img
                             v-for="(src, index) in beforePhotos"
                             :key="`before-${index}`"
@@ -68,9 +68,10 @@
                             alt="Foto sebelum pengerjaan"
                             class="w-full h-32 object-cover rounded-lg border border-(--border)" />
                     </div>
+                    <p v-else class="m-0 text-(--text)">-</p>
 
                     <p class="m-0 text-(--text-muted)">Foto Setelah Pengerjaan</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div v-if="afterPhotos.length" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <img
                             v-for="(src, index) in afterPhotos"
                             :key="`after-${index}`"
@@ -78,9 +79,10 @@
                             alt="Foto setelah pengerjaan"
                             class="w-full h-32 object-cover rounded-lg border border-(--border)" />
                     </div>
+                    <p v-else class="m-0 text-(--text)">-</p>
 
-                    <p class="m-0 text-(--text-muted)">Keterangan</p>
-                    <p class="m-0 text-(--text) leading-relaxed">{{ description }}</p>
+                    <p class="m-0 text-(--text-muted)">Status</p>
+                    <p class="m-0 text-(--text) leading-relaxed">{{ status }}</p>
                 </div>
             </div>
         </div>
@@ -100,6 +102,9 @@ const props = defineProps({
 
 const emit = defineEmits(["close"]);
 const avatarUrl = ref("");
+const beforePhotos = ref([]);
+const afterPhotos = ref([]);
+const photoObjectUrls = ref([]);
 
 const displayName = computed(() => {
     const first = String(props.labor.firstName || "").trim();
@@ -150,36 +155,48 @@ const fulfillmentItems = computed(() => {
         });
 });
 
-const beforePhotos = computed(() => {
-    const value = Array.isArray(props.labor.beforePhotos) ? props.labor.beforePhotos : [];
-    if (value.length) return value.slice(0, 3);
-    return [
-        "https://picsum.photos/seed/panen-before-1/320/180",
-        "https://picsum.photos/seed/panen-before-2/320/180",
-        "https://picsum.photos/seed/panen-before-3/320/180",
-    ];
-});
+const status = computed(() => props.labor.status || props.plan?.status || "-");
 
-const afterPhotos = computed(() => {
-    const value = Array.isArray(props.labor.afterPhotos) ? props.labor.afterPhotos : [];
-    if (value.length) return value.slice(0, 3);
-    return [
-        "https://picsum.photos/seed/panen-after-1/320/180",
-        "https://picsum.photos/seed/panen-after-2/320/180",
-        "https://picsum.photos/seed/panen-after-3/320/180",
-    ];
-});
+function photoUris(value) {
+    if (!Array.isArray(value)) return [];
+    return value
+        .map((photo) => typeof photo === "string" ? photo : photo?.image_uri || photo?.uri || "")
+        .map((uri) => String(uri || "").trim())
+        .filter(Boolean)
+        .slice(0, 3);
+}
 
-const description = computed(() => {
-    const mappings = Array.isArray(props.labor?.fullfilMappings)
-        ? props.labor.fullfilMappings
-        : Array.isArray(props.plan?.fullfilMappings) ? props.plan.fullfilMappings : [];
-    if (mappings.length) {
-        const notes = mappings.map((mapping) => String(mapping?.notes || '').trim()).filter(Boolean);
-        return notes.length ? notes.join(' • ') : '—';
+function decodeStoragePath(rawUri) {
+    try {
+        return decodeURIComponent(rawUri);
+    } catch {
+        return rawUri;
     }
-    return props.labor.description || props.plan?.description || props.plan?.notes || props.labor.notes || "—";
-});
+}
+
+async function loadPhotoGroup(uris) {
+    const loaded = await Promise.all(uris.map(async (rawUri) => {
+        try {
+            const blob = await signedApiFetchBlob(`/storage?path=${encodeURIComponent(decodeStoragePath(rawUri))}`);
+            const objectUrl = URL.createObjectURL(blob);
+            photoObjectUrls.value.push(objectUrl);
+            return objectUrl;
+        } catch (error) {
+            console.warn("Failed to load labor image", error);
+            return null;
+        }
+    }));
+    return loaded.filter(Boolean);
+}
+
+async function loadPhotos() {
+    const [before, after] = await Promise.all([
+        loadPhotoGroup(photoUris(props.labor.beforePhotos)),
+        loadPhotoGroup(photoUris(props.labor.afterPhotos)),
+    ]);
+    beforePhotos.value = before;
+    afterPhotos.value = after;
+}
 
 async function loadAvatar() {
     const rawUri = String(props.labor.avatar_uri || "").trim();
@@ -206,11 +223,13 @@ function handleKeydown(event) {
 
 onMounted(() => {
     loadAvatar();
+    loadPhotos();
     document.addEventListener("keydown", handleKeydown);
 });
 
 onUnmounted(() => {
     document.removeEventListener("keydown", handleKeydown);
     if (avatarUrl.value.startsWith("blob:")) URL.revokeObjectURL(avatarUrl.value);
+    photoObjectUrls.value.forEach((url) => URL.revokeObjectURL(url));
 });
 </script>

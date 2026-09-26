@@ -50,7 +50,7 @@ function mapTripToListItem(trip = {}) {
     unitName: trip.unit_name || '',
     volumeValue: Number.isFinite(volume) ? volume : 0,
     volumeLabel: formatVolume(trip.volume, trip.unit_name),
-    notes: trip.notes || '-'
+    notes: trip.notes ?? '-'
   }
 }
 
