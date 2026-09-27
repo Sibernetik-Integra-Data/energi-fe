@@ -142,6 +142,7 @@
 import { computed, ref, watch } from "vue";
 import LaborCard from "./LaborCard.vue";
 import ProtectedImage from "../../shared/ProtectedImage.vue";
+import { buildLaborDateRange, formatLaborDateLabel, getLaborPointDate, laborForDate } from "../../shared/laborDateGrouping";
 import infoIcon from "@/assets/icons/info-square-rounded-filled.svg";
 import taskIcon from "@/assets/icons/panen.svg";
 import metricUsersIcon from "@/assets/icons/figma/metric-users-detail.svg";
@@ -160,29 +161,30 @@ const effectiveLabors = computed(() => {
 });
 
 const laborGroups = computed(() => {
-    const grouped = new Map();
+    const dates = buildLaborDateRange(
+        props.plan?.planningStartDate || props.plan?.startDate,
+        props.plan?.planningEndDate || props.plan?.endDate,
+    );
+    const grouped = new Map(
+        dates.map((date) => [date, {
+            key: date,
+            planId: null,
+            rawDate: date,
+            label: formatLaborDateLabel(date),
+            sortKey: date,
+            labors: [],
+        }]),
+    );
 
     for (const labor of effectiveLabors.value) {
-        const dateValue = getLaborDate(labor, props.plan);
-        const planId = labor?.planId || labor?.plan_id || null;
-        const key = `${planId || "no-plan"}::${dateValue || "unknown"}`;
-
-        if (!grouped.has(key)) {
-            grouped.set(key, {
-                key,
-                planId,
-                rawDate: dateValue,
-                label: formatGroupLabel(dateValue, planId),
-                sortKey: dateValue || "0000-00-00",
-                labors: [],
-            });
-        }
-
-        const group = grouped.get(key);
-        group.labors.push(labor);
+        const dateValue = getLaborPointDate(labor);
+        if (!grouped.has(dateValue)) continue;
+        const group = grouped.get(dateValue);
+        group.planId = group.planId || labor?.planId || labor?.plan_id || null;
+        group.labors.push(laborForDate(labor, dateValue));
     }
 
-    return Array.from(grouped.values()).sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+    return Array.from(grouped.values()).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
 });
 
 const expandedGroupKeys = ref(new Set());
@@ -227,32 +229,4 @@ function statusChipClass(status) {
     return map[status] || "bg-gray-100 text-gray-600";
 }
 
-function getLaborDate(labor, plan) {
-    if (!labor) return plan?.startDate || "";
-
-    return (
-        labor.workDate ||
-        labor.work_date ||
-        labor.date ||
-        labor.plannedDate ||
-        labor.planned_date ||
-        labor.targetDate ||
-        labor.target_date ||
-        plan?.startDate ||
-        ""
-    );
-}
-
-function formatGroupLabel(rawDate, planId) {
-    if (!rawDate) return "Tanggal belum ditentukan";
-
-    const dateOnly = String(rawDate).slice(0, 10);
-    const match = dateOnly.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!match) {
-        return planId ? `${String(rawDate)}` : String(rawDate);
-    }
-
-    const dateLabel = `${match[1]} - ${match[2]} - ${match[3]}`;
-    return planId ? `${dateLabel}` : dateLabel;
-}
 </script>

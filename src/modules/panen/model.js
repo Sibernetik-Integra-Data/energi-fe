@@ -35,6 +35,13 @@ function formatDate(raw) {
   return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
+function formatDateRange(start, end) {
+  const startLabel = formatDate(start)
+  const endLabel = formatDate(end)
+  if (startLabel && endLabel && startLabel !== endLabel) return `${startLabel} — ${endLabel}`
+  return startLabel || endLabel
+}
+
 function normalizeBlockNames(rawBlocks) {
   if (!Array.isArray(rawBlocks)) return []
   const names = rawBlocks
@@ -69,7 +76,16 @@ function normalizeLaborImageUris(images) {
 }
 
 function getLaborPhotoGroups(laborRow) {
-  const grouped = laborRow?.labor_images || laborRow?.laborImages || {}
+  const candidates = [
+    laborRow?.labor_images,
+    laborRow?.laborImages,
+    laborRow?.planning?.labor_images,
+    laborRow?.planning?.laborImages
+  ]
+  const grouped = candidates.find((value) => (
+    value && typeof value === 'object' && !Array.isArray(value) &&
+    ['baseline', 'before', 'current', 'after'].some((key) => Array.isArray(value[key]) && value[key].length)
+  )) || {}
   let before = normalizeLaborImageUris(grouped.baseline || grouped.before)
   let after = normalizeLaborImageUris(grouped.current || grouped.after)
 
@@ -86,7 +102,14 @@ function getLaborPhotoGroups(laborRow) {
     if (!after.length) after = normalizeLaborImageUris(typedImages.after)
   }
 
-  return { beforePhotos: before, afterPhotos: after }
+  const imageDate = [
+    ...(Array.isArray(grouped.baseline) ? grouped.baseline : []),
+    ...(Array.isArray(grouped.current) ? grouped.current : []),
+    ...(Array.isArray(grouped.before) ? grouped.before : []),
+    ...(Array.isArray(grouped.after) ? grouped.after : [])
+  ].find((image) => image?.date_plan)?.date_plan || laborRow?.date_plan || ''
+
+  return { beforePhotos: before, afterPhotos: after, laborImages: grouped, laborImageDate: toIsoDateOrEmpty(imageDate) }
 }
 
 function mapSensusDetailItem(sensus, detail) {
@@ -109,6 +132,7 @@ function mapSensusDetailItem(sensus, detail) {
     endDate: sensusDate,
     startDateFormatted: formatDate(sensusDate),
     endDateFormatted: formatDate(sensusDate),
+    dateRangeFormatted: formatDateRange(sensusDate, sensusDate),
     actualStartDate: '',
     actualEndDate: '',
     status,
@@ -138,6 +162,7 @@ function mapSensusToListItems(sensus) {
         endDate: toDateOnlyString(sensus?.sensus_date),
         startDateFormatted: formatDate(sensus?.sensus_date),
         endDateFormatted: formatDate(sensus?.sensus_date),
+        dateRangeFormatted: formatDateRange(sensus?.sensus_date, sensus?.sensus_date),
         actualStartDate: '',
         actualEndDate: '',
         status: sensus?.status || 'draft',
@@ -207,8 +232,10 @@ function mapLaborItem(laborRow, plansById) {
     username: laborRow?.user_id || '',
     firstName: laborRow?.first_name || '',
     lastName: laborRow?.last_name || '',
+    laborImages: photoGroups.laborImages,
     beforePhotos: photoGroups.beforePhotos,
     afterPhotos: photoGroups.afterPhotos,
+    laborImageDate: photoGroups.laborImageDate,
     notes: laborRow?.notes || laborRow?.planning?.notes || '',
     description: laborRow?.planning?.sensus_detail?.description || planning?.sensus_detail?.description || laborRow?.description || '',
     blocks: normalizeBlockNames(planning?.sensus_detail?.blocks || planning?.blocks),
@@ -267,7 +294,18 @@ export async function loadPanenList(filters = {}) {
         const allLabors = laborRows.length
           ? laborRows
           : planningRows.flatMap((plan) => Array.isArray(plan.labors) ? plan.labors : [])
-        return { ...item, labors: allLabors }
+        const dateRange = pickDateRangeFromPlans(planningRows)
+        return {
+          ...item,
+          startDate: dateRange.startDate || item.startDate,
+          endDate: dateRange.endDate || item.endDate,
+          startDateFormatted: formatDate(dateRange.startDate || item.startDate),
+          endDateFormatted: formatDate(dateRange.endDate || item.endDate),
+          dateRangeFormatted: formatDateRange(dateRange.startDate || item.startDate, dateRange.endDate || item.endDate),
+          planningStartDate: dateRange.startDate,
+          planningEndDate: dateRange.endDate,
+          labors: allLabors
+        }
       } catch (error) {
         console.error(`Failed to load labors for item ${item.sensusId}:`, error)
         return item
@@ -308,6 +346,7 @@ export async function loadPanenDetail(sensusId, detailId = null) {
     endDate: dateRange.endDate || baseItem.endDate,
     startDateFormatted: formatDate(dateRange.startDate || baseItem.startDate),
     endDateFormatted: formatDate(dateRange.endDate || baseItem.endDate),
+    dateRangeFormatted: formatDateRange(dateRange.startDate || baseItem.startDate, dateRange.endDate || baseItem.endDate),
     planningStartDate: dateRange.startDate,
     planningEndDate: dateRange.endDate,
     plans: planningRows,

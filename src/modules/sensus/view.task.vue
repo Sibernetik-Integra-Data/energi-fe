@@ -76,7 +76,7 @@
                     <p class="text-xs text-(--text-muted) m-0">Sensus {{ plan.sensusId || '—' }}</p>
                   </div>
                   <div class="ml-auto flex items-center gap-2 shrink-0">
-                    <span class="inline-flex items-center text-xs px-2 py-1 rounded-full bg-(--status-done-bg) text-(--status-done-text)">{{ group.labors.length }} Submitted</span>
+                    <span class="inline-flex items-center text-xs px-2 py-1 rounded-full bg-(--status-done-bg) text-(--status-done-text)">{{ group.labors.length }} Labors</span>
                     <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-(--border) text-(--text-muted)" :class="{ 'rotate-180': expandedGroupKeys.has(group.key) }">⌃</span>
                   </div>
                 </button>
@@ -109,6 +109,7 @@ import infoIcon from '@/assets/icons/info-square-rounded-filled.svg'
 import metricUsersIcon from '@/assets/icons/figma/metric-users-detail.svg'
 import metricMandaysIcon from '@/assets/icons/figma/metric-mandays.svg'
 import metricCalendarIcon from '@/assets/icons/figma/metric-calendar.svg'
+import { buildLaborDateRange, formatLaborDateLabel, getLaborPointDate, laborForDate } from '../shared/laborDateGrouping'
 
 const props = defineProps({
   controller: { type: Object, required: true },
@@ -125,7 +126,7 @@ const error = ref(null)
 const expandedGroupKeys = ref(new Set())
 
 const effectiveLabors = computed(() => Array.isArray(plan.value?.labors) ? plan.value.labors : [])
-const workDays = computed(() => new Set(effectiveLabors.value.map((labor) => labor.workDate || labor.pointDate).filter(Boolean)).size || (plan.value ? 1 : 0))
+const workDays = computed(() => laborGroups.value.filter((group) => group.labors.length > 0).length || (plan.value ? 1 : 0))
 const mandays = computed(() => effectiveLabors.value.length)
 const workIcon = computed(() => {
   const group = String(
@@ -148,15 +149,28 @@ const metrics = computed(() => [
 ])
 
 const laborGroups = computed(() => {
-  const grouped = new Map()
+  const dates = buildLaborDateRange(
+    plan.value?.planningStartDate || plan.value?.startDate,
+    plan.value?.planningEndDate || plan.value?.endDate,
+  )
+  const grouped = new Map(
+    dates.map((date) => [date, {
+      key: date,
+      planId: null,
+      rawDate: date,
+      label: formatLaborDateLabel(date),
+      labors: []
+    }]),
+  )
+
   for (const labor of effectiveLabors.value) {
-    const date = labor.workDate || labor.pointDate || plan.value?.startDate || ''
-    const planId = labor.planId || labor.plan_id || null
-    const key = `${planId || 'no-plan'}::${date || 'unknown'}`
-    if (!grouped.has(key)) grouped.set(key, { key, planId, rawDate: date, label: formatDateLabel(date), labors: [] })
-    grouped.get(key).labors.push(labor)
+    const date = getLaborPointDate(labor)
+    if (!grouped.has(date)) continue
+    const group = grouped.get(date)
+    group.planId = group.planId || labor.planId || labor.plan_id || null
+    group.labors.push(laborForDate(labor, date))
   }
-  return [...grouped.values()].sort((a, b) => b.rawDate.localeCompare(a.rawDate))
+  return [...grouped.values()].sort((a, b) => a.rawDate.localeCompare(b.rawDate))
 })
 
 watch(laborGroups, (groups) => {
@@ -171,11 +185,6 @@ function toggleGroup(key) {
   if (next.has(key)) next.delete(key)
   else next.add(key)
   expandedGroupKeys.value = next
-}
-
-function formatDateLabel(value) {
-  const match = String(value || '').slice(0, 10).match(/^(\d{4})-(\d{2})-(\d{2})$/)
-  return match ? `${match[1]} - ${match[2]} - ${match[3]}` : (value || 'Tanggal belum ditentukan')
 }
 
 onMounted(async () => {

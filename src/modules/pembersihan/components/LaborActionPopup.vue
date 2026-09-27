@@ -121,8 +121,10 @@ const workerIdLabel = computed(() => {
 });
 
 const formattedWorkDate = computed(() => {
-    const start = props.labor.planningStartDate || props.labor.planning?.start_date || props.plan?.startDate || "";
-    const end = props.labor.planningEndDate || props.labor.planning?.end_date || props.plan?.endDate || "";
+    const selectedDate = props.workDate || props.labor.laborImageDate || props.labor.workDate || props.labor.pointDate || "";
+    if (selectedDate) return String(selectedDate).slice(0, 10);
+    const start = props.labor.planningStartDate || props.labor.planning?.start_date || props.plan?.planningStartDate || props.plan?.startDate || "";
+    const end = props.labor.planningEndDate || props.labor.planning?.end_date || props.plan?.planningEndDate || props.plan?.endDate || "";
     const startDate = String(start).slice(0, 10);
     const endDate = String(end).slice(0, 10);
     if (startDate && endDate) return `${startDate} — ${endDate}`;
@@ -163,7 +165,37 @@ function photoUris(value) {
         .map((photo) => typeof photo === "string" ? photo : photo?.image_uri || photo?.uri || "")
         .map((uri) => String(uri || "").trim())
         .filter(Boolean)
+        .filter((uri) => !/\.(md|txt|json|csv|xml)(?:$|\?)/i.test(decodeStoragePath(uri)))
         .slice(0, 3);
+}
+
+function rawLaborImageGroups() {
+    const candidates = [
+        props.labor?.laborImages,
+        props.labor?.labor_images,
+        props.labor?.planning?.labor_images,
+        props.labor?.planning?.laborImages,
+    ];
+    return candidates.find((value) => (
+        value && typeof value === "object" && !Array.isArray(value) &&
+        ["baseline", "before", "current", "after"].some((key) => Array.isArray(value[key]) && value[key].length)
+    )) || {};
+}
+
+function rawPhotoGroup(groupName) {
+    const grouped = rawLaborImageGroups();
+    const photos = [];
+    Object.entries(grouped && typeof grouped === "object" ? grouped : {}).forEach(([key, images]) => {
+        if (!Array.isArray(images)) return;
+        const hint = String(key || "").trim().toLowerCase();
+        images.forEach((image) => {
+            const typeId = Number(image?.type_image_id);
+            const isBefore = hint === "1" || hint === "baseline" || hint === "before" || hint.includes("baseline") || hint.includes("before") || hint.includes("sebelum") || typeId === 1;
+            const isAfter = hint === "2" || hint === "current" || hint === "after" || hint.includes("current") || hint.includes("after") || hint.includes("setelah") || typeId === 2;
+            if ((groupName === "before" && isBefore) || (groupName === "after" && isAfter)) photos.push(image);
+        });
+    });
+    return photos;
 }
 
 function decodeStoragePath(rawUri) {
@@ -176,23 +208,31 @@ function decodeStoragePath(rawUri) {
 
 async function loadPhotoGroup(uris) {
     const loaded = await Promise.all(uris.map(async (rawUri) => {
-        try {
-            const blob = await signedApiFetchBlob(`/storage?path=${encodeURIComponent(decodeStoragePath(rawUri))}`);
-            const objectUrl = URL.createObjectURL(blob);
-            photoObjectUrls.value.push(objectUrl);
-            return objectUrl;
-        } catch (error) {
-            console.warn("Failed to load labor image", error);
-            return null;
+        const decodedPath = decodeStoragePath(rawUri);
+        const candidatePaths = [...new Set([decodedPath, rawUri])];
+        let lastError = null;
+
+        for (const path of candidatePaths) {
+            try {
+                const blob = await signedApiFetchBlob(`/storage?path=${encodeURIComponent(path)}`);
+                const objectUrl = URL.createObjectURL(blob);
+                photoObjectUrls.value.push(objectUrl);
+                return objectUrl;
+            } catch (error) {
+                lastError = error;
+            }
         }
+
+        if (lastError) console.warn("Failed to load labor image", lastError);
+        return null;
     }));
     return loaded.filter(Boolean);
 }
 
 async function loadPhotos() {
     const [before, after] = await Promise.all([
-        loadPhotoGroup(photoUris(props.labor.beforePhotos)),
-        loadPhotoGroup(photoUris(props.labor.afterPhotos)),
+        loadPhotoGroup(photoUris(props.labor.beforePhotos?.length ? props.labor.beforePhotos : rawPhotoGroup("before"))),
+        loadPhotoGroup(photoUris(props.labor.afterPhotos?.length ? props.labor.afterPhotos : rawPhotoGroup("after"))),
     ]);
     beforePhotos.value = before;
     afterPhotos.value = after;

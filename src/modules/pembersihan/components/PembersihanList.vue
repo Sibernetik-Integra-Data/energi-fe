@@ -49,7 +49,7 @@
                     v-for="item in items"
                     :key="`${item.id}-${item.detailId || 'none'}`"
                     class="contents">
-                    <AssignmentCard :job-type="item.jobType" :group-of-work="item.groupOfWork" :date="item.startDateFormatted" :sensus-ref="`Sensus ${item.sensusId || '—'}`" :blocks="item.blocks" :photo="item.photo" @view-detail="$emit('view-detail', item)" @add-to-plan="$emit('add-to-plan', item)" />
+                    <AssignmentCard :job-type="item.jobType" :group-of-work="item.groupOfWork" :date="item.dateRangeFormatted || item.startDateFormatted" :sensus-ref="`Sensus ${item.sensusId || '—'}`" :blocks="item.blocks" :photo="item.photo" @view-detail="$emit('view-detail', item)" @add-to-plan="$emit('add-to-plan', item)" />
                     <div v-if="false">
                     <div class="p-5 pb-3 flex justify-between items-start gap-3">
                         <div class="min-w-0 flex flex-col gap-1">
