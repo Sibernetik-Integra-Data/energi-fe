@@ -179,7 +179,7 @@ const laborGroups = computed(() => {
         group.labors.push(laborForDate(labor, dateValue));
     }
 
-    return Array.from(grouped.values()).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+    return Array.from(grouped.values()).sort((a, b) => b.sortKey.localeCompare(a.sortKey));
 });
 
 const expandedGroupKeys = ref(new Set());

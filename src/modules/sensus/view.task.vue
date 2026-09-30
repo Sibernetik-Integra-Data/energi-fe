@@ -167,7 +167,7 @@ const laborGroups = computed(() => {
     group.planId = group.planId || labor.planId || labor.plan_id || null
     group.labors.push(laborForDate(labor, date))
   }
-  return [...grouped.values()].sort((a, b) => a.rawDate.localeCompare(b.rawDate))
+  return [...grouped.values()].sort((a, b) => b.rawDate.localeCompare(a.rawDate))
 })
 
 watch(laborGroups, (groups) => {
