@@ -109,7 +109,7 @@ import infoIcon from '@/assets/icons/info-square-rounded-filled.svg'
 import metricUsersIcon from '@/assets/icons/figma/metric-users-detail.svg'
 import metricMandaysIcon from '@/assets/icons/figma/metric-mandays.svg'
 import metricCalendarIcon from '@/assets/icons/figma/metric-calendar.svg'
-import { buildLaborDateRange, formatLaborDateLabel, getLaborPointDate, laborForDate } from '../shared/laborDateGrouping'
+import { formatLaborDateLabel, getLaborPointDate, getLaborPointDates, laborForDate } from '../shared/laborDateGrouping'
 
 const props = defineProps({
   controller: { type: Object, required: true },
@@ -149,10 +149,7 @@ const metrics = computed(() => [
 ])
 
 const laborGroups = computed(() => {
-  const dates = buildLaborDateRange(
-    plan.value?.planningStartDate || plan.value?.startDate,
-    plan.value?.planningEndDate || plan.value?.endDate,
-  )
+  const dates = getLaborPointDates(effectiveLabors.value)
   const grouped = new Map(
     dates.map((date) => [date, {
       key: date,

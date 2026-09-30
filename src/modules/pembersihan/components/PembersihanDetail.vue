@@ -143,7 +143,7 @@ import ProtectedImage from "../../shared/ProtectedImage.vue";
 import infoIcon from "@/assets/icons/info-square-rounded-filled.svg";
 import taskIcon from "@/assets/icons/figma/detail-task.svg";
 import metricUsersIcon from "@/assets/icons/figma/metric-users-detail.svg";
-import { buildLaborDateRange, formatLaborDateLabel, getLaborPointDate, laborForDate } from "../../shared/laborDateGrouping";
+import { formatLaborDateLabel, getLaborPointDate, getLaborPointDates, laborForDate } from "../../shared/laborDateGrouping";
 import chevronUpIcon from "@/assets/icons/figma/chevron-up.svg";
 
 const props = defineProps({
@@ -159,10 +159,7 @@ const effectiveLabors = computed(() => {
 });
 
 const laborGroups = computed(() => {
-    const dates = buildLaborDateRange(
-        props.plan?.planningStartDate || props.plan?.startDate,
-        props.plan?.planningEndDate || props.plan?.endDate,
-    );
+    const dates = getLaborPointDates(effectiveLabors.value);
     const grouped = new Map(
         dates.map((date) => [date, {
             key: date,

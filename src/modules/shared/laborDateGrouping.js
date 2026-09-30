@@ -9,25 +9,39 @@ function imageUri(image) {
 }
 
 export function getLaborPointDate(labor) {
-  return normalizeDate(labor?.pointDate || labor?.workDate || labor?.point_date || labor?.work_date)
+  return normalizeDate(labor?.pointDate || labor?.point_date || labor?.workDate || labor?.work_date)
 }
 
 function imageMatchesDate(image, date) {
   const imageDate = normalizeDate(image?.date_plan)
-  if (!imageDate || !date) return false
-  return imageDate === date || imageDate.slice(8, 10) === date.slice(8, 10)
+  if (!date) return false
+  // An image without date_plan is already scoped to its labor row. Keep it
+  // visible instead of dropping it when the labor is grouped by point_date.
+  return !imageDate || imageDate === date
+}
+
+function imageList(value) {
+  return Array.isArray(value) ? value : []
+}
+
+export function getLaborPointDates(labors = []) {
+  return [...new Set(
+    labors
+      .map((labor) => getLaborPointDate(labor))
+      .filter(Boolean),
+  )].sort((a, b) => b.localeCompare(a))
 }
 
 export function laborForDate(labor, date) {
   const grouped = labor?.laborImages && typeof labor.laborImages === 'object'
     ? labor.laborImages
     : {}
-  const baseline = Array.isArray(grouped.baseline)
+  const baseline = imageList(grouped.baseline).length
     ? grouped.baseline
-    : Array.isArray(grouped.before) ? grouped.before : []
-  const current = Array.isArray(grouped.current)
+    : imageList(grouped.before)
+  const current = imageList(grouped.current).length
     ? grouped.current
-    : Array.isArray(grouped.after) ? grouped.after : []
+    : imageList(grouped.after)
   const beforeImages = baseline.filter((image) => imageMatchesDate(image, date))
   const afterImages = current.filter((image) => imageMatchesDate(image, date))
 

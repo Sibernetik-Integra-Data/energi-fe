@@ -146,7 +146,7 @@ import infoIcon from "@/assets/icons/info-square-rounded-filled.svg";
 import taskIcon from "@/assets/icons/pemupukan.svg";
 import metricUsersIcon from "@/assets/icons/figma/metric-users-detail.svg";
 import chevronUpIcon from "@/assets/icons/figma/chevron-up.svg";
-import { buildLaborDateRange, formatLaborDateLabel, getLaborPointDate, laborForDate } from "../../shared/laborDateGrouping";
+import { formatLaborDateLabel, getLaborPointDate, getLaborPointDates, laborForDate } from "../../shared/laborDateGrouping";
 
 const props = defineProps({
     plan: { type: Object, default: null },
@@ -161,10 +161,7 @@ const effectiveLabors = computed(() => {
 });
 
 const laborGroups = computed(() => {
-    const dates = buildLaborDateRange(
-        props.plan?.planningStartDate || props.plan?.startDate,
-        props.plan?.planningEndDate || props.plan?.endDate,
-    );
+    const dates = getLaborPointDates(effectiveLabors.value);
     const grouped = new Map(
         dates.map((date) => [date, {
             key: date,
