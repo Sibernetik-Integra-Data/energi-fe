@@ -21,18 +21,18 @@
                         <th class="pekerja-th">Nama</th>
                         <th class="pekerja-th">Email</th>
                         <th class="pekerja-th whitespace-nowrap">Jabatan</th>
-                        <th class="pekerja-th">Aksi</th>
+                        <th v-if="isOwner" class="pekerja-th">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-if="rows.length === 0">
-                        <td colspan="5" class="py-10 px-3 text-center text-sm text-(--text-muted)">
+                        <td :colspan="isOwner ? 5 : 4" class="py-10 px-3 text-center text-sm text-(--text-muted)">
                             Tidak ada data.
                         </td>
                     </tr>
                     <tr
                         v-for="row in paginatedRows"
-                        :key="row.id"
+                        :key="row.user_id"
                         class="pekerja-row">
 
                         <!-- ID Pekerja: user_id (truncated) -->
@@ -56,7 +56,7 @@
                         </td>
 
                         <!-- Aksi: View button -->
-                        <td class="pekerja-td">
+                        <td v-if="isOwner" class="pekerja-td">
                             <button
                                 type="button"
                                 class="pekerja-btn-view"
@@ -71,38 +71,10 @@
         </template>
     </div>
 
-    <!-- View Alert Modal (Teleport to body) -->
-    <Teleport to="body">
-        <div
-            v-if="showViewAlert"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-            @mousedown.self="showViewAlert = false">
-            <div class="pekerja-modal">
-                <div class="flex items-center gap-3">
-                    <div class="bg-orange-100 dark:bg-orange-900/30 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="12" cy="12" r="10" stroke="#fb8c00" stroke-width="2"/>
-                            <path d="M12 8v4M12 16h.01" stroke="#fb8c00" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-base font-bold text-(--text) m-0">Informasi</h3>
-                </div>
-                <p class="text-sm text-(--text-muted) m-0">button view clicked</p>
-                <div class="flex justify-end">
-                    <button
-                        type="button"
-                        class="border-0 bg-[#fb8c00] text-white font-semibold text-sm py-2.5 px-6 rounded-lg cursor-pointer hover:bg-[#e67e00] transition-colors"
-                        @click="showViewAlert = false">
-                        Tutup
-                    </button>
-                </div>
-            </div>
-        </div>
-    </Teleport>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useListPagination } from '../../../shared/pagination/useListPagination.js'
 import MasterDataPagination from '../../../shared/pagination/MasterDataPagination.vue'
@@ -119,13 +91,16 @@ const props = defineProps({
     error: {
         type: String,
         default: null
+    },
+    isOwner: {
+        type: Boolean,
+        default: false
     }
 })
 
 const rowsForPagination = computed(() => props.rows)
 const { currentPage, pageSize, totalItems, totalPages, paginatedItems: paginatedRows, visiblePages } = useListPagination(rowsForPagination)
 
-const showViewAlert = ref(false)
 const router = useRouter()
 
 function onView(row) {
@@ -196,16 +171,4 @@ function onView(row) {
     background: var(--surface-muted);
 }
 
-.pekerja-modal {
-    background: var(--surface);
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    width: 100%;
-    max-width: 360px;
-    margin: 0 16px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
 </style>

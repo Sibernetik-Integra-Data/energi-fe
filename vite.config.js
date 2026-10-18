@@ -12,6 +12,7 @@ function parseListEnv(value = '') {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const proxyTarget = env.VITE_PROXY_DEVELOP || 'http://localhost:10002'
+  const storageProxyTarget = env.VITE_STORAGE_PROXY_TARGET || proxyTarget
   const strapiProxyTarget = env.VITE_STRAPI_URL || 'http://localhost:10003'
   const strapiProxyPaths = parseListEnv(env.VITE_STRAPI_PROXY_PATHS || '')
   const strapiProxy = Object.fromEntries(
@@ -36,6 +37,11 @@ export default defineConfig(({ mode }) => {
       port: 10001,
       proxy: {
         ...strapiProxy,
+        '/api/storage': {
+          target: storageProxyTarget,
+          changeOrigin: true,
+          secure: false
+        },
         '/uploads': {
           target: strapiProxyTarget,
           changeOrigin: true,

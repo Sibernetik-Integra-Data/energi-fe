@@ -12,6 +12,9 @@ export const userManagementService = {
   async listUsers() {
     return unwrap(await signedApiFetch(`${PREFIX}/users?max=1000`, { method: 'GET' }))
   },
+  async getUser(userId) {
+    return unwrap(await signedApiFetch(`${PREFIX}/users/${encodeURIComponent(userId)}`, { method: 'GET' }))?.user
+  },
   async getConfiguration() {
     return unwrap(await signedApiFetch(`${PREFIX}/configuration`, { method: 'GET' }))
   },

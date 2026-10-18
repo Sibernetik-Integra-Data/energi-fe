@@ -18,7 +18,7 @@
                   <img v-if="avatarUrl" :src="avatarUrl" :alt="fullName" class="h-full w-full object-cover" />
                   <span v-else>{{ initials }}</span>
                 </div>
-                <div class="text-center"><p class="m-0 text-lg font-bold">{{ fullName }}</p><p class="m-0 mt-3 text-sm text-(--text-muted)">{{ worker?.jabatan || '-' }}</p><p class="m-0 text-sm text-(--text-muted)">ID{{ worker?.user_id || '-' }}</p></div>
+                <div class="text-center"><p class="m-0 text-lg font-bold">{{ fullName }}</p><p class="m-0 mt-3 text-sm text-(--text-muted)">{{ worker?.access || worker?.jabatan || '-' }}</p><p class="m-0 text-sm text-(--text-muted)">ID{{ worker?.id || worker?.user_id || '-' }}</p></div>
               </div>
               <div class="mx-6 h-px bg-(--border)"></div>
               <nav class="flex flex-col gap-1 p-6">
@@ -35,8 +35,8 @@
             <template v-else-if="tab === 'profile'">
               <div class="overflow-hidden rounded-2xl bg-(--surface)">
                 <div class="flex items-start gap-4 p-6"><div class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#fbc66b] text-xl font-bold text-white"><img v-if="avatarUrl" :src="avatarUrl" :alt="fullName" class="h-full w-full object-cover" /><span v-else>{{ initials }}</span></div><div><p class="m-0 text-base font-bold">Foto Profil</p><p class="m-0 text-sm leading-5 text-(--text-muted)">Optimal size 300 x 300 pixels with file size: Maximum 10 MB.</p><p class="m-0 text-sm leading-5 text-(--text-muted)">Allowed file extensions: JPG, JPEG, PNG.</p></div></div>
-                <div class="grid grid-cols-2 gap-6 px-6 pb-6 max-[640px]:grid-cols-1"><ProfileField label="Nama Depan" :value="worker?.first_name" /><ProfileField label="Nama Belakang" :value="worker?.last_name" /><ProfileField label="Tanggal Lahir" value="-" /><ProfileField label="Marital Status" value="-" /><ProfileField label="Email" :value="worker?.email" /><ProfileField label="Gender" value="-" /><ProfileField label="Address 1" value="-" full /><ProfileField label="Address 2" value="-" full /></div>
-                <div class="flex justify-end border-t border-(--border) p-6"><button type="button" class="cursor-pointer rounded-full bg-(--text) px-4 py-3 text-base font-medium text-(--surface) transition-opacity hover:opacity-80">Edit Profile</button></div>
+                <div class="grid grid-cols-2 gap-6 px-6 pb-6 max-[640px]:grid-cols-1"><ProfileField label="Nama Depan" :value="worker?.firstName || worker?.first_name" /><ProfileField label="Nama Belakang" :value="worker?.lastName || worker?.last_name" /><ProfileField label="Tanggal Lahir" :value="worker?.birthDate" /><ProfileField label="Marital Status" :value="worker?.maritalStatus" /><ProfileField label="Email" :value="worker?.email" /><ProfileField label="Gender" :value="worker?.gender" /><ProfileField label="User Access" :value="worker?.access || worker?.jabatan" /><ProfileField label="Address 1" :value="worker?.address1" full /><ProfileField label="Address 2" :value="worker?.address2" full /></div>
+                <div v-if="isOwner" class="flex justify-end border-t border-(--border) p-6"><button type="button" class="cursor-pointer rounded-full bg-(--text) px-4 py-3 text-base font-medium text-(--surface) transition-opacity hover:opacity-80" :disabled="openingEdit" @click="openEdit">{{ openingEdit ? 'Memuat…' : 'Edit Profile' }}</button></div>
               </div>
             </template>
             <template v-else-if="tab === 'performance'">
@@ -48,6 +48,15 @@
       </main>
     </div>
   </div>
+  <UserManagementModal
+    v-if="editModalOpen"
+    mode="edit"
+    :user="worker"
+    :configuration="configuration"
+    :saving="saving"
+    :error="formError"
+    @close="editModalOpen = false"
+    @save="saveUser" />
 </template>
 
 <script setup>
@@ -61,6 +70,11 @@ import { useAppStore } from '../../../stores'
 import { navigation as sharedNavigation } from '../../shared/navigation'
 import { listPekerja } from './model'
 import { signedApiFetchBlob } from '../../../api/fetch'
+import UserManagementModal from '../../user-management/components/UserManagementModal.vue'
+import userManagementService, { userManagementErrorMessage } from '../../user-management/services/userManagementService'
+import { getPasswordEncryptionKey } from '../../../auth/accountApi'
+import { encryptPassword } from '../../user-management/services/passwordEncryption'
+import { useToast } from '../../../utils/toast'
 
 const ProfileField = defineComponent({ props: { label: String, value: [String, Number], full: Boolean }, setup: (props) => () => h('div', { class: props.full ? 'col-span-2 max-[640px]:col-span-1' : '' }, [h('label', { class: 'mb-2 block px-1 text-sm font-medium' }, props.label), h('div', { class: 'min-h-10 rounded-lg bg-(--surface-muted) px-2.5 py-2.5 text-sm text-(--text)' }, props.value || '-')]) })
 const MetricCard = defineComponent({ props: { label: String, value: [String, Number], icon: String }, setup: (props) => () => h('div', { class: 'flex h-[142px] items-start justify-between rounded-[14px] border border-(--border) p-6' }, [h('div', { class: 'flex h-full flex-col justify-between' }, [h('p', { class: 'm-0 text-sm text-(--text-muted)' }, props.label), h('p', { class: 'm-0 text-3xl font-semibold text-(--text)' }, String(props.value))]), h('div', { class: 'flex h-14 w-14 items-center justify-center rounded-full bg-[#b8a44c] text-white' }, [h(BaseIcon, { name: props.icon, size: 30 })])]) })
@@ -68,14 +82,21 @@ const MetricCard = defineComponent({ props: { label: String, value: [String, Num
 const route = useRoute()
 const router = useRouter()
 const appStore = useAppStore()
+const { show: showToast } = useToast()
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 const navigation = sharedNavigation
 const worker = ref(null)
 const loading = ref(true)
 const error = ref('')
+const isOwner = ref(false)
+const editModalOpen = ref(false)
+const openingEdit = ref(false)
+const saving = ref(false)
+const formError = ref('')
+const configuration = ref({ accessOptions: [], client: { clientId: 'mobile', roles: [] } })
 const localAvatarUrl = ref('')
 const tab = ref('profile')
-const fullName = computed(() => [worker.value?.first_name, worker.value?.last_name].filter(Boolean).join(' ') || '-')
+const fullName = computed(() => [worker.value?.firstName || worker.value?.first_name, worker.value?.lastName || worker.value?.last_name].filter(Boolean).join(' ') || worker.value?.username || '-')
 const initials = computed(() => fullName.value.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'U')
 const avatarUrl = computed(() => localAvatarUrl.value || '')
 
@@ -110,16 +131,92 @@ async function loadAvatar(uri) {
 
 onMounted(async () => {
   try {
-    const result = await listPekerja()
-    worker.value = result.data.find((item) => item.user_id === route.params.userId) || null
+    const [result, access] = await Promise.all([
+      listPekerja(),
+      userManagementService.verifyOwnerAccess().catch(() => null)
+    ])
+    const workerRow = result.data.find((item) => item.user_id === route.params.userId) || null
+    isOwner.value = access?.isOwner === true
+    worker.value = workerRow
     if (!worker.value) error.value = 'User tidak ditemukan.'
-    else await loadAvatar(worker.value.avatar_uri)
+    else {
+      if (isOwner.value) {
+        const managedUser = await userManagementService.getUser(route.params.userId)
+        worker.value = {
+          ...workerRow,
+          ...managedUser,
+          user_id: managedUser.id,
+          first_name: managedUser.firstName,
+          last_name: managedUser.lastName,
+          jabatan: managedUser.access
+        }
+      }
+      await loadAvatar(worker.value.avatar_uri)
+    }
   } catch (err) {
     error.value = err?.message || 'Gagal memuat profil user.'
   } finally {
     loading.value = false
   }
 })
+
+async function openEdit() {
+  openingEdit.value = true
+  formError.value = ''
+  try {
+    configuration.value = await userManagementService.getConfiguration()
+    editModalOpen.value = true
+  } catch (err) {
+    showToast(userManagementErrorMessage(err, 'Gagal memuat konfigurasi user.'), 'error')
+  } finally {
+    openingEdit.value = false
+  }
+}
+
+async function saveUser(form) {
+  saving.value = true
+  formError.value = ''
+  try {
+    const payload = {
+      username: form.username,
+      email: form.email,
+      firstName: form.firstName,
+      lastName: form.lastName,
+      birthDate: form.birthDate,
+      maritalStatus: form.maritalStatus,
+      gender: form.gender,
+      access: form.access,
+      address1: form.address1,
+      address2: form.address2
+    }
+    await userManagementService.updateUser(route.params.userId, payload)
+    await userManagementService.updateRoleMappings(route.params.userId, form.directClientRoles)
+    if (form.password) {
+      const { publicKey } = await getPasswordEncryptionKey()
+      await userManagementService.resetPassword(route.params.userId, await encryptPassword(form.password, publicKey))
+    }
+
+    const [updatedUser, result] = await Promise.all([
+      userManagementService.getUser(route.params.userId),
+      listPekerja()
+    ])
+    const latestWorker = result.data.find((item) => item.user_id === route.params.userId)
+    worker.value = {
+      ...(latestWorker || worker.value),
+      ...updatedUser,
+      user_id: updatedUser.id,
+      first_name: updatedUser.firstName,
+      last_name: updatedUser.lastName,
+      jabatan: updatedUser.access
+    }
+    editModalOpen.value = false
+    showToast('Profile user berhasil diperbarui.')
+  } catch (err) {
+    formError.value = userManagementErrorMessage(err, 'Gagal memperbarui profile user.')
+  } finally {
+    saving.value = false
+  }
+}
 
 onBeforeUnmount(() => {
   if (localAvatarUrl.value.startsWith('blob:')) URL.revokeObjectURL(localAvatarUrl.value)
