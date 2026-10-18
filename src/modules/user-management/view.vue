@@ -168,7 +168,6 @@ async function saveUser(form) {
     } else {
       const id = selectedUser.value.id
       await userManagementService.updateUser(id, payload)
-      await userManagementService.updateRoleMappings(id, form.directClientRoles)
       if (encryptedPassword) await userManagementService.resetPassword(id, encryptedPassword)
       showToast('User berhasil diperbarui.')
     }

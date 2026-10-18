@@ -14,7 +14,7 @@
         <header class="sticky top-0 z-1 flex items-center justify-between border-b border-(--border) bg-(--surface) px-6 py-4">
           <div>
             <h2 :id="titleId" class="m-0 text-lg font-bold">{{ mode === 'add' ? 'Tambah User' : 'Edit User' }}</h2>
-            <p class="m-0 mt-1 text-xs text-(--text-muted)">Kelola profil Keycloak, User Access, dan role client mobile.</p>
+            <p class="m-0 mt-1 text-xs text-(--text-muted)">{{ mode === 'add' ? 'Buat akun Keycloak dan atur profil serta role client.' : 'Perbarui profil dan akses akun Keycloak.' }}</p>
           </div>
           <button type="button" class="icon-button" aria-label="Tutup" :disabled="saving" @click="requestClose">
             <BaseIcon name="x" :size="18" />
@@ -30,19 +30,19 @@
               <label class="field"><span>Username *</span><input v-model.trim="form.username" required :readonly="mode === 'edit'" autocomplete="username" /></label>
               <label class="field"><span>Email *</span><input v-model.trim="form.email" required type="email" autocomplete="email" /></label>
               <label class="field"><span>Nama Depan *</span><input v-model.trim="form.firstName" required /></label>
-              <label class="field"><span>Nama Belakang</span><input v-model.trim="form.lastName" /></label>
+              <label class="field"><span>Nama Belakang{{ isRequired('lastName') ? ' *' : '' }}</span><input v-model.trim="form.lastName" :required="isRequired('lastName')" /></label>
             </div>
           </section>
 
           <section class="form-section">
             <h3>Profil Energi</h3>
             <div class="form-grid">
-              <label class="field"><span>Tanggal Lahir</span><input v-model="form.birthDate" type="date" /></label>
-              <label class="field"><span>Marital Status</span>
-                <select v-model="form.maritalStatus"><option value="">Pilih status</option><option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option></select>
+              <label class="field"><span>Tanggal Lahir{{ isRequired('birthDate') ? ' *' : '' }}</span><input v-model="form.birthDate" type="date" :required="isRequired('birthDate')" /></label>
+              <label class="field"><span>Marital Status{{ isRequired('maritalStatus') ? ' *' : '' }}</span>
+                <select v-model="form.maritalStatus" :required="isRequired('maritalStatus')"><option value="">Pilih status</option><option v-for="option in optionsFor('maritalStatus', ['Single', 'Married', 'Divorced', 'Widowed'])" :key="option" :value="option">{{ optionLabel(option) }}</option></select>
               </label>
-              <label class="field"><span>Gender</span>
-                <select v-model="form.gender"><option value="">Pilih gender</option><option value="Laki-Laki">Laki-Laki</option><option value="Perempuan">Perempuan</option></select>
+              <label class="field"><span>Gender{{ isRequired('gender') ? ' *' : '' }}</span>
+                <select v-model="form.gender" :required="isRequired('gender')"><option value="">Pilih gender</option><option v-for="option in optionsFor('gender', ['Laki-Laki', 'Perempuan'])" :key="option" :value="option">{{ optionLabel(option) }}</option></select>
               </label>
               <label class="field"><span>User Access *</span>
                 <select v-model="form.access" required :disabled="isProtectedSelf">
@@ -50,13 +50,13 @@
                   <option v-for="option in configuration.accessOptions || []" :key="option" :value="option">{{ option }}</option>
                 </select>
               </label>
-              <label class="field col-span-2 max-[640px]:col-span-1"><span>Address 1</span><textarea v-model.trim="form.address1" rows="2"></textarea></label>
-              <label class="field col-span-2 max-[640px]:col-span-1"><span>Address 2</span><textarea v-model.trim="form.address2" rows="2"></textarea></label>
+              <label class="field col-span-2 max-[640px]:col-span-1"><span>Address 1{{ isRequired('address1') ? ' *' : '' }}</span><textarea v-model.trim="form.address1" rows="2" :required="isRequired('address1')"></textarea></label>
+              <label class="field col-span-2 max-[640px]:col-span-1"><span>Address 2{{ isRequired('address2') ? ' *' : '' }}</span><textarea v-model.trim="form.address2" rows="2" :required="isRequired('address2')"></textarea></label>
             </div>
             <p v-if="isProtectedSelf" class="m-0 text-xs text-(--text-soft)">User Access akun Owner yang sedang digunakan tidak dapat diturunkan.</p>
           </section>
 
-          <section class="form-section">
+          <section v-if="mode === 'add'" class="form-section">
             <h3>Direct role mapping — {{ configuration.client?.clientId || 'mobile' }}</h3>
             <div class="grid grid-cols-2 gap-2 max-[640px]:grid-cols-1">
               <label v-for="role in configuration.client?.roles || []" :key="role.id || role.name" class="flex items-start gap-2 rounded-xl border border-(--border) bg-(--surface-muted) p-3 text-sm">
@@ -103,9 +103,23 @@ const titleId = `user-modal-${Math.random().toString(36).slice(2)}`
 const inheritedRoles = computed(() => props.user?.inheritedClientRoles || [])
 const isProtectedSelf = computed(() => props.user?.permissions?.manageAccess === false)
 const visibleError = computed(() => localError.value || props.error)
+function profileAttribute(name) { return props.configuration?.profileAttributes?.[name] || {} }
+function isRequired(name) { return profileAttribute(name).required === true }
+function optionsFor(name, fallback) {
+  const configured = profileAttribute(name).options
+  return Array.isArray(configured) && configured.length ? configured : fallback
+}
+function optionLabel(option) {
+  const value = String(option || '')
+  return value ? value[0].toUpperCase() + value.slice(1) : value
+}
+function selectedOption(name, value, fallback) {
+  const current = String(value || '')
+  return optionsFor(name, fallback).find((option) => String(option).toLowerCase() === current.toLowerCase()) || current
+}
 const form = reactive({
   username: props.user?.username || '', email: props.user?.email || '', firstName: props.user?.firstName || '', lastName: props.user?.lastName || '',
-  birthDate: props.user?.birthDate || '', maritalStatus: props.user?.maritalStatus || '', gender: props.user?.gender || '',
+  birthDate: props.user?.birthDate || '', maritalStatus: selectedOption('maritalStatus', props.user?.maritalStatus, ['Single', 'Married', 'Divorced', 'Widowed']), gender: selectedOption('gender', props.user?.gender, ['Laki-Laki', 'Perempuan']),
   access: props.user?.access || '', address1: props.user?.address1 || '', address2: props.user?.address2 || '',
   directClientRoles: [...(props.user?.directClientRoles || [])], password: '', confirmPassword: ''
 })

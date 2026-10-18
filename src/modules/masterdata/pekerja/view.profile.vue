@@ -190,7 +190,6 @@ async function saveUser(form) {
       address2: form.address2
     }
     await userManagementService.updateUser(route.params.userId, payload)
-    await userManagementService.updateRoleMappings(route.params.userId, form.directClientRoles)
     if (form.password) {
       const { publicKey } = await getPasswordEncryptionKey()
       await userManagementService.resetPassword(route.params.userId, await encryptPassword(form.password, publicKey))
