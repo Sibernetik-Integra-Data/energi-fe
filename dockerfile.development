@@ -12,11 +12,10 @@ WORKDIR /app
 COPY --chown=app:appgroup dist ./dist
 COPY --chown=app:appgroup .env.development ./.env.development
 COPY --chown=app:appgroup server.js ./server.js
-COPY --chown=app:appgroup package*.json ./
-
-# Install only production dependencies to keep the image small and avoid
-# copying the full build-time dependency tree into the runtime layer.
-RUN npm ci --omit=dev --silent
+# Install only the server dependencies. The frontend manifest includes build
+# and Strapi plugin dependencies that are not needed to serve the built files.
+RUN npm install --omit=dev --no-save --package-lock=false --ignore-scripts \
+    cors@2.8.6 dotenv@17.4.2 express@5.2.1
 
 USER app
 
@@ -28,4 +27,4 @@ ENV HOST=0.0.0.0
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=5 \
   CMD wget -qO- http://127.0.0.1:10001/ || exit 1
 
-CMD ["npm", "run", "server:dev"]
+CMD ["node", "server.js"]
