@@ -14,7 +14,7 @@
         <header class="sticky top-0 z-1 flex items-center justify-between border-b border-(--border) bg-(--surface) px-6 py-4">
           <div>
             <h2 :id="titleId" class="m-0 text-lg font-bold">{{ mode === 'add' ? 'Tambah User' : 'Edit User' }}</h2>
-            <p class="m-0 mt-1 text-xs text-(--text-muted)">{{ mode === 'add' ? 'Buat akun Keycloak dan atur profil serta role client.' : 'Perbarui profil dan akses akun Keycloak.' }}</p>
+            <p class="m-0 mt-1 text-xs text-(--text-muted)">{{ mode === 'add' ? 'Buat akun Keycloak dan atur profil user.' : 'Perbarui profil dan akses akun Keycloak.' }}</p>
           </div>
           <button type="button" class="icon-button" aria-label="Tutup" :disabled="saving" @click="requestClose">
             <BaseIcon name="x" :size="18" />
@@ -54,17 +54,6 @@
               <label class="field col-span-2 max-[640px]:col-span-1"><span>Address 2{{ isRequired('address2') ? ' *' : '' }}</span><textarea v-model.trim="form.address2" rows="2" :required="isRequired('address2')"></textarea></label>
             </div>
             <p v-if="isProtectedSelf" class="m-0 text-xs text-(--text-soft)">User Access akun Owner yang sedang digunakan tidak dapat diturunkan.</p>
-          </section>
-
-          <section v-if="mode === 'add'" class="form-section">
-            <h3>Direct role mapping — {{ configuration.client?.clientId || 'mobile' }}</h3>
-            <div class="grid grid-cols-2 gap-2 max-[640px]:grid-cols-1">
-              <label v-for="role in configuration.client?.roles || []" :key="role.id || role.name" class="flex items-start gap-2 rounded-xl border border-(--border) bg-(--surface-muted) p-3 text-sm">
-                <input v-model="form.directClientRoles" type="checkbox" :value="role.name" class="mt-0.5 accent-(--brand)" />
-                <span><strong class="block">{{ role.name }}</strong><small v-if="role.description" class="text-(--text-soft)">{{ role.description }}</small></span>
-              </label>
-            </div>
-            <p v-if="inheritedRoles.length" class="m-0 mt-3 text-xs text-(--text-muted)">Inherited roles (read-only): {{ inheritedRoles.join(', ') }}</p>
           </section>
 
           <section class="form-section">
