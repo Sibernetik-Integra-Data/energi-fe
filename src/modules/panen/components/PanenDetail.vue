@@ -142,7 +142,7 @@
 import { computed, ref, watch } from "vue";
 import LaborCard from "./LaborCard.vue";
 import ProtectedImage from "../../shared/ProtectedImage.vue";
-import { buildLaborDateRange, formatLaborDateLabel, getLaborPointDate, laborForDate } from "../../shared/laborDateGrouping";
+import { formatLaborDateLabel, getLaborPointDate, getLaborPointDates, laborForDate } from "../../shared/laborDateGrouping";
 import infoIcon from "@/assets/icons/info-square-rounded-filled.svg";
 import taskIcon from "@/assets/icons/panen.svg";
 import metricUsersIcon from "@/assets/icons/figma/metric-users-detail.svg";
@@ -161,10 +161,7 @@ const effectiveLabors = computed(() => {
 });
 
 const laborGroups = computed(() => {
-    const dates = buildLaborDateRange(
-        props.plan?.planningStartDate || props.plan?.startDate,
-        props.plan?.planningEndDate || props.plan?.endDate,
-    );
+    const dates = getLaborPointDates(effectiveLabors.value);
     const grouped = new Map(
         dates.map((date) => [date, {
             key: date,
@@ -184,7 +181,7 @@ const laborGroups = computed(() => {
         group.labors.push(laborForDate(labor, dateValue));
     }
 
-    return Array.from(grouped.values()).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+    return Array.from(grouped.values()).sort((a, b) => b.sortKey.localeCompare(a.sortKey));
 });
 
 const expandedGroupKeys = ref(new Set());

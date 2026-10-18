@@ -9,31 +9,63 @@ function imageUri(image) {
 }
 
 export function getLaborPointDate(labor) {
-  return normalizeDate(labor?.pointDate || labor?.workDate || labor?.point_date || labor?.work_date)
+  return normalizeDate(labor?.pointDate || labor?.point_date || labor?.workDate || labor?.work_date)
 }
 
-function imageMatchesDate(image, date) {
-  const imageDate = normalizeDate(image?.date_plan)
-  if (!imageDate || !date) return false
-  return imageDate === date || imageDate.slice(8, 10) === date.slice(8, 10)
+function imageList(value) {
+  return Array.isArray(value) ? value : []
+}
+
+function dateScopedGroup(grouped, date) {
+  if (!grouped || typeof grouped !== 'object' || Array.isArray(grouped)) return {}
+  const dateKeys = [
+    date,
+    date.replaceAll('-', '/'),
+    date.replaceAll('-', ''),
+  ]
+  const containers = [grouped, grouped.byDate, grouped.by_date, grouped.dates]
+  for (const container of containers) {
+    if (!container || typeof container !== 'object' || Array.isArray(container)) continue
+    for (const key of dateKeys) {
+      const value = container[key]
+      if (value && typeof value === 'object' && !Array.isArray(value)) return value
+    }
+  }
+  return grouped
+}
+
+export function getLaborPointDates(labors = []) {
+  return [...new Set(
+    labors
+      .map((labor) => getLaborPointDate(labor))
+      .filter(Boolean),
+  )].sort((a, b) => b.localeCompare(a))
 }
 
 export function laborForDate(labor, date) {
-  const grouped = labor?.laborImages && typeof labor.laborImages === 'object'
+  const laborDate = getLaborPointDate(labor) || date
+  const rawGrouped = labor?.laborImages && typeof labor.laborImages === 'object'
     ? labor.laborImages
     : {}
-  const baseline = Array.isArray(grouped.baseline)
+  const grouped = dateScopedGroup(rawGrouped, laborDate)
+  const baseline = imageList(grouped.baseline).length
     ? grouped.baseline
-    : Array.isArray(grouped.before) ? grouped.before : []
-  const current = Array.isArray(grouped.current)
+    : imageList(grouped.before).length
+      ? grouped.before
+      : imageList(labor?.beforePhotos)
+  const current = imageList(grouped.current).length
     ? grouped.current
-    : Array.isArray(grouped.after) ? grouped.after : []
-  const beforeImages = baseline.filter((image) => imageMatchesDate(image, date))
-  const afterImages = current.filter((image) => imageMatchesDate(image, date))
+    : imageList(grouped.after).length
+      ? grouped.after
+      : imageList(labor?.afterPhotos)
+  // labor_images already belongs to this labor row. The API example can
+  // contain a different date_plan, so point_date is the only display grouping key.
+  const beforeImages = baseline
+  const afterImages = current
 
   return {
     ...labor,
-    laborImageDate: date,
+    laborImageDate: laborDate,
     laborImages: { ...grouped, baseline: beforeImages, current: afterImages },
     beforePhotos: beforeImages.map(imageUri).filter(Boolean),
     afterPhotos: afterImages.map(imageUri).filter(Boolean)
