@@ -28,7 +28,7 @@
                         :rows="rows"
                         :loading="loading"
                         :error="fetchError"
-                        :is-owner="isOwner" />
+                        :can-view-profiles="canViewProfiles" />
                 </div>
             </main>
         </div>
@@ -69,6 +69,7 @@ const loading = ref(false)
 const fetchError = ref(null)
 const totalPekerja = ref(0)
 const isOwner = ref(false)
+const canViewProfiles = ref(false)
 const addModalOpen = ref(false)
 const openingAdd = ref(false)
 const savingAdd = ref(false)
@@ -134,11 +135,13 @@ async function createUser(form) {
 }
 
 onMounted(async () => {
-    const [accessResult] = await Promise.allSettled([
-        userManagementService.verifyOwnerAccess(),
+    const [profileAccessResult] = await Promise.allSettled([
+        userManagementService.verifyWorkerProfileAccess(),
         loadData()
     ])
-    isOwner.value = accessResult.status === 'fulfilled' && accessResult.value?.isOwner === true
+    const access = profileAccessResult.status === 'fulfilled' ? profileAccessResult.value : null
+    isOwner.value = access?.isOwner === true
+    canViewProfiles.value = access?.canViewWorkerProfiles === true
 })
 </script>
 

@@ -21,12 +21,12 @@
                         <th class="pekerja-th">Nama</th>
                         <th class="pekerja-th">Email</th>
                         <th class="pekerja-th whitespace-nowrap">Jabatan</th>
-                        <th v-if="isOwner" class="pekerja-th">Aksi</th>
+                        <th v-if="canViewProfiles" class="pekerja-th">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-if="rows.length === 0">
-                        <td :colspan="isOwner ? 5 : 4" class="py-10 px-3 text-center text-sm text-(--text-muted)">
+                        <td :colspan="canViewProfiles ? 5 : 4" class="py-10 px-3 text-center text-sm text-(--text-muted)">
                             Tidak ada data.
                         </td>
                     </tr>
@@ -56,7 +56,7 @@
                         </td>
 
                         <!-- Aksi: View button -->
-                        <td v-if="isOwner" class="pekerja-td">
+                        <td v-if="canViewProfiles" class="pekerja-td">
                             <button
                                 type="button"
                                 class="pekerja-btn-view"
@@ -67,7 +67,9 @@
                     </tr>
                 </tbody>
             </table>
-            <MasterDataPagination id="pekerja" :total-items="totalItems" :current-page="currentPage" :page-size="pageSize" :total-pages="totalPages" :visible-pages="visiblePages" @update:current-page="currentPage = $event" @update:page-size="pageSize = $event" />
+            <div class="pekerja-pagination">
+                <MasterDataPagination id="pekerja" :total-items="totalItems" :current-page="currentPage" :page-size="pageSize" :total-pages="totalPages" :visible-pages="visiblePages" @update:current-page="currentPage = $event" @update:page-size="pageSize = $event" />
+            </div>
         </template>
     </div>
 
@@ -92,7 +94,7 @@ const props = defineProps({
         type: String,
         default: null
     },
-    isOwner: {
+    canViewProfiles: {
         type: Boolean,
         default: false
     }
@@ -153,6 +155,10 @@ function onView(row) {
     font-weight: 500;
     color: var(--table-row-text);
     font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.pekerja-pagination {
+    padding: 0 16px 16px;
 }
 
 .pekerja-btn-view {

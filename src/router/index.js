@@ -25,6 +25,7 @@ import TypeOfUnitModule from '../modules/masterdata/type-of-unit'
 import MasterDataPekerjaModule from '../modules/masterdata/pekerja'
 import ProfileModule from '../modules/profile'
 import UserManagementModule from '../modules/user-management'
+import PerformanceOverviewModule from '../modules/performance-overview'
 import navigation from '../modules/shared/navigation'
 import ComingSoon from '../components/ComingSoon.vue'
 import { isAuthenticated, redirectToKeycloakLogin, tryRestoreSession } from '../auth/keycloak'
@@ -152,6 +153,12 @@ const routes = [
       ? { ...route.meta, requiresAuth: true }
       : { requiresAuth: true }
   })),
+  ...PerformanceOverviewModule.routes.map(route => ({
+    ...route,
+    meta: route.meta
+      ? { ...route.meta, requiresAuth: true }
+      : { requiresAuth: true }
+  })),
   ...DestinationModule.routes.map(route => ({
     ...route,
     meta: route.meta
@@ -237,6 +244,14 @@ router.beforeEach(async (to) => {
         return '/dashboard'
       }
     }
+    if (to.matched.some(record => record.meta?.requiresWorkerProfileAccess)) {
+      try {
+        const access = await userManagementService.verifyWorkerProfileAccess()
+        return access?.canViewWorkerProfiles === true ? true : '/master-data/pekerja'
+      } catch {
+        return '/master-data/pekerja'
+      }
+    }
     return true
   }
 
@@ -250,6 +265,14 @@ router.beforeEach(async (to) => {
         return access?.isOwner === true ? true : '/dashboard'
       } catch {
         return '/dashboard'
+      }
+    }
+    if (to.matched.some(record => record.meta?.requiresWorkerProfileAccess)) {
+      try {
+        const access = await userManagementService.verifyWorkerProfileAccess()
+        return access?.canViewWorkerProfiles === true ? true : '/master-data/pekerja'
+      } catch {
+        return '/master-data/pekerja'
       }
     }
     return true

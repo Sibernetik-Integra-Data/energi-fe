@@ -11,7 +11,8 @@ export default {
     {
       path: '/master-data/pekerja/:userId',
       name: 'MasterDataPekerjaProfile',
-      component: PekerjaProfileView
+      component: PekerjaProfileView,
+      meta: { requiresWorkerProfileAccess: true }
     }
   ]
 }

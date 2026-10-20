@@ -6,6 +6,7 @@ export const navigation = [
   { label: 'Pemupukan', icon: 'plant', to: '/pemupukan', compact: true },
   { label: 'Panen', icon: 'location', to: '/panen', compact: true },
   { label: 'Pengiriman & Penerimaan', icon: 'package', to: '/pengiriman-penerimaan', compact: true },
+  { label: 'Performance Overview', icon: 'database', to: '/performance-overview', compact: true },
   {
     label: 'Master Data',
     icon: 'settings',

@@ -9,6 +9,9 @@ export const userManagementService = {
   async verifyOwnerAccess() {
     return unwrap(await signedApiFetch(`${PREFIX}/access`, { method: 'GET' }))
   },
+  async verifyWorkerProfileAccess() {
+    return unwrap(await signedApiFetch(`${PREFIX}/worker-profile-access`, { method: 'GET' }))
+  },
   async listUsers() {
     return unwrap(await signedApiFetch(`${PREFIX}/users?max=1000`, { method: 'GET' }))
   },

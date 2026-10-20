@@ -22,9 +22,9 @@
               </div>
               <div class="mx-6 h-px bg-(--border)"></div>
               <nav class="flex flex-col gap-1 p-6">
-                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'profile' ? 'is-active bg-[#fff4e6]' : ''" @click="tab = 'profile'"><BaseIcon name="profile" :size="16" /> Profile</button>
-                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'performance' ? 'is-active bg-[#fff4e6]' : ''" @click="tab = 'performance'"><BaseIcon name="dashboard" :size="16" /> Performance Overview</button>
-                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'account' ? 'is-active bg-[#fff4e6]' : ''" @click="tab = 'account'"><BaseIcon name="settings" :size="16" /> Account Config</button>
+                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'profile' ? 'is-active bg-[#fff4e6]' : ''" @click="setTab('profile')"><BaseIcon name="profile" :size="16" /> Profile</button>
+                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'performance' ? 'is-active bg-[#fff4e6]' : ''" @click="setTab('performance')"><BaseIcon name="dashboard" :size="16" /> Performance Overview</button>
+                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'account' ? 'is-active bg-[#fff4e6]' : ''" @click="setTab('account')"><BaseIcon name="settings" :size="16" /> Account Config</button>
               </nav>
             </div>
           </aside>
@@ -40,7 +40,7 @@
               </div>
             </template>
             <template v-else-if="tab === 'performance'">
-              <div class="flex flex-col gap-6"><div class="rounded-2xl bg-(--surface) p-4"><div class="flex gap-6"><select class="w-50 rounded-lg bg-(--surface-muted) p-2.5 text-sm text-(--text)"><option>April</option></select><select class="w-50 rounded-lg bg-(--surface-muted) p-2.5 text-sm text-(--text)"><option>2026</option></select></div><div class="mt-4 grid grid-cols-2 gap-4 max-[640px]:grid-cols-1"><MetricCard label="Total Tugas Pekerjaan" value="-" icon="users" /><MetricCard label="Total hari kerja" value="-" icon="calendar" /></div></div><div class="overflow-x-auto rounded-2xl border border-(--border) bg-(--surface)"><table class="w-full min-w-170 border-collapse"><thead><tr class="bg-(--surface-muted) text-left text-xs uppercase tracking-[.6px] text-(--text-muted)"><th class="p-3">Tanggal</th><th class="p-3">Pekerjaan</th><th class="p-3">Tipe Pekerjaan</th><th class="p-3">Gender</th><th class="p-3 text-center">Action</th></tr></thead><tbody><tr><td colspan="5" class="border-t border-(--border) p-10 text-center text-sm text-(--text-muted)">-</td></tr></tbody></table></div></div>
+              <WorkerPerformanceTab :user-id="String(worker?.user_id || worker?.id || '')" />
             </template>
             <div v-else class="rounded-2xl bg-(--surface) p-8"><h2 class="m-0 text-lg font-bold">Account Config</h2><p class="mt-2 text-sm text-(--text-muted)">-</p></div>
           </section>
@@ -60,11 +60,12 @@
 </template>
 
 <script setup>
-import { computed, defineComponent, h, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, defineComponent, h, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BaseHeader from '../../shared/header'
 import BaseSidebar from '../../shared/sidebar'
 import BaseIcon from '../../shared/icon'
+import WorkerPerformanceTab from '../../performance-overview/components/WorkerPerformanceTab.vue'
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../../auth/keycloak'
 import { useAppStore } from '../../../stores'
 import { navigation as sharedNavigation } from '../../shared/navigation'
@@ -77,8 +78,6 @@ import { encryptPassword } from '../../user-management/services/passwordEncrypti
 import { useToast } from '../../../utils/toast'
 
 const ProfileField = defineComponent({ props: { label: String, value: [String, Number], full: Boolean }, setup: (props) => () => h('div', { class: props.full ? 'col-span-2 max-[640px]:col-span-1' : '' }, [h('label', { class: 'mb-2 block px-1 text-sm font-medium' }, props.label), h('div', { class: 'min-h-10 rounded-lg bg-(--surface-muted) px-2.5 py-2.5 text-sm text-(--text)' }, props.value || '-')]) })
-const MetricCard = defineComponent({ props: { label: String, value: [String, Number], icon: String }, setup: (props) => () => h('div', { class: 'flex h-[142px] items-start justify-between rounded-[14px] border border-(--border) p-6' }, [h('div', { class: 'flex h-full flex-col justify-between' }, [h('p', { class: 'm-0 text-sm text-(--text-muted)' }, props.label), h('p', { class: 'm-0 text-3xl font-semibold text-(--text)' }, String(props.value))]), h('div', { class: 'flex h-14 w-14 items-center justify-center rounded-full bg-[#b8a44c] text-white' }, [h(BaseIcon, { name: props.icon, size: 30 })])]) })
-
 const route = useRoute()
 const router = useRouter()
 const appStore = useAppStore()
@@ -89,16 +88,29 @@ const worker = ref(null)
 const loading = ref(true)
 const error = ref('')
 const isOwner = ref(false)
+const canViewProfiles = ref(false)
 const editModalOpen = ref(false)
 const openingEdit = ref(false)
 const saving = ref(false)
 const formError = ref('')
 const configuration = ref({ accessOptions: [], client: { clientId: 'mobile', roles: [] } })
 const localAvatarUrl = ref('')
-const tab = ref('profile')
+const tab = ref(route.query.tab === 'performance' ? 'performance' : 'profile')
 const fullName = computed(() => [worker.value?.firstName || worker.value?.first_name, worker.value?.lastName || worker.value?.last_name].filter(Boolean).join(' ') || worker.value?.username || '-')
 const initials = computed(() => fullName.value.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'U')
 const avatarUrl = computed(() => localAvatarUrl.value || '')
+
+watch(() => route.query.tab, (value) => {
+  tab.value = value === 'performance' || value === 'account' ? value : 'profile'
+})
+
+function setTab(value) {
+  tab.value = value
+  const query = { ...route.query }
+  if (value === 'performance' || value === 'account') query.tab = value
+  else delete query.tab
+  router.replace({ query })
+}
 
 function goBack() {
   router.push('/master-data/pekerja')
@@ -133,14 +145,15 @@ onMounted(async () => {
   try {
     const [result, access] = await Promise.all([
       listPekerja(),
-      userManagementService.verifyOwnerAccess().catch(() => null)
+      userManagementService.verifyWorkerProfileAccess().catch(() => null)
     ])
     const workerRow = result.data.find((item) => item.user_id === route.params.userId) || null
     isOwner.value = access?.isOwner === true
+    canViewProfiles.value = access?.canViewWorkerProfiles === true
     worker.value = workerRow
     if (!worker.value) error.value = 'User tidak ditemukan.'
     else {
-      if (isOwner.value) {
+      if (canViewProfiles.value) {
         const managedUser = await userManagementService.getUser(route.params.userId)
         worker.value = {
           ...workerRow,
