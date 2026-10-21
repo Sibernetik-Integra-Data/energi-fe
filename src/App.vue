@@ -1,7 +1,19 @@
 <template>
   <router-view v-if="!authError" />
 
-  <main v-else class="auth-error-shell">
+  <Transition name="route-loading">
+    <div v-if="isRouteTransitionVisible" class="route-loading-overlay" role="status" aria-live="polite">
+      <div class="route-loading-card">
+        <span class="route-loading-mark" aria-hidden="true"><span></span></span>
+        <div>
+          <p class="route-loading-title">Memeriksa sesi dan akses</p>
+          <p class="route-loading-caption">Mohon tunggu sebentar…</p>
+        </div>
+      </div>
+    </div>
+  </Transition>
+
+  <main v-if="authError" class="auth-error-shell">
     <section class="auth-error-card">
       <p class="auth-error-kicker">Login failed</p>
       <h1>We could not sign you in</h1>
@@ -20,6 +32,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { clearSessionTokens, exchangeAuthorizationCode, fetchUserProfile, redirectToKeycloakLogin, isAuthenticated, setAppStore, tryRestoreSession } from './auth/keycloak'
 import { useAppStore } from './stores'
 import AppToast from './components/AppToast.vue'
+import { isRouteTransitionVisible } from './router/navigationTransition'
 
 const route = useRoute()
 const router = useRouter()
@@ -210,5 +223,97 @@ onMounted(async () => {
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 14px 24px rgba(251, 140, 0, 0.22);
+}
+
+.route-loading-overlay {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(15 23 42 / 24%);
+  backdrop-filter: blur(4px);
+}
+
+.route-loading-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-width: min(310px, 100%);
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 20px 60px rgb(2 6 23 / 22%);
+}
+
+.route-loading-mark {
+  position: relative;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border: 3px solid color-mix(in srgb, var(--brand) 20%, transparent);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: route-loading-spin 0.85s linear infinite;
+}
+
+.route-loading-mark span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--brand) 55%, transparent);
+}
+
+.route-loading-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.route-loading-caption {
+  margin: 3px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.route-loading-enter-active,
+.route-loading-leave-active {
+  transition: opacity 160ms ease;
+}
+
+.route-loading-enter-active .route-loading-card,
+.route-loading-leave-active .route-loading-card {
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+
+.route-loading-enter-from,
+.route-loading-leave-to {
+  opacity: 0;
+}
+
+.route-loading-enter-from .route-loading-card,
+.route-loading-leave-to .route-loading-card {
+  transform: translateY(8px) scale(0.98);
+  opacity: 0;
+}
+
+@keyframes route-loading-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-loading-mark { animation-duration: 2s; }
+  .route-loading-enter-active,
+  .route-loading-leave-active,
+  .route-loading-enter-active .route-loading-card,
+  .route-loading-leave-active .route-loading-card { transition-duration: 1ms; }
 }
 </style>

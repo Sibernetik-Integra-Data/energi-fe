@@ -31,6 +31,7 @@ import navigation from '../modules/shared/navigation'
 import ComingSoon from '../components/ComingSoon.vue'
 import { isAuthenticated, redirectToKeycloakLogin, tryRestoreSession } from '../auth/keycloak'
 import userManagementService from '../modules/user-management/services/userManagementService'
+import { finishRouteTransition, startRouteTransition } from './navigationTransition'
 
 const routes = [
   { path: '/', redirect: '/dashboard', meta: { requiresAuth: true } },
@@ -231,6 +232,8 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
+  startRouteTransition()
+
   if (to.query?.code) {
     if (to.matched.some(record => record.meta?.requiresAuditReader)) {
       return { path: '/dashboard', query: to.query }
@@ -305,5 +308,8 @@ router.beforeEach(async (to) => {
   redirectToKeycloakLogin()
   return false
 })
+
+router.afterEach(() => finishRouteTransition())
+router.onError(() => finishRouteTransition())
 
 export default router

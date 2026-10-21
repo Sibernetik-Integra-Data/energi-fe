@@ -45,7 +45,7 @@
                     <td class="max-w-0 px-4 py-3"><div class="truncate" :title="row.actor_id">{{ row.actor_id || 'Service' }}</div><div class="truncate text-xs text-(--text-muted)">{{ row.actor_type || '—' }}</div></td>
                     <td class="px-4 py-3"><span class="inline-flex max-w-full truncate rounded-full px-2.5 py-1 text-xs font-semibold" :class="outcomeClass(row.outcome)">{{ row.outcome || '—' }}</span></td>
                     <td class="max-w-0 truncate px-4 py-3" :title="row.source">{{ row.source || '—' }}</td>
-                    <td class="px-4 py-3"><button type="button" class="rounded-lg border border-(--border) px-3 py-1.5 text-xs font-semibold hover:bg-(--surface-muted)" @click="openDetail(row)">Lihat</button></td>
+                    <td class="px-4 py-3"><button type="button" class="cursor-pointer rounded-lg border border-(--border) px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-(--surface-muted) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500" @click="openDetail(row)">Lihat</button></td>
                   </tr>
                   <tr v-if="!loading && !visibleRows.length"><td colspan="7" class="px-4 py-12 text-center text-sm text-(--text-muted)">{{ pageRows.length ? 'Tidak ada data yang cocok dengan pencarian.' : 'Belum ada audit log pada rentang waktu default API.' }}</td></tr>
                 </tbody>
