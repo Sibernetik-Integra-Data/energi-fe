@@ -157,6 +157,27 @@ onMounted(refresh)
 </script>
 
 <style scoped>
-.page-button { @apply inline-flex h-9 min-w-9 items-center justify-center rounded-lg border border-(--border) bg-(--surface) px-2.5 text-sm font-medium text-(--text) hover:bg-(--surface-muted) disabled:cursor-not-allowed disabled:opacity-40; }
-.page-button-active { @apply border-teal-600 bg-teal-600 text-white hover:bg-teal-700; }
+.page-button {
+  display: inline-flex;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  padding: 0 0.625rem;
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.page-button:hover:not(:disabled) { background: var(--surface-muted); }
+.page-button:disabled { cursor: not-allowed; opacity: 0.4; }
+.page-button-active,
+.page-button-active:hover:not(:disabled) {
+  border-color: #0d9488;
+  background: #0d9488;
+  color: #fff;
+}
 </style>
