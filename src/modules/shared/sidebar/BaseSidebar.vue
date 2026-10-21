@@ -26,7 +26,7 @@
     <!-- Nav (scrollable) -->
     <nav class="flex min-h-0 flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto px-3 py-3"
       :aria-label="navLabel">
-      <div v-for="item in resolvedItems" :key="getItemKey(item)">
+      <div v-for="item in visibleItems" :key="getItemKey(item)">
         <!-- Group item with children -->
         <template v-if="hasChildren(item)">
           <div class="flex w-full items-center">
@@ -154,10 +154,11 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import BaseIcon from "../icon";
 import { cloneNavigation, loadStrapiSidebarNavigation } from "./strapiNavigation";
+import { canViewAuditLog } from "../../../auth/access";
 
 const isCollapsed = ref(false);
 const router = useRouter();
@@ -251,6 +252,10 @@ const props = defineProps({
     default: "Assistant Kebun",
   },
 });
+
+const visibleItems = computed(() => resolvedItems.value.filter((item) => (
+  item?.to !== "/audit-log" || canViewAuditLog(props.user)
+)));
 
 function onNavigate(item) {
   if (item?.to) {

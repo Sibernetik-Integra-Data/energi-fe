@@ -232,6 +232,9 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   if (to.query?.code) {
+    if (to.matched.some(record => record.meta?.requiresAuditReader)) {
+      return { path: '/dashboard', query: to.query }
+    }
     return true
   }
 
@@ -257,6 +260,14 @@ router.beforeEach(async (to) => {
         return '/master-data/pekerja'
       }
     }
+    if (to.matched.some(record => record.meta?.requiresAuditReader)) {
+      try {
+        const access = await userManagementService.verifyWorkerProfileAccess()
+        return access?.canViewWorkerProfiles === true ? true : '/dashboard'
+      } catch {
+        return '/dashboard'
+      }
+    }
     return true
   }
 
@@ -278,6 +289,14 @@ router.beforeEach(async (to) => {
         return access?.canViewWorkerProfiles === true ? true : '/master-data/pekerja'
       } catch {
         return '/master-data/pekerja'
+      }
+    }
+    if (to.matched.some(record => record.meta?.requiresAuditReader)) {
+      try {
+        const access = await userManagementService.verifyWorkerProfileAccess()
+        return access?.canViewWorkerProfiles === true ? true : '/dashboard'
+      } catch {
+        return '/dashboard'
       }
     }
     return true

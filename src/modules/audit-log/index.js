@@ -6,7 +6,7 @@ const controller = createAuditLogController()
 
 export default {
   routes: [
-    { path: '/audit-log', name: 'AuditLog', component: AuditLogView, props: { controller } },
-    { path: '/audit-log/:id', name: 'AuditLogDetail', component: AuditLogDetailView, props: { controller } }
+    { path: '/audit-log', name: 'AuditLog', component: AuditLogView, props: { controller }, meta: { requiresAuditReader: true } },
+    { path: '/audit-log/:id', name: 'AuditLogDetail', component: AuditLogDetailView, props: { controller }, meta: { requiresAuditReader: true } }
   ]
 }
