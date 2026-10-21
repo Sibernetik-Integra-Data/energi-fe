@@ -26,6 +26,7 @@ import MasterDataPekerjaModule from '../modules/masterdata/pekerja'
 import ProfileModule from '../modules/profile'
 import UserManagementModule from '../modules/user-management'
 import PerformanceOverviewModule from '../modules/performance-overview'
+import AuditLogModule from '../modules/audit-log'
 import navigation from '../modules/shared/navigation'
 import ComingSoon from '../components/ComingSoon.vue'
 import { isAuthenticated, redirectToKeycloakLogin, tryRestoreSession } from '../auth/keycloak'
@@ -184,6 +185,10 @@ const routes = [
       : { requiresAuth: true }
   })),
   ...UserManagementModule.routes.map(route => ({
+    ...route,
+    meta: { ...(route.meta || {}), requiresAuth: true }
+  })),
+  ...AuditLogModule.routes.map(route => ({
     ...route,
     meta: { ...(route.meta || {}), requiresAuth: true }
   }))
