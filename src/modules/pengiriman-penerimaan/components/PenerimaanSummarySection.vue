@@ -1,33 +1,30 @@
 <template>
     <section>
         <h2 class="m-0 text-3xl font-semibold text-(--text)">Summary</h2>
-        <div class="mt-3 overflow-hidden rounded-xl border border-(--border)">
+        <div class="mt-3 overflow-x-auto rounded-xl border border-(--border)">
             <table class="min-w-full text-sm">
                 <thead class="bg-(--surface-muted) text-(--text-muted) uppercase text-xs tracking-wide">
                     <tr>
                         <th class="px-4 py-3 text-left">Field</th>
                         <th class="px-4 py-3 text-left">Pengiriman</th>
                         <th class="px-4 py-3 text-left">Penerimaan</th>
-                        <th class="px-4 py-3 text-left">Perbedaan</th>
+                        <th class="px-4 py-3 text-left">Selisih</th>
                     </tr>
                 </thead>
                 <tbody class="bg-(--surface) text-(--text)">
                     <tr class="border-t border-(--border)">
-                        <td class="px-4 py-3 font-medium">Berat (Kg)</td>
-                        <td class="px-4 py-3">{{ formatWeight(detail.qtyPengirimanValue) }}</td>
-                        <td class="px-4 py-3">{{ formatWeight(detail.receipt.qtyPenerimaanValue) }}</td>
+                        <td class="px-4 py-3 font-medium">Jumlah</td>
+                        <td class="px-4 py-3">{{ detail.volumeLabel }}</td>
+                        <td class="px-4 py-3">{{ detail.receipt.quantityLabel }}</td>
                         <td class="px-4 py-3">
-                            <span class="inline-flex rounded-full px-3 py-1 text-xs"
-                                :class="differenceWeight < 0 ? 'bg-[#fde9eb] text-[#ed2637]' : 'bg-[#e6f3ea] text-[#00842a]'">
-                                {{ differenceWeight > 0 ? '+' : '' }}{{ differenceWeight }} kg
+                            <span v-if="difference === null" class="text-(--text-muted)">
+                                Satuan berbeda, tidak dibandingkan
+                            </span>
+                            <span v-else class="inline-flex rounded-full px-3 py-1 text-xs"
+                                :class="difference < 0 ? 'bg-[#fde9eb] text-[#c81e2d]' : 'bg-[#e6f3ea] text-[#00642a]'">
+                                {{ differenceLabel }}
                             </span>
                         </td>
-                    </tr>
-                    <tr class="border-t border-(--border)">
-                        <td class="px-4 py-3 font-medium">Jenis Panen</td>
-                        <td class="px-4 py-3">{{ detail.jenisPanen }}</td>
-                        <td class="px-4 py-3">{{ detail.receipt.jenisPanen }}</td>
-                        <td class="px-4 py-3">-</td>
                     </tr>
                 </tbody>
             </table>
@@ -37,16 +34,23 @@
 
 <script setup>
 import { computed } from 'vue'
+import { formatQuantity } from '../model'
 
 const props = defineProps({
     detail: { type: Object, required: true }
 })
 
-const differenceWeight = computed(() => {
-    return Number(props.detail.receipt.qtyPenerimaanValue || 0) - Number(props.detail.qtyPengirimanValue || 0)
+// Compared only when both sides use the same unit: there is no conversion rule.
+const difference = computed(() => {
+    const receipt = props.detail.receipt
+    if (!receipt || receipt.unitId !== props.detail.unitId) return null
+    return Math.round((receipt.quantity - props.detail.volumeValue) * 1000) / 1000
 })
 
-function formatWeight(value) {
-    return `${Number(value || 0).toLocaleString('id-ID')} kg`
-}
+const differenceLabel = computed(() => {
+    const value = difference.value
+    if (value === 0) return 'Sama'
+    const text = formatQuantity(Math.abs(value), props.detail.receipt.unitName)
+    return value < 0 ? `Kurang ${text}` : `Lebih ${text}`
+})
 </script>

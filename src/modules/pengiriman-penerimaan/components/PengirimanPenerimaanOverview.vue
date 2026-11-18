@@ -6,25 +6,34 @@
             </h1>
             <p class="mt-2 max-w-130 text-(--text-muted) text-sm leading-relaxed">{{ intro.description }}</p>
         </div>
-        <!-- <button type="button"
-            class="inline-flex items-center gap-2 rounded-3xl bg-[#4d4d4d] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#3f3f3f]"
-            @click="$emit('tambah-penerimaan')">
-            <span class="text-base leading-none">+</span>
-            Tambah Penerimaan
-        </button> -->
+        <label class="flex items-center gap-2 text-sm text-(--text-muted)">
+            Status
+            <select :value="status" @change="$emit('update:status', $event.target.value)"
+                class="rounded-lg border border-(--border) bg-(--surface) px-3 py-2 text-sm text-(--text) outline-none hover:cursor-pointer">
+                <option v-for="option in statusFilters" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                </option>
+            </select>
+        </label>
     </section>
 
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <PengirimanPenerimanCard label="Jumlah Trip (halaman ini)" :value="summary.totalTrips" unit="Trip"
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <PengirimanPenerimanCard label="Jumlah Trip" :value="summary.totalTrips" unit="Trip"
             icon-bg-class="bg-[#4674ba]">
             <template #icon>
                 <BaseIcon name="package" :size="20" class="text-white" />
             </template>
         </PengirimanPenerimanCard>
-        <PengirimanPenerimanCard label="Total Volume (halaman ini)" :value="summary.totalVolume" :unit="summary.volumeUnit"
+        <PengirimanPenerimanCard label="Total Dikirim" :value="summary.shippedLabel"
             icon-bg-class="bg-[#b8a44c]">
             <template #icon>
                 <BaseIcon name="location" :size="20" class="text-white" />
+            </template>
+        </PengirimanPenerimanCard>
+        <PengirimanPenerimanCard label="Total Diterima" :value="summary.receivedLabel"
+            icon-bg-class="bg-[#00842a]">
+            <template #icon>
+                <span class="text-white text-lg leading-none" aria-hidden="true">✓</span>
             </template>
         </PengirimanPenerimanCard>
     </div>
@@ -50,8 +59,10 @@ defineProps({
     currentPage: { type: Number, default: 1 },
     pageSize: { type: Number, default: 10 },
     totalPages: { type: Number, default: 1 },
-    visiblePages: { type: Array, default: () => [] }
+    visiblePages: { type: Array, default: () => [] },
+    statusFilters: { type: Array, default: () => [] },
+    status: { type: String, default: '' }
 })
 
-defineEmits(['view', 'update:currentPage', 'update:pageSize'])
+defineEmits(['view', 'update:status', 'update:currentPage', 'update:pageSize'])
 </script>

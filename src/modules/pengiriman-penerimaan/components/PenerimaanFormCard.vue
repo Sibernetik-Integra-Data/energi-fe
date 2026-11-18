@@ -1,103 +1,130 @@
 <template>
-    <section class="rounded-xl bg-(--surface) border border-(--border) p-6">
+    <form class="rounded-xl bg-(--surface) border border-(--border) p-6" novalidate @submit.prevent="handlePublish">
         <div class="mb-4">
             <h2 class="m-0 text-3xl font-bold text-(--text)">Form Penerimaan</h2>
-            <p class="m-0 mt-1 text-sm text-(--text-muted)">ID Penerimaan {{ generatedReceiptId }}</p>
+            <p class="m-0 mt-1 text-sm text-(--text-muted)">
+                Nomor penerimaan dibuat otomatis saat disimpan.
+                <span v-if="detail.replacesReceiptId">Penerimaan ini menggantikan penerimaan yang dibatalkan.</span>
+            </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label class="grid grid-cols-[140px_1fr] items-start gap-2">
-                <span class="text-sm font-medium text-(--text) pt-2">Tanggal Terima</span>
-                <input v-model="form.tanggalTerima" type="date"
+                <span class="text-sm font-medium text-(--text) pt-2">Tanggal Terima <span aria-hidden="true">*</span></span>
+                <input v-model="form.tanggalTerima" type="date" required :disabled="saving"
                     class="date-input rounded-lg border border-(--border) bg-(--surface-muted) px-3 py-2.5 text-sm text-(--text) outline-none" />
             </label>
 
             <label class="grid grid-cols-[140px_1fr] items-start gap-2">
-                <span class="text-sm font-medium text-(--text) pt-2">Jenis Panen</span>
-                <select v-model="form.jenisPanen"
+                <span class="text-sm font-medium text-(--text) pt-2">Jenis Panen <span aria-hidden="true">*</span></span>
+                <select v-model="form.jenisPanen" required :disabled="saving"
                     class="rounded-lg border border-(--border) bg-(--surface-muted) px-3 py-2.5 text-sm text-(--text) outline-none hover:cursor-pointer">
                     <option value="" disabled>Pilih jenis panen</option>
-                    <option value="TBS">TBS</option>
-                    <option value="Loose Fruit">Loose Fruit</option>
+                    <option v-for="type in harvestTypes" :key="type.value" :value="type.value">{{ type.label }}</option>
                 </select>
             </label>
 
-            <label class="grid grid-cols-[140px_1fr] items-start gap-2">
-                <span class="text-sm font-medium text-(--text) pt-2">Berat Terima</span>
-                <input v-model="form.beratTerima" type="number" min="1" placeholder="Contoh: 1290"
-                    class="weight-input rounded-lg border border-(--border) bg-(--surface-muted) px-3 py-2.5 text-sm text-(--text) outline-none" />
-            </label>
+            <div class="grid grid-cols-[140px_1fr] items-start gap-2">
+                <label for="penerimaan-jumlah" class="text-sm font-medium text-(--text) pt-2">
+                    Jumlah Terima <span aria-hidden="true">*</span>
+                </label>
+                <div>
+                    <div class="grid grid-cols-[1fr_120px] gap-2">
+                        <input id="penerimaan-jumlah" v-model="form.jumlah" type="number" min="0" step="0.001"
+                            inputmode="decimal" required :disabled="saving" :placeholder="`Dikirim: ${detail.volumeLabel}`"
+                            class="weight-input rounded-lg border border-(--border) bg-(--surface-muted) px-3 py-2.5 text-sm text-(--text) outline-none" />
+                        <select v-model="form.unitId" aria-label="Satuan" required :disabled="saving"
+                            class="rounded-lg border border-(--border) bg-(--surface-muted) px-3 py-2.5 text-sm text-(--text) outline-none hover:cursor-pointer">
+                            <option v-for="unit in unitOptions" :key="unit.id" :value="unit.id">{{ unit.name }}</option>
+                        </select>
+                    </div>
+                    <p class="m-0 mt-1 text-xs text-(--text-muted)">Dikirim: {{ detail.volumeLabel }}. Paling banyak tiga angka di belakang koma.</p>
+                </div>
+            </div>
 
             <label class="grid grid-cols-[140px_1fr] items-start gap-2">
                 <span class="text-sm font-medium text-(--text) pt-2">Keterangan</span>
-                <textarea v-model="form.keterangan" rows="4" placeholder="Ketik disini"
+                <textarea v-model="form.keterangan" rows="4" maxlength="1000" placeholder="Ketik disini" :disabled="saving"
                     class="rounded-lg border border-(--border) bg-(--surface-muted) px-3 py-2.5 text-sm text-(--text) outline-none resize-none"></textarea>
             </label>
         </div>
 
-        <p v-if="errorMessage" class="mt-4 text-sm text-red-600">{{ errorMessage }}</p>
+        <p v-if="errorMessage" role="alert" class="mt-4 text-sm text-red-600">{{ errorMessage }}</p>
 
-        <div class="mt-5 flex items-center justify-between">
-            <button type="button"
-                class="rounded-3xl border border-(--border-strong) bg-transparent px-4 py-2 text-sm font-medium text-(--text-muted)"
-                @click="$emit('cancel')">
-                Cancel
-            </button>
-            <button type="button"
-                class="rounded-3xl bg-(--text) px-4 py-2 text-sm font-medium text-(--surface) opacity-90 hover:opacity-100 hover:cursor-pointer"
-                @click="handlePublish">
-                Simpan dan Publish
+        <div class="mt-5 flex items-center justify-end">
+            <button type="submit" :disabled="saving"
+                class="rounded-3xl bg-(--text) px-4 py-2 text-sm font-medium text-(--surface) opacity-90 hover:opacity-100 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                {{ saving ? 'Menyimpan…' : 'Simpan Penerimaan' }}
             </button>
         </div>
-    </section>
+    </form>
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
 const props = defineProps({
-    initialJenisPanen: { type: String, default: '' },
-    generatedReceiptId: { type: String, required: true }
+    detail: { type: Object, required: true },
+    units: { type: Array, default: () => [] },
+    harvestTypes: { type: Array, default: () => [] },
+    saving: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['cancel', 'publish'])
+const emit = defineEmits(['publish'])
+
+function today() {
+    const now = new Date()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    return `${now.getFullYear()}-${month}-${day}`
+}
 
 const form = reactive({
-    tanggalTerima: '',
-    beratTerima: '',
+    tanggalTerima: today(),
+    jumlah: '',
+    unitId: props.detail.unitId,
     jenisPanen: '',
     keterangan: ''
 })
 const errorMessage = ref('')
 
-watch(
-    () => props.initialJenisPanen,
-    () => {
-        const now = new Date()
-        const month = String(now.getMonth() + 1).padStart(2, '0')
-        const day = String(now.getDate()).padStart(2, '0')
-        form.tanggalTerima = `${now.getFullYear()}-${month}-${day}`
-        form.beratTerima = ''
-        form.jenisPanen = props.initialJenisPanen || ''
-        form.keterangan = ''
-        errorMessage.value = ''
-    },
-    { immediate: true }
-)
+// The shipment's own unit is always offered, even when the unit list could not be loaded.
+const unitOptions = computed(() => {
+    const own = props.detail.unitId ? [{ id: props.detail.unitId, name: props.detail.unitName || 'Satuan pengiriman' }] : []
+    return props.units.some((unit) => unit.id === props.detail.unitId) ? props.units : [...own, ...props.units]
+})
 
 function handlePublish() {
-    const beratTerima = Number(form.beratTerima)
-    if (!form.tanggalTerima || !form.jenisPanen || !Number.isFinite(beratTerima) || beratTerima <= 0) {
-        errorMessage.value = 'Lengkapi tanggal, jenis panen, dan berat terima sebelum publish.'
+    const raw = String(form.jumlah ?? '').trim()
+    const jumlah = Number(raw)
+    if (!form.tanggalTerima) {
+        errorMessage.value = 'Tanggal terima wajib diisi.'
+        return
+    }
+    if (!raw || !Number.isFinite(jumlah) || jumlah <= 0) {
+        errorMessage.value = 'Jumlah terima harus lebih besar dari 0.'
+        return
+    }
+    if (Math.abs(jumlah * 1000 - Math.round(jumlah * 1000)) > 1e-6) {
+        errorMessage.value = 'Jumlah terima paling banyak tiga angka di belakang koma.'
+        return
+    }
+    if (!form.jenisPanen) {
+        errorMessage.value = 'Jenis panen wajib dipilih.'
+        return
+    }
+    if (!form.unitId) {
+        errorMessage.value = 'Satuan wajib dipilih.'
         return
     }
 
     errorMessage.value = ''
     emit('publish', {
-        tanggalTerima: form.tanggalTerima,
-        beratTerima,
-        jenisPanen: form.jenisPanen,
-        keterangan: form.keterangan
+        received_date: form.tanggalTerima,
+        quantity: jumlah,
+        unit_id: Number(form.unitId),
+        harvest_type: form.jenisPanen,
+        notes: form.keterangan.trim() || null
     })
 }
 </script>

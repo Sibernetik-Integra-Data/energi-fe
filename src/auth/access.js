@@ -4,6 +4,14 @@ export function normalizeAccess(source) {
   return String(raw || '').trim()
 }
 
+// Roles allowed to receive a harvest shipment or cancel a receipt. This only
+// decides what the screen offers; the server checks the role on every request.
+const HARVEST_RECEIVER_ACCESS = ['admin', 'kepala kebun', 'owner']
+
+export function canReceiveHarvest(source) {
+  return HARVEST_RECEIVER_ACCESS.includes(normalizeAccess(source).toLowerCase())
+}
+
 export function isOwnerAccess(source) {
   return normalizeAccess(source).toLowerCase() === 'owner'
 }

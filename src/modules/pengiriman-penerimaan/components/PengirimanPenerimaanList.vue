@@ -7,31 +7,38 @@
         <div v-else class="flex flex-1 flex-col">
             <div class="overflow-hidden rounded-xl border border-(--border) bg-(--surface)">
                 <div class="overflow-x-auto table-scroll">
-                    <table class="min-w-[1100px] w-full divide-y divide-(--border)">
+                    <table class="min-w-[1000px] w-full divide-y divide-(--border)">
                         <thead>
                             <tr class="text-left text-xs font-medium uppercase tracking-wide text-(--text-muted) bg-(--surface-muted)">
-                                <th class="px-6 py-4">ID Trip</th>
-                                <th class="px-6 py-4">Tanggal Mulai</th>
-                                <th class="px-6 py-4">Asal</th>
-                                <th class="px-6 py-4">Tujuan</th>
-                                <th class="px-6 py-4">Volume</th>
-                                <th class="px-6 py-4">Driver</th>
-                                <th class="px-6 py-4">Tanggal Selesai</th>
-                                <th class="px-6 py-4">Notes</th>
-                                <th class="px-6 py-4 text-right">Action</th>
+                                <th class="px-4 py-4">ID Trip</th>
+                                <th class="px-4 py-4">Tanggal Kirim</th>
+                                <th class="px-4 py-4">Asal</th>
+                                <th class="px-4 py-4">Tujuan</th>
+                                <th class="px-4 py-4">Dikirim</th>
+                                <th class="px-4 py-4">Status</th>
+                                <th class="px-4 py-4">No. Penerimaan</th>
+                                <th class="px-4 py-4">Tanggal Terima</th>
+                                <th class="px-4 py-4">Diterima</th>
+                                <th class="px-4 py-4 text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-(--border)">
                             <tr v-for="item in items" :key="item.id" class="text-sm text-(--text)">
-                                <td class="px-6 py-4 font-medium">{{ item.id ?? '-' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ item.startTime }}</td>
-                                <td class="px-6 py-4">{{ item.originName }}</td>
-                                <td class="px-6 py-4">{{ item.destinationName }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ item.volumeLabel }}</td>
-                                <td class="px-6 py-4">{{ item.driverName }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ item.endTime }}</td>
-                                <td class="px-6 py-4 min-w-[220px] max-w-[320px] whitespace-normal">{{ item.notes }}</td>
-                                <td class="px-6 py-4">
+                                <td class="px-4 py-4 font-medium">{{ item.id ?? '-' }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap">{{ item.startTime }}</td>
+                                <td class="px-4 py-4">{{ item.originName }}</td>
+                                <td class="px-4 py-4">{{ item.destinationName }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap">{{ item.volumeLabel }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span class="inline-flex rounded-full px-3 py-1 text-xs font-medium"
+                                        :class="item.received ? 'bg-[#e6f3ea] text-[#00642a]' : 'bg-[#fff4d6] text-[#7a5b00]'">
+                                        {{ item.statusLabel }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">{{ item.receiptNo }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap">{{ item.receivedDate }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap">{{ item.receivedLabel }}</td>
+                                <td class="px-4 py-4">
                                     <div class="flex items-center justify-end gap-2">
                                         <button type="button"
                                             class="rounded-md border border-(--border) px-3.5 py-1.5 text-sm font-medium text-(--text) hover:bg-(--surface-muted) hover:cursor-pointer"
@@ -42,7 +49,7 @@
                                 </td>
                             </tr>
                             <tr v-if="items.length === 0">
-                                <td colspan="9" class="px-6 py-10 text-center text-sm text-(--text-muted)">
+                                <td colspan="10" class="px-6 py-10 text-center text-sm text-(--text-muted)">
                                     Tidak ada data pengiriman ditemukan.
                                 </td>
                             </tr>

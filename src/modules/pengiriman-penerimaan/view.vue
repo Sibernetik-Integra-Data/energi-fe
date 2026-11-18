@@ -7,20 +7,29 @@
                 :user="user" :on-logout="logoutFromKeycloak" />
 
             <main class="flex-1 min-w-0 p-6 max-[920px]:p-4.5 overflow-y-auto flex flex-col gap-5">
-                <div v-if="fetchError" class="px-4 py-3 rounded-lg bg-red-50 text-red-600 text-sm border border-red-200">
+                <div v-if="fetchError" role="alert"
+                    class="px-4 py-3 rounded-lg bg-red-50 text-red-600 text-sm border border-red-200">
                     {{ fetchError }}
+                </div>
+                <div v-if="successMessage" role="status"
+                    class="px-4 py-3 rounded-lg bg-[#e6f3ea] text-[#00642a] text-sm border border-[#b9dcc4]">
+                    {{ successMessage }}
                 </div>
 
                 <template v-if="!selectedDetail">
                     <PengirimanPenerimaanOverview :intro="intro" :summary="summary" :items="items"
                         :loading="loading" :total-items="totalItems" :current-page="currentPage"
                         :page-size="pageSize" :total-pages="totalPages" :visible-pages="visiblePages"
-                        @view="onView" @update:current-page="currentPage = $event"
+                        :status-filters="statusFilters" :status="statusFilter"
+                        @view="onView" @update:status="statusFilter = $event"
+                        @update:current-page="currentPage = $event"
                         @update:page-size="pageSize = $event" />
                 </template>
 
                 <template v-else>
-                    <PengirimanPenerimaanDetail :detail="selectedDetail" @back="onBack" />
+                    <PengirimanPenerimaanDetail :detail="selectedDetail" :can-receive="canReceive" :units="units"
+                        :harvest-types="harvestTypes" :saving="saving" :action-error="actionError"
+                        @back="onBack" @receive="onReceive" @cancel-receipt="onCancelReceipt" />
                 </template>
             </main>
         </div>
@@ -34,6 +43,7 @@ import BaseSidebar from '../shared/sidebar'
 import PengirimanPenerimaanOverview from './components/PengirimanPenerimaanOverview.vue'
 import PengirimanPenerimaanDetail from './components/PengirimanPenerimaanDetail.vue'
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
+import { canReceiveHarvest } from '../../auth/access'
 import { useAppStore } from '../../stores'
 import { useServerPagination } from '../shared/pagination'
 
@@ -43,70 +53,99 @@ const props = defineProps({
 
 const appStore = useAppStore()
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
+const canReceive = computed(() => canReceiveHarvest(user.value))
 const navigation = computed(() => props.controller.getNavigation())
 const header = computed(() => props.controller.getHeader())
 const intro = computed(() => props.controller.getIntro())
+const statusFilters = props.controller.getStatusFilters()
+const harvestTypes = props.controller.getHarvestTypes()
 
 const items = ref([])
 const loading = ref(false)
 const fetchError = ref(null)
+const successMessage = ref('')
 const selectedDetail = ref(null)
 const totalItems = ref(0)
 const currentPage = ref(1)
 const pageSize = ref(10)
+const statusFilter = ref('')
+const summary = ref({ totalTrips: 0, shippedLabel: '-', receivedLabel: '-' })
+const units = ref([])
+const saving = ref(false)
+const actionError = ref('')
 
 const { totalPages, visiblePages } = useServerPagination(totalItems, currentPage, pageSize)
-
-const summary = computed(() => {
-    const totalVolume = items.value.reduce((sum, item) => sum + (item.volumeValue || 0), 0)
-    return {
-        totalTrips: items.value.length,
-        totalVolume,
-        volumeUnit: items.value[0]?.unitName || ''
-    }
-})
 
 onMounted(async () => {
     await loadList()
 })
 
+// Only the answer to the latest request is shown, so a slow earlier page
+// cannot overwrite a newer one.
+let listRequest = 0
+
 async function loadList() {
+    const request = ++listRequest
     loading.value = true
     fetchError.value = null
     try {
         const result = await props.controller.fetchList({
             page: currentPage.value,
-            limit: pageSize.value
+            limit: pageSize.value,
+            status: statusFilter.value
         })
+        if (request !== listRequest) return
         items.value = result.items || []
         totalItems.value = result.total || 0
+        summary.value = result.summary
     } catch (err) {
+        if (request !== listRequest) return
         fetchError.value = err?.message || 'Gagal memuat data pengiriman dan penerimaan.'
         items.value = []
         totalItems.value = 0
     } finally {
-        loading.value = false
+        if (request === listRequest) loading.value = false
     }
 }
 
-watch(pageSize, () => {
+function reloadFromFirstPage() {
     if (currentPage.value !== 1) {
         currentPage.value = 1
         return
     }
     loadList()
-})
+}
 
+watch(pageSize, reloadFromFirstPage)
+watch(statusFilter, reloadFromFirstPage)
 watch(currentPage, loadList)
 
-async function onView(item) {
+async function loadUnitsOnce() {
+    if (units.value.length) return
     try {
-        const detail = await props.controller.fetchDetail(item.id)
-        if (!detail) {
-            fetchError.value = 'Detail pengiriman tidak ditemukan.'
-            return
-        }
-        selectedDetail.value = detail
+        units.value = await props.controller.fetchUnits()
+    } catch {
+        // The form falls back to the shipment's own unit.
+        units.value = []
+    }
+}
+
+async function loadDetail(tripId) {
+    const detail = await props.controller.fetchDetail(tripId)
+    if (!detail) {
+        fetchError.value = 'Detail pengiriman tidak ditemukan.'
+        return false
+    }
+    selectedDetail.value = detail
+    return true
+}
+
+async function onView(item) {
+    fetchError.value = null
+    successMessage.value = ''
+    actionError.value = ''
+    try {
+        if (await loadDetail(item.id)) loadUnitsOnce()
     } catch (err) {
         fetchError.value = err?.message || 'Gagal memuat detail pengiriman.'
     }
@@ -114,5 +153,48 @@ async function onView(item) {
 
 function onBack() {
     selectedDetail.value = null
+    actionError.value = ''
+    successMessage.value = ''
+}
+
+async function runAction(action, successText) {
+    if (saving.value) return
+    saving.value = true
+    actionError.value = ''
+    successMessage.value = ''
+    const tripId = selectedDetail.value.id
+    try {
+        const receipt = await action()
+        successMessage.value = successText(receipt)
+    } catch (err) {
+        actionError.value = err?.message || 'Permintaan gagal diproses.'
+    }
+    // Reload in both cases: after a refusal the screen may be out of date
+    // (for example, someone else has just received the same trip).
+    try {
+        await loadDetail(tripId)
+        await loadList()
+    } catch (err) {
+        fetchError.value = err?.message || 'Gagal memuat ulang data.'
+    } finally {
+        saving.value = false
+    }
+}
+
+function onReceive(payload) {
+    const detail = selectedDetail.value
+    const body = { ...payload, trip_id: detail.id }
+    if (detail.replacesReceiptId) body.replaces_receipt_id = detail.replacesReceiptId
+    return runAction(
+        () => props.controller.receive(body),
+        (receipt) => `Penerimaan ${receipt?.receiptNo || ''} tersimpan.`
+    )
+}
+
+function onCancelReceipt({ receiptId, reason }) {
+    return runAction(
+        () => props.controller.cancel(receiptId, reason),
+        (receipt) => `Penerimaan ${receipt?.receiptNo || ''} dibatalkan.`
+    )
 }
 </script>
