@@ -7,7 +7,7 @@
       <main class="flex-1 min-w-0 p-5 max-[920px]:p-4 overflow-y-auto">
         <div class="mb-4">
           <h1 class="text-2xl font-semibold leading-8 tracking-tight text-(--text) m-0">Detail Penugasan</h1>
-          <RouterLink :to="`/sensus/${id}/record`" class="inline-flex items-center gap-2 mt-1 text-sm text-orange-500 hover:text-orange-600 transition-colors">
+          <RouterLink :to="`/sensus/${id}/record`" class="inline-flex items-center gap-2 mt-1 text-sm text-(--brand) hover:text-[color-mix(in_srgb,var(--brand)_80%,black)] transition-colors">
             <span aria-hidden="true">←</span>
             Kembali ke halaman sebelumnya
           </RouterLink>

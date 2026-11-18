@@ -16,7 +16,7 @@
         <!-- Back link -->
         <RouterLink
           to="/sensus"
-          class="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors mb-5 no-underline"
+          class="inline-flex items-center gap-1.5 text-sm font-semibold text-(--brand) hover:text-[color-mix(in_srgb,var(--brand)_80%,black)] transition-colors mb-5 no-underline"
         >
           <span aria-hidden="true">←</span>
           Kembali ke Sensus list

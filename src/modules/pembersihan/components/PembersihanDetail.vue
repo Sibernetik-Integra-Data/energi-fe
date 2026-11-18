@@ -3,7 +3,7 @@
         <div class="flex flex-col gap-1">
             <h1 class="m-0 text-2xl font-semibold leading-8 tracking-tight text-(--text)">Detail Penugasan</h1>
             <button
-                class="inline-flex items-center gap-2 text-sm text-orange-500 hover:text-orange-600 transition-colors cursor-pointer w-fit bg-transparent border-0 p-0"
+                class="inline-flex items-center gap-2 text-sm text-(--brand) hover:text-[color-mix(in_srgb,var(--brand)_80%,black)] transition-colors cursor-pointer w-fit bg-transparent border-0 p-0"
                 @click="$emit('back')">
                 <span aria-hidden="true">←</span>
                 Kembali ke halaman sebelumnya

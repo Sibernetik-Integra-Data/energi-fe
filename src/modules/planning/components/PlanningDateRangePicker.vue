@@ -97,7 +97,7 @@
               v-if="cell.hasJob"
               :class="[
                 'absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full z-20',
-                cell.isStart || cell.isEnd ? 'bg-white' : 'bg-orange-500'
+                cell.isStart || cell.isEnd ? 'bg-white' : 'bg-(--brand)'
               ]"
               aria-hidden="true"
             ></span>
@@ -109,7 +109,7 @@
           <div class="flex flex-col gap-1">
             <span class="text-xs text-(--text-muted)">Min. 7 hari · Maks. 31 hari</span>
             <span class="flex items-center gap-1.5 text-[10px] text-(--text-muted)">
-              <span class="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-(--brand) shrink-0"></span>
               Ada rencana job
             </span>
           </div>

@@ -16,7 +16,7 @@
           <h1 class="text-2xl font-semibold leading-8 tracking-tight text-(--text) m-0">Sensus Detail</h1>
           <RouterLink
             :to="`/sensus/${id}`"
-            class="inline-flex items-center gap-2 text-sm text-orange-500 hover:text-orange-600 transition-colors w-fit"
+            class="inline-flex items-center gap-2 text-sm text-(--brand) hover:text-[color-mix(in_srgb,var(--brand)_80%,black)] transition-colors w-fit"
           >
             <span aria-hidden="true">←</span>
             Kembali ke Sensus list
