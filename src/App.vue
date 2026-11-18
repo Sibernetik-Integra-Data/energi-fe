@@ -1,5 +1,7 @@
 <template>
-  <router-view v-if="!authError" />
+  <!-- A module switched off in the CMS shows a notice; its page never mounts. -->
+  <ModuleUnavailable v-if="!authError && unavailableModule" :module="unavailableModule" />
+  <router-view v-else-if="!authError" />
 
   <Transition name="route-loading">
     <div v-if="isRouteTransitionVisible" class="route-loading-overlay" role="status" aria-live="polite">
@@ -27,15 +29,18 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { clearSessionTokens, exchangeAuthorizationCode, fetchUserProfile, redirectToKeycloakLogin, isAuthenticated, setAppStore, tryRestoreSession } from './auth/keycloak'
 import { useAppStore } from './stores'
 import AppToast from './components/AppToast.vue'
+import ModuleUnavailable from './components/ModuleUnavailable.vue'
 import { isRouteTransitionVisible } from './router/navigationTransition'
+import { unavailableModuleFor } from './modules/shared/modules/moduleAvailability'
 
 const route = useRoute()
 const router = useRouter()
+const unavailableModule = computed(() => unavailableModuleFor(route.path))
 const appStore = useAppStore()
 const LOGIN_RETRY_KEY = 'energi.login_retry_attempted'
 const TAB_ID_KEY = 'energi.tab_id'

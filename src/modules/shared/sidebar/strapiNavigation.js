@@ -251,6 +251,13 @@ async function fetchSidebarMediaMap() {
   }
 }
 
+// Module status from the CMS (Sidebar Item -> moduleStatus); see shared/modules/moduleAvailability.js.
+const MODULE_STATUS_BADGES = {
+  active: '',
+  'coming-soon': 'Segera',
+  maintenance: 'Perbaikan'
+}
+
 function createSidebarItem(attributes = {}, id = null) {
   let key = ''
   if (hasText(attributes.key)) key = attributes.key
@@ -267,6 +274,8 @@ function createSidebarItem(attributes = {}, id = null) {
     ? normalizeToken(attributes.icon)
     : (iconUrl ? '' : 'dashboard')
 
+  const moduleStatus = Object.hasOwn(MODULE_STATUS_BADGES, attributes.moduleStatus) ? attributes.moduleStatus : 'active'
+
   return {
     id: id ?? undefined,
     documentId: hasText(attributes.documentId) ? attributes.documentId : undefined,
@@ -277,7 +286,10 @@ function createSidebarItem(attributes = {}, id = null) {
     to: toText(attributes.to || attributes.path, ''),
     compact: toBoolean(attributes.compact),
     defaultExpanded: toBoolean(attributes.defaultExpanded),
-    badge: attributes.badge ?? '',
+    // A badge set in the CMS wins; otherwise unavailable modules get one automatically.
+    badge: toText(attributes.badge, '') || MODULE_STATUS_BADGES[moduleStatus],
+    moduleStatus,
+    moduleMessage: toText(attributes.moduleMessage, ''),
     order: toNumber(attributes.order, 0),
     isVisible: attributes.isVisible === undefined ? true : toBoolean(attributes.isVisible),
     children: []

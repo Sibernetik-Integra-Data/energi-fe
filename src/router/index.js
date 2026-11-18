@@ -32,6 +32,7 @@ import ComingSoon from '../components/ComingSoon.vue'
 import { isAuthenticated, redirectToKeycloakLogin, tryRestoreSession } from '../auth/keycloak'
 import userManagementService from '../modules/user-management/services/userManagementService'
 import { finishRouteTransition, startRouteTransition } from './navigationTransition'
+import { resolveModuleAvailability } from '../modules/shared/modules/moduleAvailability'
 
 const routes = [
   { path: '/', redirect: '/dashboard', meta: { requiresAuth: true } },
@@ -233,6 +234,10 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   startRouteTransition()
+
+  // Module on/off from the CMS (menu item status). Decided before the page
+  // mounts; App.vue shows a notice instead of a closed module.
+  await resolveModuleAvailability(to.path)
 
   if (to.query?.code) {
     if (to.matched.some(record => record.meta?.requiresAuditReader)) {
