@@ -107,7 +107,7 @@ const JsonValue = defineComponent({
         : displayValue(valueProps.value)
       return h(valueProps.block ? 'pre' : 'div', {
         class: valueProps.block
-          ? 'm-0 max-h-96 overflow-auto rounded-xl bg-slate-950 p-4 text-xs leading-5 text-slate-100 whitespace-pre-wrap break-all'
+          ? 'm-0 max-h-96 overflow-auto rounded-xl bg-slate-950 p-4 text-xs leading-5 text-[#f1f5f9] whitespace-pre-wrap break-all'
           : 'max-h-28 overflow-auto whitespace-pre-wrap break-all text-sm text-(--text)'
       }, content)
     }
