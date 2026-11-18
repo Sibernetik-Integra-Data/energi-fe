@@ -23,8 +23,14 @@ const BRAND_SOFT_ALPHA = { light: 0.12, dark: 0.18 }
 
 const HEX_COLOR = /^#[0-9a-f]{6}$/i
 
-/** Logo from the CMS; empty strings mean "use the built-in logo". */
+const FAVICON_ID = 'cms-favicon'
+// Whatever index.html ships with; used when the CMS has no browser title.
+const DEFAULT_DOCUMENT_TITLE = typeof document !== 'undefined' ? document.title : ''
+
+/** Brand from the CMS; empty strings mean "use the built-in value". */
 export const cmsBrand = reactive({
+  appLabel: '',
+  appName: '',
   logoUrl: '',
   logoDarkUrl: '',
   logoAlt: ''
@@ -95,6 +101,31 @@ function safeMediaUrl(media) {
   return ''
 }
 
+function safeText(value, maxLength) {
+  return typeof value === 'string' ? value.trim().slice(0, maxLength) : ''
+}
+
+function applyFavicon(media) {
+  const url = safeMediaUrl(media)
+  let link = document.getElementById(FAVICON_ID)
+
+  if (!url) {
+    link?.remove()
+    return
+  }
+
+  if (!link) {
+    link = document.createElement('link')
+    link.id = FAVICON_ID
+    link.rel = 'icon'
+    document.head.appendChild(link)
+  }
+  link.href = url
+  const mime = typeof media?.mime === 'string' ? media.mime : ''
+  if (mime.startsWith('image/')) link.type = mime
+  else link.removeAttribute('type')
+}
+
 function applyCmsTheme(theme) {
   let style = document.getElementById(STYLE_ID)
   if (!style) {
@@ -104,6 +135,11 @@ function applyCmsTheme(theme) {
   }
   style.textContent = buildThemeCss(theme)
   themeRevision.value += 1
+
+  cmsBrand.appLabel = safeText(theme?.appLabel, 40)
+  cmsBrand.appName = safeText(theme?.appName, 40)
+  document.title = safeText(theme?.browserTitle, 80) || DEFAULT_DOCUMENT_TITLE
+  applyFavicon(theme?.favicon)
 
   cmsBrand.logoUrl = safeMediaUrl(theme?.logo)
   cmsBrand.logoDarkUrl = safeMediaUrl(theme?.logoDark)

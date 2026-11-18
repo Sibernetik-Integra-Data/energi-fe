@@ -8,12 +8,15 @@
       'flex items-center border-b border-(--border) h-15 shrink-0',
       isCollapsed ? 'justify-center px-3' : 'gap-3 px-4',
     ]">
-      <!-- Logo from the CMS (Theme Setting); falls back to the built-in mark. -->
-      <div v-if="cmsBrand.logoUrl" class="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-xl">
-        <img :src="cmsBrand.logoUrl" :alt="cmsBrand.logoAlt || `${brandLabel} ${brandTitle}`"
-          :class="['h-full w-full object-contain', cmsBrand.logoDarkUrl ? 'brand-logo-light' : '']" />
-        <img v-if="cmsBrand.logoDarkUrl" :src="cmsBrand.logoDarkUrl" alt=""
-          class="brand-logo-dark h-full w-full object-contain" />
+      <!-- Logo from the CMS (Theme Setting); falls back to the built-in mark,
+           also when the uploaded file cannot be loaded. -->
+      <div v-if="showCmsLogo" class="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-xl">
+        <img :src="cmsBrand.logoUrl" :alt="cmsBrand.logoAlt || `${shownBrandLabel} ${shownBrandTitle}`"
+          :class="['h-full w-full object-contain', showCmsDarkLogo ? 'brand-logo-light' : '']"
+          @error="markLogoFailed(cmsBrand.logoUrl)" />
+        <img v-if="showCmsDarkLogo" :src="cmsBrand.logoDarkUrl" alt=""
+          class="brand-logo-dark h-full w-full object-contain"
+          @error="markLogoFailed(cmsBrand.logoDarkUrl)" />
       </div>
       <div v-else aria-hidden="true"
         class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-linear-to-br from-(--brand) to-[color-mix(in_srgb,var(--brand)_80%,white)] text-white shadow-[0_8px_20px_color-mix(in_srgb,var(--brand)_22%,transparent)] ring-1 ring-white/30">
@@ -22,10 +25,10 @@
 
       <div v-show="!isCollapsed" class="flex items-baseline gap-1 min-w-0 overflow-hidden">
         <span class="text-[13px] font-bold uppercase tracking-[0.18em] text-(--text-soft) whitespace-nowrap">
-          {{ brandLabel }}
+          {{ shownBrandLabel }}
         </span>
         <span class="truncate text-[18px] font-extrabold leading-tight tracking-[-0.02em] text-(--text)">
-          {{ brandTitle }}
+          {{ shownBrandTitle }}
         </span>
       </div>
     </div>
@@ -260,6 +263,19 @@ const props = defineProps({
     default: "Assistant Kebun",
   },
 });
+
+// Brand text from the CMS Theme Setting wins; the props are the built-in fallback.
+const shownBrandLabel = computed(() => cmsBrand.appLabel || props.brandLabel);
+const shownBrandTitle = computed(() => cmsBrand.appName || props.brandTitle);
+
+// Logo URLs that failed to load (e.g. the file is gone from the CMS uploads).
+const failedLogoUrls = ref(new Set());
+function markLogoFailed(url) {
+  if (!url || failedLogoUrls.value.has(url)) return;
+  failedLogoUrls.value = new Set([...failedLogoUrls.value, url]);
+}
+const showCmsLogo = computed(() => Boolean(cmsBrand.logoUrl) && !failedLogoUrls.value.has(cmsBrand.logoUrl));
+const showCmsDarkLogo = computed(() => Boolean(cmsBrand.logoDarkUrl) && !failedLogoUrls.value.has(cmsBrand.logoDarkUrl));
 
 const visibleItems = computed(() => resolvedItems.value.filter((item) => (
   item?.to !== "/audit-log" || canViewAuditLog(props.user)
