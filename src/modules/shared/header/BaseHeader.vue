@@ -1,5 +1,5 @@
 <template>
-  <header class="header">
+  <header class="header" v-bind="$attrs">
     <div class="header__title">
       <p class="header__eyebrow">{{ eyebrow }}</p>
       <h1>{{ title }}</h1>
@@ -97,12 +97,18 @@
       </div>
     </div>
   </header>
+  <!-- Announcements from the CMS, under the header on every page. -->
+  <AnnouncementBanner />
 </template>
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseIcon from '../icon'
+import AnnouncementBanner from '../announcement/AnnouncementBanner.vue'
+
+// Two root nodes now (header + banner): keep attributes from pages on <header>.
+defineOptions({ inheritAttrs: false })
 import { isDark as isDarkFn, toggleTheme } from '../../../utils/theme'
 import { isOwnerAccess } from '../../../auth/access'
 
