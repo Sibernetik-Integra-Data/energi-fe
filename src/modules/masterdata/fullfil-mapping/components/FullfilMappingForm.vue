@@ -4,6 +4,12 @@
       <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between"><h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Edit Fullfil Mapping' : 'Add Fullfil Mapping' }}</h3><button type="button" class="border-0 bg-transparent text-(--text-soft) text-xl cursor-pointer" @click="emit('cancel')">&times;</button></div>
         <form class="flex flex-col gap-4" @submit.prevent="submit">
+          <label class="flex flex-col gap-1 text-sm font-semibold text-(--text)">Name <span class="text-red-500">*</span>
+            <input v-model.trim="form.name" type="text" maxlength="50" placeholder="e.g. Panen - Hitung TBS" autocomplete="off" class="border border-(--border) rounded-lg px-3.5 py-2.5 font-normal bg-(--surface-muted)" :class="{ 'border-red-400': errors.name }" /><span v-if="errors.name" class="text-xs text-red-500">{{ errors.name }}</span>
+          </label>
+          <label class="flex flex-col gap-1 text-sm font-semibold text-(--text)">Title
+            <input v-model.trim="form.title" type="text" maxlength="100" placeholder="e.g. Perhitungan panen TBS" autocomplete="off" class="border border-(--border) rounded-lg px-3.5 py-2.5 font-normal bg-(--surface-muted)" />
+          </label>
           <label class="flex flex-col gap-1 text-sm font-semibold text-(--text)">Type of Work <span class="text-red-500">*</span>
             <select v-model="form.tow_id" class="border border-(--border) rounded-lg px-3.5 py-2.5 font-normal bg-(--surface-muted)" :class="{ 'border-red-400': errors.tow_id }"><option value="">Select type of work</option><option v-for="item in typeOfWorks" :key="item.id" :value="String(item.id)">{{ item.name || `#${item.id}` }}</option></select><span v-if="errors.tow_id" class="text-xs text-red-500">{{ errors.tow_id }}</span>
           </label>
@@ -28,19 +34,24 @@ import { computed, reactive, watch } from 'vue'
 const props = defineProps({ visible: Boolean, fullfil: Object, typeOfWorks: { type: Array, default: () => [] }, typeOfNeeds: { type: Array, default: () => [] }, submitting: Boolean })
 const emit = defineEmits(['submit', 'cancel'])
 const isEdit = computed(() => Boolean(props.fullfil?.id))
-const form = reactive({ tow_id: '', ton_id: '', access: '', notes: '', is_view: true })
-const errors = reactive({ tow_id: '', ton_id: '' })
+const form = reactive({ name: '', title: '', tow_id: '', ton_id: '', access: '', notes: '', is_view: true })
+const errors = reactive({ name: '', tow_id: '', ton_id: '' })
 
 watch(() => props.visible, (visible) => {
   if (!visible) return
-  Object.assign(form, props.fullfil ? { tow_id: String(props.fullfil.tow_id || ''), ton_id: String(props.fullfil.ton_id || ''), access: props.fullfil.access || '', notes: props.fullfil.notes || '', is_view: props.fullfil.is_view !== 0 } : { tow_id: '', ton_id: '', access: '', notes: '', is_view: true })
-  errors.tow_id = ''; errors.ton_id = ''
+  Object.assign(form, props.fullfil ? { name: props.fullfil.name || '', title: props.fullfil.title || '', tow_id: String(props.fullfil.tow_id || ''), ton_id: String(props.fullfil.ton_id || ''), access: props.fullfil.access || '', notes: props.fullfil.notes || '', is_view: props.fullfil.is_view !== 0 } : { name: '', title: '', tow_id: '', ton_id: '', access: '', notes: '', is_view: true })
+  errors.name = ''; errors.tow_id = ''; errors.ton_id = ''
 })
 
 function submit() {
+  // name is required by the database; the form used to have no field for it.
+  errors.name = form.name ? '' : 'Name is required.'
   errors.tow_id = form.tow_id ? '' : 'Type of Work is required.'
   errors.ton_id = form.ton_id ? '' : 'Type of Need is required.'
-  if (errors.tow_id || errors.ton_id) return
-  emit('submit', { tow_id: Number(form.tow_id), ton_id: Number(form.ton_id), access: form.access || null, notes: form.notes || null, is_view: form.is_view ? 1 : 0 })
+  if (errors.name || errors.tow_id || errors.ton_id) return
+  const payload = { name: form.name, title: form.title || null, tow_id: Number(form.tow_id), ton_id: Number(form.ton_id), notes: form.notes || null, is_view: form.is_view ? 1 : 0 }
+  // access is NOT NULL in the table: leave it out when nothing is chosen so the default applies.
+  if (form.access) payload.access = form.access
+  emit('submit', payload)
 }
 </script>

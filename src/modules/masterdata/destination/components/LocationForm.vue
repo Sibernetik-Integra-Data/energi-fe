@@ -61,16 +61,24 @@
                     </div>
 
                     <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="loc-type">Type of Destination</label>
+                        <label class="text-sm font-semibold text-(--text)" for="loc-type">
+                            Type of Destination <span class="text-red-500">*</span>
+                        </label>
                         <div v-if="typeOfLocationsLoading" class="text-xs text-(--text-muted)">Loading types&hellip;</div>
                         <select
                             v-else
                             id="loc-type"
-                            v-model="form.type_of_location"
-                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors">
-                            <option value="">— None —</option>
-                            <option v-for="t in typeOfLocations" :key="t.id" :value="t.name">{{ t.name }}</option>
+                            v-model="form.tol_id"
+                            class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
+                            :class="
+                                errors.tol_id
+                                    ? 'border-red-400 bg-red-50 focus:border-red-500'
+                                    : 'border-(--border) bg-(--surface-muted) focus:border-green-500'
+                            ">
+                            <option value="">Select type of destination</option>
+                            <option v-for="t in typeOfLocations" :key="t.id" :value="String(t.id)">{{ t.name }}</option>
                         </select>
+                        <span v-if="errors.tol_id" class="text-xs text-red-500">{{ errors.tol_id }}</span>
                     </div>
 
                     <div class="flex flex-col gap-1">
@@ -145,7 +153,7 @@ const emptyForm = () => ({
     name: '',
     nomor: null,
     location: '',
-    type_of_location: '',
+    tol_id: '',
     latitude: '',
     longitude: '',
     notes: ''
@@ -178,7 +186,7 @@ watch(
                     name: props.location.name || '',
                     nomor: props.location.nomor ?? null,
                     location: props.location.location || '',
-                    type_of_location: props.location.type_of_location || '',
+                    tol_id: String(props.location.tol_id ?? props.location.location_type?.id ?? ''),
                     latitude: props.location.latitude || '',
                     longitude: props.location.longitude || '',
                     notes: props.location.notes || ''
@@ -200,6 +208,8 @@ onMounted(() => {
 function validate() {
     const errs = {}
     if (!form.value.name) errs.name = 'Name is required.'
+    // The database requires a type; without this check the server answered 500.
+    if (!form.value.tol_id) errs.tol_id = 'Type of Destination is required.'
     errors.value = errs
     return Object.keys(errs).length === 0
 }
@@ -210,7 +220,7 @@ function onSubmit() {
     const payload = {
         name: form.value.name,
         location: form.value.location,
-        type_of_location: form.value.type_of_location || undefined,
+        tol_id: Number(form.value.tol_id),
         latitude: form.value.latitude,
         longitude: form.value.longitude,
         notes: form.value.notes
