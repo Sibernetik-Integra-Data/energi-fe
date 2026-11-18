@@ -74,9 +74,6 @@ jobs:
           ls -la dist || true
           podman build -f dockerfile.development -t $IMAGE .
 
-      - name: Prune old Podman images
-        run: podman image prune -f --filter until=24h
-
       - name: Backup current Podman container
         run: |
           set -euo pipefail
@@ -124,6 +121,11 @@ jobs:
             fi
             echo "Waiting for application... ($i)"
           done
+
+      # Housekeeping only: runs after the new container is up and must never
+      # fail the deploy (a stale image record on the runner made it exit 125).
+      - name: Prune old Podman images
+        run: podman image prune -f --filter until=24h || echo "Image prune failed; continuing"
 
       - name: Save image artifact (tar)
         run: |
