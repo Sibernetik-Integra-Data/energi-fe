@@ -2,7 +2,7 @@
     <div class="relative">
         <button
             type="button"
-            class="w-full h-16 text-left bg-(--surface) border border-[#bababa] rounded-2xl p-3 flex items-center gap-4 cursor-pointer hover:bg-(--surface-muted) hover:border-teal-300 transition-all focus:outline-none focus:ring-2 focus:ring-teal-300"
+            class="w-full h-16 text-left bg-(--surface) border border-(--border-strong) rounded-2xl p-3 flex items-center gap-4 cursor-pointer hover:bg-(--surface-muted) hover:border-teal-300 transition-all focus:outline-none focus:ring-2 focus:ring-teal-300"
             :class="{ 'border-teal-400 ring-2 ring-teal-200': popupOpen }"
             @click="togglePopup">
             <!-- Avatar -->

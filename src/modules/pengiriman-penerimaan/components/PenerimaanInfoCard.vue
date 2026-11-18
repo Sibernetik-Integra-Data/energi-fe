@@ -5,7 +5,7 @@
                 <h2 class="m-0 text-3xl font-bold text-(--text)">Penerimaan</h2>
                 <p class="m-0 mt-1 text-sm text-(--text-muted)">{{ receipt.receiptNo }} · {{ receipt.statusLabel }}</p>
             </div>
-            <div class="w-14 h-14 rounded-full bg-[#e6f3ea] flex items-center justify-center text-[#00842a] text-xl"
+            <div class="w-14 h-14 rounded-full bg-(--status-done-bg) flex items-center justify-center text-(--status-done-text) text-xl"
                 aria-hidden="true">✓</div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">

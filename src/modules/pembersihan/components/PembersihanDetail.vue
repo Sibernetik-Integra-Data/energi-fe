@@ -106,7 +106,7 @@
                             <div class="ml-auto flex items-center gap-2 shrink-0">
                                 <span
                                     v-if="group.labors.length > 0"
-                                    class="inline-flex items-center text-sm px-2 py-1 rounded-full bg-[#e6f3ea] text-[#00842a]"
+                                    class="inline-flex items-center text-sm px-2 py-1 rounded-full bg-(--status-done-bg) text-(--status-done-text)"
                                     >{{ group.labors.length }} Labors</span
                                 >
                                 <span

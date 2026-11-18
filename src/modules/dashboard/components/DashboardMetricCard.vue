@@ -27,6 +27,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { cssVar } from '../../../utils/cmsTheme'
 
 const props = defineProps({
   metric: {
@@ -55,7 +56,12 @@ const toneColorMap = {
 }
 
 const chartOptions = computed(() => {
-  const tone = toneColorMap[metricTone.value] || toneColorMap.orange
+  const baseTone = toneColorMap[metricTone.value] || toneColorMap.orange
+  // "orange" is the brand tone: follow --brand (CMS theme). ApexCharts needs a
+  // real colour value, not var(--brand).
+  const tone = baseTone === toneColorMap.orange
+    ? { ...baseTone, color: cssVar('--brand', baseTone.color) }
+    : baseTone
   return {
     chart: {
       type: 'area',

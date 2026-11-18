@@ -1,4 +1,4 @@
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 
 // Colours and logo managed in Strapi (single type "Theme Setting").
 // The defaults stay in src/index.css; a value from the CMS overrides one token.
@@ -29,6 +29,26 @@ export const cmsBrand = reactive({
   logoDarkUrl: '',
   logoAlt: ''
 })
+
+// Bumped whenever token values may have changed: a CMS theme was applied or
+// light/dark mode was toggled (class on <html>).
+const themeRevision = ref(0)
+
+if (typeof MutationObserver !== 'undefined' && typeof document !== 'undefined') {
+  new MutationObserver(() => { themeRevision.value += 1 })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+}
+
+/**
+ * Current value of a CSS token, e.g. cssVar('--brand') -> '#fb8c00'.
+ * For places that cannot take var(--x) (chart libraries, SVG attributes).
+ * Reactive: a computed() using it re-runs when the theme or mode changes.
+ */
+export function cssVar(name, fallback = '') {
+  void themeRevision.value
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+  return value || fallback
+}
 
 function hexToRgba(hex, alpha) {
   const value = Number.parseInt(hex.slice(1), 16)
@@ -83,6 +103,7 @@ function applyCmsTheme(theme) {
     document.head.appendChild(style)
   }
   style.textContent = buildThemeCss(theme)
+  themeRevision.value += 1
 
   cmsBrand.logoUrl = safeMediaUrl(theme?.logo)
   cmsBrand.logoDarkUrl = safeMediaUrl(theme?.logoDark)

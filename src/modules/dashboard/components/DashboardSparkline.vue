@@ -14,6 +14,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { cssVar } from '../../../utils/cmsTheme'
 
 const props = defineProps({
   points: {
@@ -33,7 +34,12 @@ const toneMap = {
   amber: '#d97706'
 }
 
-const toneColor = computed(() => toneMap[props.tone] ?? toneMap.orange)
+// "orange" is the brand tone and follows --brand (CMS theme). SVG presentation
+// attributes cannot take var(--brand), so the current value is read instead.
+const toneColor = computed(() => {
+  const color = toneMap[props.tone] ?? toneMap.orange
+  return color === toneMap.orange ? cssVar('--brand', color) : color
+})
 const gradientId = computed(() => `sparkline-${props.tone}-${Math.abs(props.points.join('-').length)}`)
 
 const geometry = computed(() => {

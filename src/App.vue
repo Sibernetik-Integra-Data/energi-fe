@@ -173,7 +173,7 @@ onMounted(async () => {
   place-items: center;
   padding: 24px;
   background:
-    radial-gradient(circle at top left, rgba(251, 140, 0, 0.16), transparent 28%),
+    radial-gradient(circle at top left, color-mix(in srgb, var(--brand) 16%, transparent), transparent 28%),
     radial-gradient(circle at bottom right, rgba(37, 99, 235, 0.12), transparent 30%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
 }
@@ -182,7 +182,7 @@ onMounted(async () => {
   width: min(720px, 100%);
   border: 1px solid var(--border);
   border-radius: 28px;
-  background: rgba(255, 255, 255, 0.88);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
   backdrop-filter: blur(18px);
   box-shadow: var(--shadow);
   padding: clamp(28px, 5vw, 56px);
@@ -222,7 +222,7 @@ onMounted(async () => {
   background: var(--brand);
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 14px 24px rgba(251, 140, 0, 0.22);
+  box-shadow: 0 14px 24px color-mix(in srgb, var(--brand) 22%, transparent);
 }
 
 .route-loading-overlay {

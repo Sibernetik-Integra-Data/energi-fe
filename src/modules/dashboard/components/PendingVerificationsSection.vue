@@ -253,8 +253,8 @@ defineProps({
   width: 28px;
   height: 28px;
   border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
+  border: 1px solid var(--border);
+  background: var(--surface);
   display: inline-grid;
   place-items: center;
 }
@@ -263,7 +263,7 @@ defineProps({
   width: 12px;
   height: 12px;
   border-radius: 999px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-strong);
   position: relative;
 }
 
@@ -275,7 +275,7 @@ defineProps({
   width: 4px;
   height: 4px;
   border-radius: 999px;
-  background: #d1d5db;
+  background: var(--border-strong);
   transform: translateY(-50%);
 }
 
