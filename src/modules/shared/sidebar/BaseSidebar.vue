@@ -42,7 +42,7 @@
           <div class="flex w-full items-center">
             <button type="button" :class="[
               'sidebar-item-button',
-              'group relative flex min-w-0 flex-1 items-center appearance-none border-0 bg-transparent text-left outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-orange-300 min-h-10 rounded-[10px] px-3 py-1.5 cursor-pointer',
+              'group relative flex min-w-0 flex-1 items-center appearance-none border-0 bg-transparent text-left outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-(--brand) min-h-10 rounded-[10px] px-3 py-1.5 cursor-pointer',
               'text-(--text-muted) hover:bg-black/4 hover:text-(--text)',
               isItemActive(item) ? 'is-active' : '',
             ]" :title="isCollapsed ? item.label : ''" @click="onNavigate(item)">
@@ -64,7 +64,7 @@
             </button>
 
             <button v-if="!isCollapsed" type="button"
-              class="group ml-0.5 inline-grid h-9 w-9 shrink-0 place-items-center rounded-lg border-0 bg-transparent text-(--text-muted) outline-none transition-colors hover:bg-black/4 hover:text-(--text) focus-visible:ring-2 focus-visible:ring-orange-300 cursor-pointer"
+              class="group ml-0.5 inline-grid h-9 w-9 shrink-0 place-items-center rounded-lg border-0 bg-transparent text-(--text-muted) outline-none transition-colors hover:bg-black/4 hover:text-(--text) focus-visible:ring-2 focus-visible:ring-(--brand) cursor-pointer"
               :aria-label="isExpanded(item) ? `Tutup ${item.label}` : `Buka ${item.label}`"
               :aria-expanded="isExpanded(item)" @click="toggleGroup(item)">
               <span
@@ -79,9 +79,9 @@
             class="mb-1 ml-9.5 mt-0.5 flex flex-col border-l border-black/8 pl-2">
             <button v-for="child in item.children" :key="getItemKey(child)" type="button" :class="[
               'sidebar-item-button',
-              'group relative flex w-full appearance-none items-center gap-2 border-0 text-left outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-orange-300 min-h-8.5 rounded-lg px-3 py-1 cursor-pointer',
+              'group relative flex w-full appearance-none items-center gap-2 border-0 text-left outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-(--brand) min-h-8.5 rounded-lg px-3 py-1 cursor-pointer',
               isChildActive(child)
-                ? 'bg-orange-100 text-(--brand)'
+                ? 'bg-(--brand-soft) text-(--brand)'
                 : 'bg-transparent text-(--text-muted) hover:bg-black/4 hover:text-(--text)',
               isChildActive(child) ? 'is-active' : '',
             ]" @click="onNavigate(child)">
@@ -98,9 +98,9 @@
         <!-- Leaf item -->
         <button v-else type="button" :class="[
           'sidebar-item-button',
-          'group relative flex w-full items-center appearance-none border-0 text-left outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-orange-300 min-h-10 rounded-[10px] px-3 py-1.5 cursor-pointer',
+          'group relative flex w-full items-center appearance-none border-0 text-left outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-(--brand) min-h-10 rounded-[10px] px-3 py-1.5 cursor-pointer',
           isItemActive(item)
-            ? 'bg-orange-100 text-(--brand)'
+            ? 'bg-(--brand-soft) text-(--brand)'
             : 'bg-transparent text-(--text-muted) hover:bg-black/4 hover:text-(--text)',
           isItemActive(item) ? 'is-active' : '',
         ]" :title="isCollapsed ? item.label : ''" @click="onNavigate(item)">

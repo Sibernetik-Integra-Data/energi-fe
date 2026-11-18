@@ -33,7 +33,8 @@ export const navigation = [
       { label: 'Fullfil Params', icon: 'database', to: '/master-data/fullfil-params', order: 150 },
       { label: 'Fullfil Payment', icon: 'database', to: '/master-data/fullfil-payment', order: 160 },
     ]
-  }
+  },
+  { label: 'Bantuan', icon: 'list-check', to: '/bantuan', compact: true }
 ]
 
 export default navigation
