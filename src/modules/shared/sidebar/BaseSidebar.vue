@@ -8,8 +8,15 @@
       'flex items-center border-b border-(--border) h-15 shrink-0',
       isCollapsed ? 'justify-center px-3' : 'gap-3 px-4',
     ]">
-      <div aria-hidden="true"
-        class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-linear-to-br from-[#fb8c00] to-[#f59e0b] text-white shadow-[0_8px_20px_rgba(251,140,0,0.22)] ring-1 ring-white/30">
+      <!-- Logo from the CMS (Theme Setting); falls back to the built-in mark. -->
+      <div v-if="cmsBrand.logoUrl" class="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-xl">
+        <img :src="cmsBrand.logoUrl" :alt="cmsBrand.logoAlt || `${brandLabel} ${brandTitle}`"
+          :class="['h-full w-full object-contain', cmsBrand.logoDarkUrl ? 'brand-logo-light' : '']" />
+        <img v-if="cmsBrand.logoDarkUrl" :src="cmsBrand.logoDarkUrl" alt=""
+          class="brand-logo-dark h-full w-full object-contain" />
+      </div>
+      <div v-else aria-hidden="true"
+        class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-linear-to-br from-(--brand) to-[color-mix(in_srgb,var(--brand)_80%,white)] text-white shadow-[0_8px_20px_color-mix(in_srgb,var(--brand)_22%,transparent)] ring-1 ring-white/30">
         <BaseIcon :name="brandIcon" :size="brandIconSize" class="justify-center items-center" />
       </div>
 
@@ -159,6 +166,7 @@ import { useRoute, useRouter } from "vue-router";
 import BaseIcon from "../icon";
 import { cloneNavigation, loadStrapiSidebarNavigation } from "./strapiNavigation";
 import { canViewAuditLog } from "../../../auth/access";
+import { cmsBrand } from "../../../utils/cmsTheme";
 
 const isCollapsed = ref(false);
 const router = useRouter();
@@ -401,5 +409,18 @@ watch(
 
 :global(html:not(.theme-dark)) .sidebar-item-button:not(.is-active) .sidebar-icon {
   color: var(--text-muted);
+}
+
+/* CMS logo: swap to the dark variant only when one is uploaded. */
+.brand-logo-dark {
+  display: none;
+}
+
+:global(.theme-dark) .brand-logo-light {
+  display: none;
+}
+
+:global(.theme-dark) .brand-logo-dark {
+  display: block;
 }
 </style>

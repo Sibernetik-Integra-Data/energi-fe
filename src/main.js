@@ -5,9 +5,11 @@ import router from './router'
 import App from './App.vue'
 import './index.css'
 import { initTheme } from './utils/theme'
+import { initCmsTheme } from './utils/cmsTheme'
 import { preloadStrapiSidebarNavigation } from './modules/shared/sidebar/strapiNavigation'
 
 initTheme()
+initCmsTheme()
 preloadStrapiSidebarNavigation()
 
 const app = createApp(App)
