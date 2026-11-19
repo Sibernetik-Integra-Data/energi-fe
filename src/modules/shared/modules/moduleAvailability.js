@@ -1,7 +1,9 @@
-import { reactive } from 'vue'
+import { reactive, shallowRef } from 'vue'
 import { loadStrapiSidebarNavigation } from '../sidebar/strapiNavigation'
 
-// Module status managed in Strapi on each menu item (Sidebar Item -> moduleStatus).
+// Per-module settings managed in Strapi on each menu item (Sidebar Item):
+// - moduleStatus / moduleMessage: module on/off (notice page instead of the module);
+// - pageEyebrow / pageTitle / pageNote / helpPage: header texts and contextual help.
 // This only changes what the web app shows; the backend API is not affected.
 const LOAD_TIMEOUT_MS = 2500
 // The sidebar already fetches the menu on every page; reuse a recent answer
@@ -16,6 +18,8 @@ const MAX_RESULTS = 50
 
 let lastKnownModules = []
 let lastLoadedAt = 0
+// Same list, reactive, for the header (page texts and help link).
+const knownModules = shallowRef([])
 
 function flatten(items, result = []) {
   for (const item of items || []) {
@@ -24,7 +28,11 @@ function flatten(items, result = []) {
         to: item.to,
         label: item.label,
         status: item.moduleStatus || 'active',
-        message: item.moduleMessage || ''
+        message: item.moduleMessage || '',
+        pageEyebrow: item.pageEyebrow || '',
+        pageTitle: item.pageTitle || '',
+        pageNote: item.pageNote || '',
+        helpPage: item.helpPage || null
       })
     }
     if (Array.isArray(item?.children)) flatten(item.children, result)
@@ -42,6 +50,7 @@ async function loadModules() {
   if (Array.isArray(items) && items.length > 0) {
     lastKnownModules = flatten(items)
     lastLoadedAt = Date.now()
+    knownModules.value = lastKnownModules
   }
   return lastKnownModules
 }
@@ -90,4 +99,38 @@ export async function resolveModuleAvailability(path) {
 /** The unavailable module for this path (App.vue shows a notice instead), or null. */
 export function unavailableModuleFor(path) {
   return resultsByPath.get(normalizePath(path)) ?? null
+}
+
+// Most specific menu entry covering the path that has a value for `field`.
+function mostSpecificWith(modules, path, field) {
+  const target = normalizePath(path)
+  let best = null
+  for (const module of modules) {
+    if (!module[field]) continue
+    const base = normalizePath(module.to)
+    if (base === '/') continue
+    if ((target === base || target.startsWith(`${base}/`)) && (!best || base.length > normalizePath(best.to).length)) {
+      best = module
+    }
+  }
+  return best
+}
+
+/**
+ * Header settings for a path, from the menu item data (reactive):
+ * - eyebrow / title: only on the exact menu path, so detail pages keep their own
+ *   (often dynamic) titles;
+ * - note / help: for the module and every page below it.
+ * Empty values mean "keep what the page shows".
+ */
+export function pageSettingsFor(path) {
+  const modules = knownModules.value
+  const target = normalizePath(path)
+  const exact = modules.find((module) => normalizePath(module.to) === target) || null
+  return {
+    eyebrow: exact?.pageEyebrow || '',
+    title: exact?.pageTitle || '',
+    note: mostSpecificWith(modules, path, 'pageNote')?.pageNote || '',
+    helpPage: mostSpecificWith(modules, path, 'helpPage')?.helpPage || null
+  }
 }

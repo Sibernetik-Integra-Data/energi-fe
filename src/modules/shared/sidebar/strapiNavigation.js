@@ -290,6 +290,13 @@ function createSidebarItem(attributes = {}, id = null) {
     badge: toText(attributes.badge, '') || MODULE_STATUS_BADGES[moduleStatus],
     moduleStatus,
     moduleMessage: toText(attributes.moduleMessage, ''),
+    // Page texts and contextual help for the header (shared/modules/moduleAvailability.js).
+    pageEyebrow: toText(attributes.pageEyebrow, ''),
+    pageTitle: toText(attributes.pageTitle, ''),
+    pageNote: toText(attributes.pageNote, ''),
+    helpPage: hasText(attributes.helpPage?.slug)
+      ? { slug: attributes.helpPage.slug, title: toText(attributes.helpPage.title, '') }
+      : null,
     order: toNumber(attributes.order, 0),
     isVisible: attributes.isVisible === undefined ? true : toBoolean(attributes.isVisible),
     children: []

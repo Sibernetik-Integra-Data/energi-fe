@@ -1,11 +1,14 @@
 <template>
   <header class="header" v-bind="$attrs">
     <div class="header__title">
-      <p class="header__eyebrow">{{ eyebrow }}</p>
-      <h1>{{ title }}</h1>
+      <p class="header__eyebrow">{{ shownEyebrow }}</p>
+      <h1>{{ shownTitle }}</h1>
     </div>
 
     <div class="header__actions">
+      <!-- Contextual help: the SOP linked to this module in the CMS (Sidebar Item -> helpPage). -->
+      <RouterLink v-if="pageSettings.helpPage" :to="`/bantuan/${pageSettings.helpPage.slug}`"
+        class="header__button header__help" :title="helpTitle" :aria-label="helpTitle">?</RouterLink>
       <!-- Notification button intentionally hidden until notifications are supported. -->
       <!-- <button class="header__button" type="button" aria-label="Notifications">
         <span class="header__button-icon">
@@ -97,15 +100,18 @@
       </div>
     </div>
   </header>
+  <!-- Page note from the CMS (Sidebar Item -> pageNote), for this module and its pages. -->
+  <p v-if="pageSettings.note" class="header-note">{{ pageSettings.note }}</p>
   <!-- Announcements from the CMS, under the header on every page. -->
   <AnnouncementBanner />
 </template>
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import BaseIcon from '../icon'
 import AnnouncementBanner from '../announcement/AnnouncementBanner.vue'
+import { pageSettingsFor } from '../modules/moduleAvailability'
 
 // Two root nodes now (header + banner): keep attributes from pages on <header>.
 defineOptions({ inheritAttrs: false })
@@ -144,7 +150,17 @@ const isUserMenuOpen = ref(false)
 const userMenuRef = ref(null)
 const isDarkMode = ref(isDarkFn())
 const router = useRouter()
+const route = useRoute()
 const isOwner = computed(() => isOwnerAccess(props.user))
+
+// Texts and help link from the CMS for this page; the props are the fallback.
+const pageSettings = computed(() => pageSettingsFor(route.path))
+const shownEyebrow = computed(() => pageSettings.value.eyebrow || props.eyebrow)
+const shownTitle = computed(() => pageSettings.value.title || props.title)
+const helpTitle = computed(() => {
+  const pageTitle = pageSettings.value.helpPage?.title
+  return pageTitle ? `Bantuan: ${pageTitle}` : 'Bantuan untuk halaman ini'
+})
 
 function closeUserMenu() {
   isUserMenuOpen.value = false
@@ -255,6 +271,37 @@ onBeforeUnmount(() => {
 .header__button-icon {
   width: 17px;
   height: 17px;
+}
+
+.header__help {
+  font-size: 16px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: color 150ms ease, border-color 150ms ease;
+}
+
+.header__help:hover,
+.header__help:focus-visible {
+  color: var(--brand);
+  border-color: var(--brand);
+  outline: none;
+}
+
+.header-note {
+  margin: 0;
+  padding: 8px 20px 8px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 18px;
+  white-space: pre-line;
+}
+
+@media (max-width: 920px) {
+  .header-note {
+    padding: 8px 16px;
+  }
 }
 
 .header__button-badge {
