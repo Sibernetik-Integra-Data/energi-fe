@@ -17,25 +17,35 @@
             <h1>{{ intro.title }}</h1>
             <p class="dashboard-description">{{ intro.description }}</p>
           </div>
+          <!-- Quick links from the CMS (Dashboard Setting -> quickLinks) -->
+          <nav v-if="quickLinks.length" class="dashboard-quick-links" aria-label="Tautan cepat">
+            <template v-for="link in quickLinks" :key="`${link.label}-${link.url}`">
+              <RouterLink v-if="link.isInternal" :to="link.url" class="dashboard-quick-link" :title="link.description || undefined">
+                {{ link.label }}
+              </RouterLink>
+              <a v-else :href="link.url" target="_blank" rel="noopener noreferrer" class="dashboard-quick-link"
+                :title="link.description || undefined">{{ link.label }} ↗</a>
+            </template>
+          </nav>
         </section>
 
         <!-- Metrics filter + cards section -->
-        <section aria-label="Filter & ringkasan aktivitas">
+        <section v-if="metrics.length" aria-label="Filter & ringkasan aktivitas">
           <div class="dashboard-metrics-header">
             <DashboardMetricsFilter @change="onFilterChange" />
           </div>
-          <div class="dashboard-metrics">
+          <div class="dashboard-metrics" :style="{ '--metric-columns': Math.min(metrics.length, 4) }">
             <DashboardMetricCard
               v-for="metric in metrics"
-              :key="metric.title"
+              :key="metric.key || metric.title"
               :metric="metric"
             />
           </div>
         </section>
 
-        <section class="dashboard-grid">
-          <PendingVerificationsSection :section="pendingVerification" />
-          <RecentVerifiedSection :section="recentVerified" />
+        <section v-if="showPending || showRecent" class="dashboard-grid">
+          <PendingVerificationsSection v-if="showPending" :section="pendingVerification" />
+          <RecentVerifiedSection v-if="showRecent" :section="recentVerified" />
         </section>
       </main>
     </div>
@@ -52,6 +62,7 @@ import PendingVerificationsSection from './components/PendingVerificationsSectio
 import RecentVerifiedSection from './components/RecentVerifiedSection.vue'
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
 import { useAppStore } from '../../stores'
+import { applyMetricSettings, useDashboardSettings } from './dashboardSettings'
 
 const props = defineProps({
   controller: {
@@ -73,18 +84,32 @@ const activeFilter = ref({
 const metricsData = ref(null)
 const metricsLoading = ref(false)
 
+// Presentation from the CMS (Dashboard Setting); null keeps the built-in dashboard.
+const cms = useDashboardSettings()
+
+// CMS text wins when set; otherwise the built-in text from the model.
+function withCmsText(base, override) {
+  return {
+    ...base,
+    title: override?.title || base.title,
+    ...('subtitle' in base ? { subtitle: override?.subtitle || base.subtitle } : {}),
+    ...('description' in base ? { description: override?.description || base.description } : {})
+  }
+}
+
 const navigation = computed(() => props.controller.getNavigation())
 const header = computed(() => props.controller.getHeader())
-const intro = computed(() => props.controller.getIntro())
-const pendingVerification = computed(() => props.controller.getPendingVerification())
-const recentVerified = computed(() => props.controller.getRecentVerified())
+const intro = computed(() => withCmsText(props.controller.getIntro(), cms.value?.intro))
+const pendingVerification = computed(() => withCmsText(props.controller.getPendingVerification(), cms.value?.pending))
+const recentVerified = computed(() => withCmsText(props.controller.getRecentVerified(), cms.value?.recent))
+const showPending = computed(() => cms.value?.pending?.isVisible !== false)
+const showRecent = computed(() => cms.value?.recent?.isVisible !== false)
+const quickLinks = computed(() => cms.value?.quickLinks || [])
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 
 const metrics = computed(() => {
-  if (metricsData.value) {
-    return metricsData.value
-  }
-  return props.controller.getMetrics(activeFilter.value)
+  const base = metricsData.value || props.controller.getMetrics(activeFilter.value)
+  return applyMetricSettings(base, cms.value?.metrics)
 })
 
 async function loadMetricsForFilter(filter) {
@@ -182,8 +207,38 @@ watch(
 
 .dashboard-metrics {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* Number of visible cards (max 4), set from the CMS settings. */
+  grid-template-columns: repeat(var(--metric-columns, 4), minmax(0, 1fr));
   gap: 16px;
+}
+
+.dashboard-quick-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.dashboard-quick-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 150ms ease, color 150ms ease;
+}
+
+.dashboard-quick-link:hover,
+.dashboard-quick-link:focus-visible {
+  border-color: var(--brand);
+  color: var(--brand);
+  outline: none;
 }
 
 .dashboard-grid {

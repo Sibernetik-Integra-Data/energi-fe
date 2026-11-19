@@ -70,6 +70,7 @@ function buildWeeklyMetric(config, sensusList, referenceDate = new Date()) {
   const deltaSign = deltaPercent >= 0 ? '+' : ''
 
   return {
+    key: config.key,
     title: config.title,
     value: String(currentMonthTotal),
     delta: `${deltaSign}${deltaPercent}%`,
@@ -120,6 +121,7 @@ function buildYearlyMetric(config, sensusList, year) {
   const deltaSign = deltaPercent >= 0 ? '+' : ''
 
   return {
+    key: config.key,
     title: config.title,
     value: String(yearTotal),
     delta: `${deltaSign}${deltaPercent}%`,
@@ -135,6 +137,7 @@ function buildYearlyMetric(config, sensusList, year) {
 
 const DASHBOARD_METRIC_CONFIGS = [
   {
+    key: 'sensus',
     title: 'Sensus',
     detail: 'Total bulan berjalan',
     tone: 'orange',
@@ -142,6 +145,7 @@ const DASHBOARD_METRIC_CONFIGS = [
     groupOfWork: null
   },
   {
+    key: 'pembersihan',
     title: 'Pembersihan',
     detail: 'Blok aktif',
     tone: 'green',
@@ -149,6 +153,7 @@ const DASHBOARD_METRIC_CONFIGS = [
     groupOfWork: 1
   },
   {
+    key: 'pemupukan',
     title: 'Pemupukan',
     detail: 'Target mingguan',
     tone: 'blue',
@@ -156,6 +161,7 @@ const DASHBOARD_METRIC_CONFIGS = [
     groupOfWork: 3
   },
   {
+    key: 'panen',
     title: 'Panen',
     detail: 'Tonase terkini',
     tone: 'amber',
@@ -169,6 +175,7 @@ function buildEmptyMetric(config, referenceDate = new Date(), value = '0', mode 
     ? getYearlyMonthLabels(referenceDate.getFullYear())
     : getCurrentMonthWeekLabels(referenceDate)
   return {
+    key: config.key,
     title: config.title,
     value,
     delta: '+0%',
