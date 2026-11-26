@@ -31,6 +31,8 @@
             v-model:filterSensusId="filterSensusId"
             :sensus-options="sensusOptions"
             :items="plannings"
+            :can-write="canWrite"
+            :count-tasks="(id) => props.controller.countTasks(id)"
             @add="openDrawer(null)"
             @editItem="openDrawer"
             @remove-plan="handleRemove"
@@ -65,6 +67,7 @@ import PlanningGanttChart from './components/PlanningGanttChart.vue'
 import PlanningDrawer from './components/PlanningDrawer.vue'
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
 import { useAppStore } from '../../stores'
+import { canManagePlanning } from '../../auth/access'
 import { useToast } from '../../utils/toast'
 
 const props = defineProps({
@@ -73,6 +76,8 @@ const props = defineProps({
 
 const appStore = useAppStore()
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
+// Owner, Admin, Kepala kebun, Asisten kebun (DEP-01); peran lain hanya melihat.
+const canWrite = computed(() => canManagePlanning(user.value))
 const { show: showToast } = useToast()
 const route = useRoute()
 const router = useRouter()
@@ -122,7 +127,7 @@ onMounted(async () => {
   }
 
   // Auto-open drawer if navigated from Sensus Detail or from Pembersihan/Pemupukan
-  if (route.query.openDrawer === '1' && route.query.sensusId) {
+  if (route.query.openDrawer === '1' && route.query.sensusId && canWrite.value) {
     prefillSensusId.value = String(route.query.sensusId)
     prefillSensusDetailId.value = route.query.sensusDetailId ? Number(route.query.sensusDetailId) : null
     prefillStartDate.value = route.query.startDate ? String(route.query.startDate) : ''
@@ -135,6 +140,7 @@ onMounted(async () => {
 })
 
 function openDrawer(item) {
+  if (!canWrite.value) return
   drawerItem.value = item ?? null
   drawerOpen.value = true
 }

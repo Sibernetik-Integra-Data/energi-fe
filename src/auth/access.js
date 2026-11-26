@@ -12,6 +12,14 @@ export function canReceiveHarvest(source) {
   return HARVEST_RECEIVER_ACCESS.includes(normalizeAccess(source).toLowerCase())
 }
 
+// Roles allowed to create, edit or delete a planning (DEP-01, 26 Nov 2026).
+// Matches ROLE_PLANNING_WRITE on the server, which still checks every request.
+const PLANNING_WRITER_ACCESS = ['owner', 'admin', 'kepala kebun', 'asisten kebun', 'assisten kebun']
+
+export function canManagePlanning(source) {
+  return PLANNING_WRITER_ACCESS.includes(normalizeAccess(source).toLowerCase())
+}
+
 export function isOwnerAccess(source) {
   return normalizeAccess(source).toLowerCase() === 'owner'
 }

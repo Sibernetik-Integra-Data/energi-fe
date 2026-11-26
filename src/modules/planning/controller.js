@@ -1,4 +1,4 @@
-import { createPlanningModel, loadPlannings, loadSensusOptions, loadSensusDetails, loadAktifitasOptions, createPlanning, updatePlanning, deletePlanning } from './model'
+import { createPlanningModel, loadPlannings, loadSensusOptions, loadSensusDetails, loadAktifitasOptions, createPlanning, updatePlanning, deletePlanning, countPlanningTasks } from './model'
 
 export function createPlanningController() {
   const model = createPlanningModel()
@@ -43,6 +43,10 @@ export function createPlanningController() {
     return deletePlanning(id)
   }
 
+  async function countTasks(planId) {
+    return countPlanningTasks(planId)
+  }
+
   return {
     getNavigation,
     getHeader,
@@ -53,6 +57,7 @@ export function createPlanningController() {
     fetchAktifitasOptions,
     savePlanning,
     editPlanning,
-    removePlanning
+    removePlanning,
+    countTasks
   }
 }

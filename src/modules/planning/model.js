@@ -97,16 +97,37 @@ export async function deletePlanning(id) {
   return signedApiFetch(`/planning/${id}`, { method: 'DELETE' })
 }
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+
+function shortDate(value) {
+  const d = toDateOnlyString(value)
+  if (!d) return ''
+  const [y, m, day] = d.split('-')
+  return `${Number(day)} ${MONTHS[Number(m) - 1]} ${y}`
+}
+
 export async function loadSensusOptions() {
   const resp = await signedApiFetch('/sensus', { method: 'GET' })
   const rows = Array.isArray(resp.data) ? resp.data : []
-  return rows.map(r => ({
-    value: r.id_sensus,
-    label: r.id_sensus
-  }))
+  // Tanggal dulu agar mudah dipilih; kode sensus tetap ditampilkan.
+  return rows.map(r => {
+    const date = shortDate(r.sensus_date)
+    return { value: r.id_sensus, label: date ? `${date} · ${r.id_sensus}` : r.id_sensus }
+  })
+}
+
+// Jumlah tugas Pekerja (labor_plan) pada satu planning; ikut terhapus bila
+// planning dihapus (ON DELETE CASCADE).
+export async function countPlanningTasks(planId) {
+  const params = new URLSearchParams({ plan_id: String(planId), page: '1', limit: '1' })
+  const resp = await signedApiFetch(`/labor?${params.toString()}`, { method: 'GET' })
+  const total = Number(resp?.meta?.total)
+  return Number.isFinite(total) ? total : null
 }
 
 export async function loadSensusDetails(idSensus) {
+  // Satu detail sensus hanya boleh punya satu planning (uq_sensus_detail_id).
+  const planned = new Set((await loadPlannings({ idSensus })).map(p => p.sensusDetailId))
   const params = new URLSearchParams({ id_sensus: idSensus })
   const resp = await signedApiFetch(`/sensus/detail?${params.toString()}`, { method: 'GET' })
   // Response is grouped by sensus: [{id_sensus, details: [{id, type_of_work, description, ...}]}]
@@ -121,7 +142,8 @@ export async function loadSensusDetails(idSensus) {
       const label = activity && desc
         ? `${activity} — ${desc}`
         : activity || desc || `Detail #${d.id}`
-      options.push({ value: d.id, label, blocks })
+      const hasPlanning = planned.has(d.id)
+      options.push({ value: d.id, label: hasPlanning ? `${label} (sudah planning)` : label, blocks, hasPlanning })
     }
   }
   return options

@@ -67,7 +67,7 @@
             class="h-9.5 px-3 border border-(--border) rounded-lg bg-(--surface) text-(--text) text-sm outline-none transition-colors duration-150 focus:border-(--brand) w-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <option :value="null" disabled>{{ form.sensusId ? 'Pilih Detail...' : 'Pilih Sensus terlebih dahulu' }}</option>
-            <option v-for="opt in sensusDetailOptions" :key="opt.value" :value="opt.value">
+            <option v-for="opt in sensusDetailOptions" :key="opt.value" :value="opt.value" :disabled="opt.hasPlanning">
               {{ opt.label }}
             </option>
           </select>

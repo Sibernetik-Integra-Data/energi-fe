@@ -42,7 +42,7 @@
                     </div>
 
                     <div class="px-4 py-3 border-b border-(--border) flex items-center" style="height: 70px">
-                        <button @click="$emit('add')"
+                        <button v-if="canWrite" @click="$emit('add')"
                             class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-(--text) text-(--surface) text-sm font-semibold hover:opacity-80 transition-opacity cursor-pointer border-0">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-width="2.5">
@@ -68,7 +68,7 @@
                     <div v-else class="divide-y divide-(--border)">
                         <div v-for="plan in filteredItems" :key="plan.id"
                             class="flex items-center px-4 gap-3 group cursor-pointer hover:bg-(--surface-muted) transition-colors"
-                            style="height: 96px" @click="$emit('editItem', plan)"
+                            style="height: 96px" @click="canWrite && $emit('editItem', plan)"
                             @mouseenter="handlePlanHoverStart($event, plan)" @mouseleave="handlePlanHoverEnd">
                             <div class="shrink-0 w-1 rounded-full self-stretch my-3"
                                 :style="{ backgroundColor: jobColor(plan.groupOfWork).bar }"></div>
@@ -88,7 +88,7 @@
                                     </template>
                                 </div>
                             </div>
-                            <button @click.stop="openDeleteConfirm(plan)"
+                            <button v-if="canWrite" @click.stop="openDeleteConfirm(plan)"
                                 class="shrink-0 opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center rounded text-(--text-muted) hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer border-0 bg-transparent"
                                 aria-label="Hapus rencana">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
@@ -185,6 +185,12 @@
                         <strong class="text-(--text)">{{ deletingPlan?.jobType || 'ini' }}</strong>?
                         Tindakan ini tidak dapat dibatalkan.
                     </p>
+                    <p class="text-sm m-0" :class="deletingTasks ? 'text-red-600 font-semibold' : 'text-(--text-muted)'">
+                        <template v-if="deletingTasks === undefined">Memeriksa tugas pekerja...</template>
+                        <template v-else-if="deletingTasks === null">Jumlah tugas pekerja tidak bisa diperiksa; semua tugas pekerja pada rencana ini ikut terhapus.</template>
+                        <template v-else-if="deletingTasks > 0">{{ deletingTasks }} tugas pekerja pada rencana ini ikut terhapus, termasuk jawaban dan laporannya.</template>
+                        <template v-else>Belum ada tugas pekerja pada rencana ini.</template>
+                    </p>
                     <div class="flex justify-end gap-3">
                         <button type="button"
                             class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
@@ -244,6 +250,10 @@ import {
 
 const props = defineProps({
     items: { type: Array, default: () => [] },
+    /** Peran boleh menambah/mengubah/menghapus rencana (DEP-01); server tetap memeriksa. */
+    canWrite: { type: Boolean, default: false },
+    /** (planId) => Promise<number|null>: jumlah tugas pekerja yang ikut terhapus. */
+    countTasks: { type: Function, default: null },
     /** ISO date string for the first visible day; defaults to the current Jakarta month */
     startDate: { type: String, default: null },
     daysCount: { type: Number, default: 31 },
@@ -300,6 +310,8 @@ function resetFilters() {
 
 const showDeleteConfirm = ref(false);
 const deletingPlan = ref(null);
+// undefined = sedang diperiksa, null = tidak diketahui, angka = jumlah tugas.
+const deletingTasks = ref(undefined);
 const hoverInfoVisible = ref(false);
 const hoverInfoPlan = ref(null);
 const hoverInfoStyle = ref({ top: '0px', left: '0px', transform: 'translateY(-50%)' });
@@ -450,9 +462,14 @@ function handlePlanHoverEnd() {
     hoverInfoPlan.value = null;
 }
 
-function openDeleteConfirm(plan) {
+async function openDeleteConfirm(plan) {
     deletingPlan.value = plan;
+    deletingTasks.value = props.countTasks ? undefined : null;
     showDeleteConfirm.value = true;
+    if (!props.countTasks) return;
+    const planId = plan.id;
+    const n = await props.countTasks(planId).catch(() => null);
+    if (deletingPlan.value?.id === planId) deletingTasks.value = n;
 }
 
 function cancelDelete() {
