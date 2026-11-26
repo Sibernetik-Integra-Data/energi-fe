@@ -139,16 +139,30 @@
             Block Terkait
           </label>
           <div
-            v-if="selectedDetailBlocks.length"
-            class="flex flex-wrap gap-1.5 rounded-lg border border-(--border) bg-(--surface-muted) p-2"
+            v-if="selectedDetailLocations.length"
+            class="flex flex-col divide-y divide-(--border) rounded-lg border border-(--border) bg-(--surface-muted)"
           >
-            <span
-              v-for="block in selectedDetailBlocks"
-              :key="block"
-              class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-(--surface) text-(--text) border border-(--border)"
+            <div
+              v-for="loc in selectedDetailLocations"
+              :key="loc.id"
+              class="flex flex-col gap-1 px-2.5 py-2"
             >
-              {{ block }}
-            </span>
+              <div class="text-xs text-(--text)">
+                <span v-if="loc.blok" class="text-(--text-muted)">Blok {{ loc.blok }} · </span>
+                <span class="font-semibold">Petak {{ loc.petak }}</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-1">
+                <span class="text-[11px] text-(--text-muted)">TPH:</span>
+                <template v-if="loc.tph.length">
+                  <span
+                    v-for="code in loc.tph"
+                    :key="code"
+                    class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-(--surface) text-(--text) border border-(--border)"
+                  >{{ code }}</span>
+                </template>
+                <span v-else class="text-[11px] text-(--text-muted)">tidak dipilih di sensus</span>
+              </div>
+            </div>
           </div>
           <p v-else class="text-xs text-(--text-muted)">
             Pilih detail sensus untuk melihat daftar block.
@@ -277,13 +291,13 @@ const isFormValid = computed(() => {
   return !!(base && form.value.sensusDetailId)
 })
 
-const selectedDetailBlocks = computed(() => {
+const selectedDetailLocations = computed(() => {
   if (props.editItem) {
-    return Array.isArray(props.editItem.blocks) ? props.editItem.blocks : []
+    return Array.isArray(props.editItem.locations) ? props.editItem.locations : []
   }
 
   const selected = sensusDetailOptions.value.find((opt) => opt.value === form.value.sensusDetailId)
-  return Array.isArray(selected?.blocks) ? selected.blocks : []
+  return Array.isArray(selected?.locations) ? selected.locations : []
 })
 
 function close() {

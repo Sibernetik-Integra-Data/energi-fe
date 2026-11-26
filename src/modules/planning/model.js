@@ -46,6 +46,25 @@ function normalizeBlockNames(rawBlocks) {
   return [...new Set(names)]
 }
 
+// Lokasi bertingkat untuk "Block Terkait": Blok → Petak → TPH.
+// Planning API menaruh TPH di blocks[].tph; /sensus/detail mengirim tph[] terpisah
+// dengan id_block.
+export function buildLocations(rawBlocks, rawTph = []) {
+  if (!Array.isArray(rawBlocks)) return []
+  const tphList = Array.isArray(rawTph) ? rawTph : []
+  return rawBlocks
+    .filter((b) => b && typeof b === 'object' && (b.name || Number.isFinite(b.id)))
+    .map((b) => {
+      const own = Array.isArray(b.tph) ? b.tph : tphList.filter((t) => t && t.id_block === b.id)
+      return {
+        id: b.id,
+        blok: b.block_group || '',
+        petak: String(b.name || `Petak ${b.id}`),
+        tph: own.map((t) => String(t.code || t.name || t.id)).filter(Boolean)
+      }
+    })
+}
+
 // Map a planning API row to the shape expected by the Gantt chart
 function mapPlanningItem(p) {
   const rawBlocks = Array.isArray(p.blocks) ? p.blocks : p.sensus_detail?.blocks
@@ -57,6 +76,7 @@ function mapPlanningItem(p) {
     jobType: p.sensus_detail?.type_of_work?.name || '',
     groupOfWork: p.sensus_detail?.type_of_work?.group_of_work_name || '',
     blocks: normalizeBlockNames(rawBlocks),
+    locations: buildLocations(rawBlocks),
     startDate: toDateOnlyString(p.start_date),
     endDate: toDateOnlyString(p.end_date),
     actualStartDate: toDateOnlyString(p.actual_start_date),
@@ -139,11 +159,12 @@ export async function loadSensusDetails(idSensus) {
       const activity = d.type_of_work?.name || ''
       const desc = d.description || ''
       const blocks = normalizeBlockNames(d.blocks)
+      const locations = buildLocations(d.blocks, d.tph)
       const label = activity && desc
         ? `${activity} — ${desc}`
         : activity || desc || `Detail #${d.id}`
       const hasPlanning = planned.has(d.id)
-      options.push({ value: d.id, label: hasPlanning ? `${label} (sudah planning)` : label, blocks, hasPlanning })
+      options.push({ value: d.id, label: hasPlanning ? `${label} (sudah planning)` : label, blocks, locations, hasPlanning })
     }
   }
   return options
