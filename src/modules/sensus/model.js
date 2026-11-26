@@ -103,7 +103,9 @@ function mapDetailItem(d, parentSensus = {}) {
     description:     d.description || '',
     rowsNo:          Array.isArray(d.rows_no) ? d.rows_no : [],
     locationId:      d.id_location || null,
-    isUpload:        d.type_of_work?.is_upload ?? 0
+    isUpload:        d.type_of_work?.is_upload ?? 0,
+    // Detail yang sudah punya planning terkunci (trigger sensus_detail_lock_when_planned)
+    isPlanned:       !!d.planning
   }
 }
 
