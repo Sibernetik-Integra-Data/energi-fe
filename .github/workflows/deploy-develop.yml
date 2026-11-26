@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop
+      - develop_with_block
   workflow_dispatch:
 
 concurrency:
