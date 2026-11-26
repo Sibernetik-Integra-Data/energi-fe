@@ -48,6 +48,7 @@
                     :total-pages="totalPages"
                     :visible-pages="visiblePages"
                     @view-detail="handleViewDetail"
+                    :can-plan="canPlan"
                     @add-to-plan="handleAddToPlan"
                     @update:current-page="currentPage = $event"
                     @update:page-size="pageSize = $event"
@@ -66,6 +67,7 @@ import PemupukanList from "./components/PemupukanList.vue";
 import PemupukanDetail from "./components/PemupukanDetail.vue";
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from "../../auth/keycloak";
 import { useAppStore } from "../../stores";
+import { canManagePlanning } from "../../auth/access";
 import { useServerPagination } from "../shared/pagination";
 
 const props = defineProps({
@@ -75,6 +77,7 @@ const props = defineProps({
 const appStore = useAppStore();
 const router = useRouter();
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser());
+const canPlan = computed(() => canManagePlanning(user.value));
 const navigation = computed(() => props.controller.getNavigation());
 const header = computed(() => props.controller.getHeader());
 const intro = computed(() => props.controller.getIntro());

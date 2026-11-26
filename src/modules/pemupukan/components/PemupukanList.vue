@@ -49,7 +49,7 @@
                     v-for="item in items"
                     :key="`${item.id}-${item.detailId || 'none'}`"
                     class="contents">
-                    <AssignmentCard :job-type="item.jobType" :group-of-work="item.groupOfWork" :date="item.dateRangeFormatted || item.startDateFormatted" :sensus-ref="`Sensus ${item.sensusId || '—'}`" :blocks="item.blocks" :photo="item.photo" @view-detail="$emit('view-detail', item)" @add-to-plan="$emit('add-to-plan', item)" />
+                    <AssignmentCard :job-type="item.jobType" :group-of-work="item.groupOfWork" :date="item.dateRangeFormatted || item.startDateFormatted" :sensus-ref="`Sensus ${item.sensusId || '—'}`" :blocks="item.blocks" :photo="item.photo" :show-add-to-plan="canPlan" @view-detail="$emit('view-detail', item)" @add-to-plan="$emit('add-to-plan', item)" />
                     <div v-if="false">
                     <div class="p-5 pb-3 flex justify-between items-start gap-3">
                         <div class="min-w-0 flex flex-col gap-1">
@@ -117,6 +117,7 @@
                             Lihat Detail
                         </button>
                         <button
+                            v-if="canPlan"
                             type="button"
                             class="h-8 text-xs font-semibold py-0 px-3 rounded-full border-0 bg-(--text) text-(--surface) hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap"
                             @click="$emit('add-to-plan', item)">
@@ -155,6 +156,7 @@ defineProps({
     pageSize: { type: Number, default: 10 },
     totalPages: { type: Number, default: 1 },
     visiblePages: { type: Array, default: () => [] },
+    canPlan: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(["view-detail", "add-to-plan", "update:currentPage", "update:pageSize", "filters-change"]);

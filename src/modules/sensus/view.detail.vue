@@ -73,6 +73,7 @@
                 :photo="item.photo"
                 :progress-status="item.progressStatus"
                 @view="handleView(item)"
+                :can-plan="canPlan"
                 @add-to-plan="openPlanModal(item)"
               />
             </div>
@@ -82,6 +83,7 @@
           <div v-show="activeTab === 'perencanaan'" role="tabpanel">
             <SensusPlanning
               :plans="plans"
+              :can-write="canPlan"
               @add-plan="openPlanModal(null)"
               @remove-plan="removePlan"
               @view-plan="openPlanDetail"
@@ -126,6 +128,7 @@ import SensusPlanning from './components/SensusPlanning.vue'
 import SensusPlanningModal from './components/SensusPlanningModal.vue'
 import SensusPlanningDetailPanel from './components/SensusPlanningDetailPanel.vue'
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
+import { canManagePlanning } from '../../auth/access'
 import { useAppStore } from '../../stores'
 
 import { useToast } from '../../utils/toast'
@@ -139,6 +142,7 @@ const appStore = useAppStore()
 const router = useRouter()
 const navigation = computed(() => props.controller.getNavigation())
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
+const canPlan = computed(() => canManagePlanning(user.value))
 const { show: showToast } = useToast()
 
 const loading = ref(false)
@@ -229,6 +233,7 @@ function handleView(item) {
 }
 
 function openPlanModal(item) {
+  if (!canPlan.value) return
   console.log('[SensusDetail] openPlanModal called:', { item, itemId: item?.id ?? null })
   planItem.value = item ?? {}
   planOpenKey.value++

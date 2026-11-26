@@ -67,7 +67,8 @@
 
                     <div v-else class="divide-y divide-(--border)">
                         <div v-for="plan in filteredItems" :key="plan.id"
-                            class="flex items-center px-4 gap-3 group cursor-pointer hover:bg-(--surface-muted) transition-colors"
+                            class="flex items-center px-4 gap-3 group hover:bg-(--surface-muted) transition-colors"
+                            :class="{ 'cursor-pointer': canWrite }"
                             style="height: 96px" @click="canWrite && $emit('editItem', plan)"
                             @mouseenter="handlePlanHoverStart($event, plan)" @mouseleave="handlePlanHoverEnd">
                             <div class="shrink-0 w-1 rounded-full self-stretch my-3"
@@ -158,6 +159,8 @@
                                 <div v-for="(item, idx) in filteredItems" :key="'bar-' + item.id" class="relative z-20"
                                     style="height: 96px">
                                     <div v-if="barVisible(item)"
+                                        :class="canWrite ? 'cursor-pointer hover:brightness-110' : ''"
+                                        @click="canWrite && $emit('editItem', item)"
                                         class="absolute top-1/2 -translate-y-1/2 rounded-lg flex items-center px-3 text-xs font-semibold truncate shadow-sm"
                                         style="height:38px"
                                         :style="[barStyle(item), { backgroundColor: jobColor(item.groupOfWork).bar, color: '#fff' }]">

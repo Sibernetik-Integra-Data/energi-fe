@@ -7,7 +7,7 @@
     :blocks="blocks"
     :progress-status="progressStatus"
     :show-photo="false"
-    :show-add-to-plan="true"
+    :show-add-to-plan="canPlan"
     @view-detail="$emit('view')"
     @add-to-plan="$emit('add-to-plan')"
   />
@@ -24,7 +24,8 @@ defineProps({
   blocks: { type: Array, default: () => [] },
   photo: { type: String, default: '' },
   extraPhotos: { type: Number, default: 0 },
-  progressStatus: { type: String, default: '' }
+  progressStatus: { type: String, default: '' },
+  canPlan: { type: Boolean, default: false }
 })
 
 defineEmits(['view', 'add-to-plan'])
