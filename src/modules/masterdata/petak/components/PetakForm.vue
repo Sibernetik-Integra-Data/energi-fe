@@ -1,100 +1,62 @@
 <template>
-  <Teleport to="body">
-    <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @mousedown.self="onCancel">
-      <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Ubah Petak' : 'Tambah Petak' }}</h3>
-          <button type="button" class="border-0 bg-transparent cursor-pointer text-(--text-soft) hover:text-(--text) text-xl leading-none" aria-label="Tutup" @click="onCancel">&times;</button>
-        </div>
+  <MdModal
+    :open="visible"
+    :title="isEdit ? `Ubah Petak ${petak.name}` : 'Tambah Petak'"
+    subtitle="Lengkapi data petak. Kolom bertanda * wajib diisi."
+    as-form
+    @close="onCancel"
+    @submit="onSubmit">
+    <MdField label="Nomor petak" for-id="petak-name" required hint="Huruf di akhir menandai bagian blok, mis. 113a." :error="errors.name">
+      <input id="petak-name" v-model.trim="form.name" class="md-input" :class="{ 'is-invalid': errors.name }" maxlength="20" placeholder="mis. 113a" autocomplete="off" @blur="suggestBlok" />
+    </MdField>
 
-        <form class="flex flex-col gap-4" novalidate @submit.prevent="onSubmit">
-          <!-- Nomor petak -->
-          <div class="flex flex-col gap-1">
-            <label class="text-sm font-semibold text-(--text)" for="petak-name">Nomor Petak <span class="text-red-500">*</span></label>
-            <input id="petak-name" v-model.trim="form.name" type="text" maxlength="20" placeholder="mis. 113a" autocomplete="off"
-              class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
-              :class="errors.name ? 'border-red-400 bg-red-50' : 'border-(--border) bg-(--surface-muted) focus:border-green-500'"
-              @blur="suggestBlok" />
-            <span v-if="errors.name" class="text-xs text-red-500">{{ errors.name }}</span>
-          </div>
+    <MdField label="Blok" for-id="petak-blok" required :hint="blokError || 'Dipilih otomatis dari angka awal nomor petak.'" :error="errors.id_block_group">
+      <MdDropdown
+        id="petak-blok"
+        v-model="form.id_block_group"
+        field
+        :invalid="!!errors.id_block_group"
+        :disabled="bloksLoading"
+        :placeholder="bloksLoading ? 'Memuat…' : 'Pilih blok'"
+        :options="bloks.map((b) => ({ value: b.id, label: `Blok ${b.name}` }))" />
+    </MdField>
 
-          <!-- Blok -->
-          <div class="flex flex-col gap-1">
-            <label class="text-sm font-semibold text-(--text)" for="petak-blok">Blok <span class="text-red-500">*</span></label>
-            <select id="petak-blok" v-model="form.id_block_group" :disabled="bloksLoading"
-              class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
-              :class="errors.id_block_group ? 'border-red-400 bg-red-50' : 'border-(--border) bg-(--surface-muted) focus:border-green-500'">
-              <option :value="null">{{ bloksLoading ? 'Memuat…' : 'Pilih blok' }}</option>
-              <option v-for="b in bloks" :key="b.id" :value="b.id">Blok {{ b.name }}</option>
-            </select>
-            <span v-if="errors.id_block_group" class="text-xs text-red-500">{{ errors.id_block_group }}</span>
-            <span v-else-if="blokError" class="text-xs text-red-500">{{ blokError }}</span>
-            <span v-else class="text-xs text-(--text-soft)">Sumber: Data Master → Blok. Dipilih otomatis dari angka awal nomor petak.</span>
-          </div>
+    <MdField label="Status tanam" full hint="Otomatis TM bila petak punya TPH panen aktif.">
+      <MdSegmented v-model="form.planting_status" aria-label="Status tanam" :options="statusOptions" />
+    </MdField>
 
-          <div class="grid grid-cols-2 gap-4 max-[520px]:grid-cols-1">
-            <!-- Status tanam -->
-            <div class="flex flex-col gap-1">
-              <label class="text-sm font-semibold text-(--text)" for="petak-status">Status Tanam</label>
-              <select id="petak-status" v-model="form.planting_status"
-                class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500">
-                <option value="">— Belum diisi —</option>
-                <option value="TBM">TBM (belum menghasilkan)</option>
-                <option value="TM">TM (menghasilkan)</option>
-              </select>
-              <span class="text-xs text-(--text-soft)">Otomatis TM bila ada TPH panen aktif.</span>
-            </div>
+    <MdField label="Tahun tanam" for-id="petak-year" :hint="`1950 sampai ${maxYear}.`" :error="errors.planting_year">
+      <input id="petak-year" v-model.number="form.planting_year" class="md-input" :class="{ 'is-invalid': errors.planting_year }" type="number" min="1950" :max="maxYear" step="1" placeholder="mis. 2015" />
+    </MdField>
 
-            <!-- Tahun tanam -->
-            <div class="flex flex-col gap-1">
-              <label class="text-sm font-semibold text-(--text)" for="petak-year">Tahun Tanam</label>
-              <input id="petak-year" v-model.number="form.planting_year" type="number" min="1950" :max="maxYear" step="1" placeholder="mis. 2015"
-                class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
-                :class="errors.planting_year ? 'border-red-400 bg-red-50' : 'border-(--border) bg-(--surface-muted) focus:border-green-500'" />
-              <span v-if="errors.planting_year" class="text-xs text-red-500">{{ errors.planting_year }}</span>
-            </div>
+    <MdField label="Luas (ha)" for-id="petak-wide" hint="Opsional." :error="errors.wide">
+      <input id="petak-wide" v-model.number="form.wide" class="md-input" :class="{ 'is-invalid': errors.wide }" type="number" min="0" step="0.01" placeholder="mis. 12,5" />
+    </MdField>
 
-            <!-- Jumlah pohon -->
-            <div class="flex flex-col gap-1">
-              <label class="text-sm font-semibold text-(--text)" for="petak-plants">Jumlah Pohon</label>
-              <input id="petak-plants" v-model.number="form.plants_count" type="number" min="0" step="1" placeholder="mis. 1500"
-                class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
-                :class="errors.plants_count ? 'border-red-400 bg-red-50' : 'border-(--border) bg-(--surface-muted) focus:border-green-500'" />
-              <span v-if="errors.plants_count" class="text-xs text-red-500">{{ errors.plants_count }}</span>
-            </div>
+    <MdField label="Jumlah pohon" for-id="petak-plants" hint="Opsional." :error="errors.plants_count" full>
+      <input id="petak-plants" v-model.number="form.plants_count" class="md-input" :class="{ 'is-invalid': errors.plants_count }" type="number" min="0" step="1" placeholder="mis. 1500" />
+    </MdField>
 
-            <!-- Luas -->
-            <div class="flex flex-col gap-1">
-              <label class="text-sm font-semibold text-(--text)" for="petak-wide">Luas (ha)</label>
-              <input id="petak-wide" v-model.number="form.wide" type="number" min="0" step="0.01" placeholder="mis. 12.5"
-                class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
-                :class="errors.wide ? 'border-red-400 bg-red-50' : 'border-(--border) bg-(--surface-muted) focus:border-green-500'" />
-              <span v-if="errors.wide" class="text-xs text-red-500">{{ errors.wide }}</span>
-            </div>
-          </div>
+    <div v-if="error" class="md-modal__error" role="alert">{{ error }}</div>
 
-          <div v-if="error" class="text-xs text-red-500">{{ error }}</div>
-
-          <div class="flex justify-end gap-3 pt-1">
-            <button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted)" :disabled="submitting" @click="onCancel">Batal</button>
-            <button type="submit" class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-green-700 disabled:opacity-60" :disabled="submitting">
-              <span v-if="submitting">Menyimpan&hellip;</span>
-              <span v-else>{{ isEdit ? 'Simpan Perubahan' : 'Tambah Petak' }}</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </Teleport>
+    <template #footer>
+      <button type="button" class="md-btn" :disabled="submitting" @click="onCancel">Batal</button>
+      <button type="submit" class="md-btn md-btn--primary" :disabled="submitting">
+        <MdIcon name="check" />{{ submitting ? 'Menyimpan…' : 'Simpan' }}
+      </button>
+    </template>
+  </MdModal>
 </template>
 
 <script setup>
 import { ref, watch, computed } from 'vue'
 import { listBlok } from '../model'
+import { MdModal, MdField, MdDropdown, MdSegmented, MdIcon } from '../../../shared/masterdata-ui'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
   petak: { type: Object, default: null },
+  rows: { type: Array, default: () => [] }, // untuk cek nomor petak ganda
   submitting: { type: Boolean, default: false },
   error: { type: String, default: '' }
 })
@@ -102,6 +64,11 @@ const emit = defineEmits(['submit', 'cancel'])
 
 const isEdit = computed(() => Boolean(props.petak?.id))
 const maxYear = new Date().getFullYear()
+const statusOptions = [
+  { value: '', label: 'Belum diisi' },
+  { value: 'TBM', label: 'TBM' },
+  { value: 'TM', label: 'TM' }
+]
 
 const emptyForm = () => ({ name: '', id_block_group: null, planting_status: '', planting_year: null, plants_count: null, wide: null })
 const form = ref(emptyForm())
@@ -116,7 +83,8 @@ async function loadBloks() {
   bloksLoading.value = true
   blokError.value = ''
   try {
-    bloks.value = await listBlok()
+    const list = await listBlok()
+    bloks.value = list.slice().sort((a, b) => String(a.name).localeCompare(String(b.name), 'id', { numeric: true }))
   } catch (err) {
     blokError.value = err?.message || 'Gagal memuat blok.'
   } finally {
@@ -124,7 +92,7 @@ async function loadBloks() {
   }
 }
 
-// "113a" -> Blok 113, hanya bila Blok belum dipilih.
+// "113a" -> Blok 113, hanya bila blok belum dipilih.
 function suggestBlok() {
   if (form.value.id_block_group) return
   const m = /^(\d+)/.exec(form.value.name || '')
@@ -159,10 +127,9 @@ function validate() {
   const e = {}
   const f = form.value
   if (!f.name) e.name = 'Nomor petak wajib diisi.'
+  else if (props.rows.some((r) => r.id !== props.petak?.id && String(r.name).toLowerCase() === f.name.toLowerCase())) e.name = `Petak ${f.name} sudah ada.`
   if (!f.id_block_group) e.id_block_group = 'Pilih blok.'
-  if (!isBlank(f.planting_year) && (!Number.isInteger(f.planting_year) || f.planting_year < 1950 || f.planting_year > maxYear)) {
-    e.planting_year = `Tahun 1950–${maxYear}.`
-  }
+  if (!isBlank(f.planting_year) && (!Number.isInteger(f.planting_year) || f.planting_year < 1950 || f.planting_year > maxYear)) e.planting_year = `Tahun harus 1950–${maxYear}.`
   if (!isBlank(f.plants_count) && (!Number.isInteger(f.plants_count) || f.plants_count < 0)) e.plants_count = 'Bilangan bulat ≥ 0.'
   if (!isBlank(f.wide) && !(Number(f.wide) >= 0)) e.wide = 'Angka ≥ 0.'
   errors.value = e

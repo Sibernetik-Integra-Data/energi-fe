@@ -42,6 +42,11 @@ html {
   --radius-lg: 24px;
   --radius-md: 14px;
   --radius-sm: 10px;
+  /* Oranye gelap untuk tombol/teks: --brand + teks putih hanya ±2,4:1 (gagal WCAG AA). */
+  --brand-strong: #b45309;
+  --brand-strong-hover: #92400e;
+  --on-brand-strong: #ffffff;
+  --focus-ring: 0 0 0 3px rgba(251, 140, 0, 0.45);
 }
 
 /* ─── Dark theme overrides ───────────────────────────────────── */
@@ -74,6 +79,9 @@ html {
   --status-done-text: #4ade80;
   --table-row-text: #94a3b8;
   --shadow: 0 14px 34px rgba(0, 0, 0, 0.36);
+  --brand-strong: #fbbf24;
+  --brand-strong-hover: #fcd34d;
+  --on-brand-strong: #111827;
 }
 
 /* ─── Dark mode: named Tailwind tints (chips, badges, soft alerts) ───────────
