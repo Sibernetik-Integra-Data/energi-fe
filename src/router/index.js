@@ -8,6 +8,8 @@ import PemupukanModule from '../modules/pemupukan'
 import PanenModule from '../modules/panen'
 import PengirimanPenerimaanModule from '../modules/pengiriman-penerimaan'
 import BlocksModule from '../modules/masterdata/blocks'
+import PetakModule from '../modules/masterdata/petak'
+import TphModule from '../modules/masterdata/tph'
 import DriverModule from '../modules/masterdata/driver'
 import VehicleModule from '../modules/masterdata/vehicle'
 import AktifitasKebunModule from '../modules/masterdata/aktifitas-kebun'
@@ -86,6 +88,18 @@ const routes = [
       : { requiresAuth: true }
   })),
   ...PengirimanPenerimaanModule.routes.map(route => ({
+    ...route,
+    meta: route.meta
+      ? { ...route.meta, requiresAuth: true }
+      : { requiresAuth: true }
+  })),
+  ...TphModule.routes.map(route => ({
+    ...route,
+    meta: route.meta
+      ? { ...route.meta, requiresAuth: true }
+      : { requiresAuth: true }
+  })),
+  ...PetakModule.routes.map(route => ({
     ...route,
     meta: route.meta
       ? { ...route.meta, requiresAuth: true }

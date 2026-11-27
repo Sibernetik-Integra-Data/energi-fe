@@ -22,6 +22,7 @@ export const navigation = [
       { label: 'Vehicle', icon: 'database', to: '/master-data/vehicle', order: 40 },
       { label: 'Group of Work', icon: 'calendar', to: '/master-data/group-of-work', order: 50 },
       { label: 'Nomor Petak', icon: 'location-pin', to: '/master-data/petak', order: 60 },
+      { label: 'TPH', icon: 'location-pin', to: '/master-data/tph', order: 65 },
       { label: 'Sensus Progress Status', icon: 'database', to: '/master-data/sensus-progress-status', order: 70 },
       { label: 'Destination', icon: 'location-pin', to: '/master-data/destination', order: 80 },
       { label: 'Type of Accept', icon: 'calendar', to: '/master-data/type-of-accept', order: 90 },
