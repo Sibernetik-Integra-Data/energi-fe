@@ -50,7 +50,6 @@
               <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Name</th>
               <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Detail</th>
               <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Notes</th>
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Status</th>
               <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Created At</th>
               <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Created By</th>
               <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Updated At / By</th>
@@ -59,7 +58,7 @@
           </thead>
           <tbody>
             <tr v-if="filteredRows.length === 0">
-              <td colspan="9" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
+              <td colspan="8" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
             </tr>
             <tr
               v-for="row in paginatedRows"
@@ -69,7 +68,6 @@
               <td class="py-4 px-3 align-middle text-sm font-semibold text-(--text) text-left">{{ row.name || '-' }}</td>
               <td class="py-4 px-3 align-middle text-sm text-(--text-muted) text-left whitespace-normal wrap-break-word">{{ row.detail || '-' }}</td>
               <td class="py-4 px-3 align-middle text-sm text-(--text-muted) text-left whitespace-normal wrap-break-word">{{ row.notes || '-' }}</td>
-              <td class="py-4 px-3 align-middle text-sm text-(--text-muted) text-left">{{ row.status || '-' }}</td>
               <td class="py-4 px-3 align-middle text-sm text-(--text-muted) text-left">{{ formatDateTime(row.created_at) || '-' }}</td>
               <td class="py-4 px-3 align-middle text-sm text-(--text-muted) text-left">{{ displayUser(row.created_by) }}</td>
               <td class="py-4 px-3 align-middle text-sm text-(--text-muted) text-left">
@@ -108,7 +106,6 @@
               <div class="font-bold text-sm text-(--text)">{{ row.name || '-' }}</div>
               <div class="text-xs text-(--text-muted)">ID: {{ row.id }}</div>
             </div>
-            <div class="text-xs text-(--text-muted)">{{ row.status || '-' }}</div>
           </div>
           <div class="text-xs text-(--text-muted) flex flex-col gap-1">
             <span>Detail: {{ row.detail || '-' }}</span>
@@ -214,7 +211,7 @@ const filteredRows = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
   if (!q) return rows.value
   return rows.value.filter((row) => {
-    return [row.name, row.detail, row.notes, row.status]
+    return [row.name, row.detail, row.notes]
       .some((value) => String(value || '').toLowerCase().includes(q))
   })
 })

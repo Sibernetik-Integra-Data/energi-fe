@@ -63,18 +63,6 @@
             <span v-if="errors.notes" class="text-xs text-red-500" role="alert">{{ errors.notes }}</span>
           </div>
 
-          <div class="flex flex-col gap-1">
-            <label class="text-sm font-semibold text-(--text)" for="tou-status">Status</label>
-            <input
-              id="tou-status"
-              v-model.trim="form.status"
-              type="text"
-              placeholder="Optional status"
-              maxlength="100"
-              autocomplete="off"
-              class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors" />
-            <span v-if="errors.status" class="text-xs text-red-500" role="alert">{{ errors.status }}</span>
-          </div>
 
           <div class="flex justify-end gap-3 pt-1">
             <button
@@ -146,9 +134,6 @@ function validate() {
   if (form.value.notes && form.value.notes.length > 500) {
     errs.notes = 'Notes must be 500 characters or fewer.'
   }
-  if (form.value.status && form.value.status.length > 100) {
-    errs.status = 'Status must be 100 characters or fewer.'
-  }
   errors.value = errs
   return Object.keys(errs).length === 0
 }
@@ -162,7 +147,6 @@ function onSubmit() {
   const payload = { name: form.value.name }
   appendNullable(payload, 'detail')
   appendNullable(payload, 'notes')
-  appendNullable(payload, 'status')
   emit('submit', payload)
 }
 

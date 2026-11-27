@@ -70,6 +70,17 @@
                         <div v-if="groupLoadError" class="text-xs text-red-500">{{ groupLoadError }}</div>
                     </div>
 
+                    <!-- Foto (is_upload) -->
+                    <div class="flex flex-col gap-1">
+                        <label class="flex items-center gap-2 text-sm font-semibold text-(--text) cursor-pointer">
+                            <input id="activity-upload" v-model="form.is_upload" type="checkbox" class="w-4 h-4 accent-green-600" />
+                            Perlu unggah foto
+                        </label>
+                        <span class="text-xs text-(--text-soft)">
+                            Tanda bahwa pekerjaan ini perlu bukti foto. Aplikasi mobile belum mewajibkannya.
+                        </span>
+                    </div>
+
                     <!-- Actions -->
                     <div class="flex justify-end gap-3 pt-1">
                         <button
@@ -110,7 +121,8 @@ const isEdit = computed(() => Boolean(props.activity?.id))
 const emptyForm = () => ({
     name: '',
     detail: '',
-    group_of_work: ''
+    group_of_work: '',
+    is_upload: false
 })
 
 const form = ref(emptyForm())
@@ -142,7 +154,8 @@ watch(
                 ? {
                       name: activity.name || '',
                       detail: activity.detail || '',
-                      group_of_work: activity.group_of_work ?? ''
+                      group_of_work: activity.group_of_work ?? '',
+                      is_upload: Boolean(Number(activity.is_upload))
                   }
                 : emptyForm()
             errors.value = {}
@@ -167,6 +180,8 @@ function onSubmit() {
     const selectedGroup = groups.value.find(g => String(g.id) === String(form.value.group_of_work))
     emit('submit', {
         ...form.value,
+        // Kolom DB smallint 0/1.
+        is_upload: form.value.is_upload ? 1 : 0,
         group_of_work_name: selectedGroup?.name ?? null
     })
 }

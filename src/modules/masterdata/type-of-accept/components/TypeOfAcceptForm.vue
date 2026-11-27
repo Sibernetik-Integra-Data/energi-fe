@@ -64,16 +64,22 @@
           </div>
 
           <div class="flex flex-col gap-1">
-            <label class="text-sm font-semibold text-(--text)" for="toa-status">Status</label>
+            <label class="text-sm font-semibold text-(--text)" for="toa-status">
+              Label status <span class="text-red-500">*</span>
+            </label>
             <input
               id="toa-status"
               v-model.trim="form.status"
               type="text"
-              placeholder="Optional status"
+              placeholder="mis. Diterima"
               maxlength="100"
               autocomplete="off"
-              class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors" />
+              class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
+              :class="errors.status ? 'border-red-400 bg-red-50' : 'border-(--border) bg-(--surface-muted) focus:border-green-500'" />
             <span v-if="errors.status" class="text-xs text-red-500" role="alert">{{ errors.status }}</span>
+            <span v-else class="text-xs text-(--text-soft)">
+              Teks yang tampil di aplikasi untuk status penugasan ini (mis. di daftar tugas pekerja).
+            </span>
           </div>
 
           <div class="flex justify-end gap-3 pt-1">
@@ -146,7 +152,9 @@ function validate() {
   if (form.value.notes && form.value.notes.length > 500) {
     errs.notes = 'Notes must be 500 characters or fewer.'
   }
-  if (form.value.status && form.value.status.length > 100) {
+  if (!form.value.status) {
+    errs.status = 'Label status wajib diisi.'
+  } else if (form.value.status.length > 100) {
     errs.status = 'Status must be 100 characters or fewer.'
   }
   errors.value = errs

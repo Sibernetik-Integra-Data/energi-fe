@@ -45,6 +45,10 @@
                                 Name
                             </th>
                             <th
+                                class="w-1/5 align-middle text-center text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">
+                                Jenis TPH
+                            </th>
+                            <th
                                 class="w-1/4 align-middle text-center text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">
                                 Created By
                             </th>
@@ -60,7 +64,7 @@
                     </thead>
                     <tbody>
                         <tr v-if="filteredRows.length === 0">
-                            <td colspan="4" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
+                            <td colspan="5" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
                         </tr>
                         <tr
                             v-for="row in paginatedRows"
@@ -68,6 +72,9 @@
                             class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted) transition-colors">
                             <td class="py-4 px-4 align-middle text-sm font-semibold text-(--text) text-center">
                                 {{ row.name }}
+                            </td>
+                            <td class="py-4 px-4 align-middle text-sm text-(--text) text-center">
+                                {{ row.tph_type === 'PANEN' ? 'Panen' : row.tph_type === 'PERAWATAN' ? 'Perawatan' : '-' }}
                             </td>
                             <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-center">
                                 {{ userName(row.created_by) }}

@@ -48,7 +48,7 @@
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Name</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Group</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Detail</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Upload</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Foto</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Created By</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Updated By</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Actions</th>
@@ -67,9 +67,9 @@
                             <td class="py-4 px-6 align-middle text-sm text-(--text-muted) max-w-xs truncate">{{ row.detail || '' }}</td>
                             <td class="py-4 px-6 align-middle text-sm text-(--text)">
                                 <span
-                                    :class="row.is_upload ? 'bg-green-100 text-green-700' : 'bg-(--surface-muted) text-(--text-muted)'"
+                                    :class="Number(row.is_upload) ? 'bg-green-100 text-green-700' : 'bg-(--surface-muted) text-(--text-muted)'"
                                     class="text-xs font-semibold px-2.5 py-1 rounded-full">
-                                    {{ row.is_upload ? 'Yes' : 'No' }}
+                                    {{ Number(row.is_upload) ? 'Ya' : 'Tidak' }}
                                 </span>
                             </td>
                             <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ userName(row.created_by) }}</td>
@@ -106,7 +106,7 @@
                     <div class="text-xs text-(--text-muted) flex flex-wrap gap-x-4 gap-y-1">
                         <span v-if="row.group_of_work_name">Group: {{ row.group_of_work_name }}</span>
                         <span v-if="row.detail">Detail: {{ row.detail }}</span>
-                        <span>Upload: {{ row.is_upload ? 'Yes' : 'No' }}</span>
+                        <span>Foto: {{ Number(row.is_upload) ? 'Ya' : 'Tidak' }}</span>
                         <span>Created by: {{ userName(row.created_by) }}</span>
                         <span>Updated by: {{ userName(row.updated_by) }}</span>
                     </div>

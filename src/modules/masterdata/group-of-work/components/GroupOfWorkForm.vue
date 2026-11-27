@@ -60,6 +60,23 @@
                         ></textarea>
                     </div>
 
+                    <!-- Jenis TPH: menentukan TPH mana yang boleh dipilih di sensus/penugasan -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-sm font-semibold text-(--text)" for="gow-tph-type">
+                            Jenis TPH <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                            id="gow-tph-type"
+                            v-model="form.tph_type"
+                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500">
+                            <option value="PERAWATAN">Perawatan</option>
+                            <option value="PANEN">Panen</option>
+                        </select>
+                        <span class="text-xs text-(--text-soft)">
+                            Pekerjaan di kelompok ini hanya bisa memakai TPH berjenis ini.
+                        </span>
+                    </div>
+
                     <!-- Actions -->
                     <div class="flex justify-end gap-3 pt-1">
                         <button
@@ -99,7 +116,7 @@ const nameInput = ref(null)
 
 const isEdit = computed(() => Boolean(props.group?.id))
 
-const emptyForm = () => ({ name: '', detail: '' })
+const emptyForm = () => ({ name: '', detail: '', tph_type: 'PERAWATAN' })
 
 const form = ref(emptyForm())
 const errors = ref({})
@@ -108,7 +125,9 @@ watch(
     () => [props.visible, props.group],
     ([visible, group]) => {
             if (visible) {
-                form.value = group ? { name: group.name || '', detail: group.detail || '' } : emptyForm()
+                form.value = group
+                    ? { name: group.name || '', detail: group.detail || '', tph_type: group.tph_type || 'PERAWATAN' }
+                    : emptyForm()
             errors.value = {}
             nextTick(() => nameInput.value?.focus())
         }
@@ -129,7 +148,7 @@ function validate() {
 
 function onSubmit() {
     if (!validate()) return
-    emit('submit', { name: form.value.name, detail: form.value.detail })
+    emit('submit', { name: form.value.name, detail: form.value.detail, tph_type: form.value.tph_type })
 }
 
 function onCancel() {

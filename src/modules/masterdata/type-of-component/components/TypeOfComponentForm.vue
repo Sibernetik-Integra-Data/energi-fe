@@ -39,11 +39,6 @@
             <span v-if="errors.notes" class="text-xs text-red-500" role="alert">{{ errors.notes }}</span>
           </div>
 
-          <div class="flex flex-col gap-1">
-            <label class="text-sm font-semibold text-(--text)" for="toc-status">Status</label>
-            <input id="toc-status" v-model.trim="form.status" type="text" placeholder="Optional status" maxlength="100" autocomplete="off" class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors" />
-            <span v-if="errors.status" class="text-xs text-red-500" role="alert">{{ errors.status }}</span>
-          </div>
 
           <div class="flex justify-end gap-3 pt-1">
             <button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors" :disabled="submitting" @click="onCancel">Cancel</button>
@@ -96,7 +91,6 @@ function validate() {
   else if (form.value.name.length > 100) errs.name = 'Name must be 100 characters or fewer.'
   if (form.value.detail && form.value.detail.length > 500) errs.detail = 'Detail must be 500 characters or fewer.'
   if (form.value.notes && form.value.notes.length > 500) errs.notes = 'Notes must be 500 characters or fewer.'
-  if (form.value.status && form.value.status.length > 100) errs.status = 'Status must be 100 characters or fewer.'
   errors.value = errs
   return Object.keys(errs).length === 0
 }
@@ -110,7 +104,6 @@ function onSubmit() {
   const payload = { name: form.value.name }
   appendNullable(payload, 'detail')
   appendNullable(payload, 'notes')
-  appendNullable(payload, 'status')
   emit('submit', payload)
 }
 

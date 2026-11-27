@@ -38,18 +38,6 @@
                     </div>
 
                     <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="loc-nomor">Nomor</label>
-                        <input
-                            id="loc-nomor"
-                            v-model.number="form.nomor"
-                            type="number"
-                            placeholder="1"
-                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors"
-                        />
-                        <span class="text-xs text-(--text-muted)">Enter a numeric identifier for this destination.</span>
-                    </div>
-
-                    <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="loc-location">Destination</label>
                         <input
                             id="loc-location"
@@ -151,7 +139,6 @@ const isEdit = computed(() => Boolean(props.location?.id))
 
 const emptyForm = () => ({
     name: '',
-    nomor: null,
     location: '',
     tol_id: '',
     latitude: '',
@@ -184,7 +171,6 @@ watch(
             if (props.location) {
                 form.value = {
                     name: props.location.name || '',
-                    nomor: props.location.nomor ?? null,
                     location: props.location.location || '',
                     tol_id: String(props.location.tol_id ?? props.location.location_type?.id ?? ''),
                     latitude: props.location.latitude || '',
@@ -226,9 +212,6 @@ function onSubmit() {
         notes: form.value.notes
     }
 
-    if (form.value.nomor !== null && form.value.nomor !== undefined && form.value.nomor !== '') {
-        payload.nomor = form.value.nomor
-    }
 
     const cleaned = Object.fromEntries(
         Object.entries(payload).filter(([, v]) => v !== undefined && v !== '')
