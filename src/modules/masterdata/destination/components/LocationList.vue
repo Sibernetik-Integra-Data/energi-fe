@@ -1,281 +1,303 @@
 <template>
-    <div>
-        <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
-            <div>
-                <h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Daftar Tujuan</h2>
-                <p class="text-sm text-(--text-muted) m-0">Kelola tujuan</p>
-            </div>
-            <button
-                type="button"
-                class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl cursor-pointer hover:bg-green-700 transition-colors shadow-sm"
-                v-if="canWrite" @click="openCreate">
-                + Tambah Tujuan
-            </button>
-        </div>
+  <MdPage title="Tujuan" description="Lokasi tujuan pengiriman hasil kebun beserta tipe dan koordinatnya. Klik kartu atau batang grafik untuk menyaring tabel.">
+    <template #actions>
+      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah Tujuan</button>
+    </template>
 
-        <div class="flex flex-wrap gap-3 mb-4">
-            <input
-                v-model="searchName"
-                type="text"
-                placeholder="Cari nama tujuan…"
-                class="border border-(--border) rounded-lg px-3.5 py-2 text-sm text-(--text) bg-(--surface) outline-none focus:border-green-500 transition-colors w-56" />
-        </div>
-
-        <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">
-            Memuat data&hellip;
-        </div>
-
-        <div v-else-if="fetchError" class="flex justify-center items-center py-16 text-sm text-red-600">
-            {{ fetchError }}
-        </div>
-
-        <template v-else>
-            <div class="bg-(--surface) rounded-xl overflow-hidden border border-(--border) shadow-sm max-[920px]:hidden">
-                <table class="w-full border-collapse">
-                    <thead>
-                        <tr class="border-b border-(--border) bg-(--surface-muted)">
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Nama</th>
-                            <!-- <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">No.</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Tujuan</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Tipe</th> -->
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Latitude</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Longitude</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Catatan</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-if="filteredRows.length === 0">
-                            <td colspan="6" class="py-10 px-6 text-center text-sm text-(--text-muted)">Belum ada data.</td>
-                        </tr>
-                        <tr
-                            v-for="row in paginatedRows"
-                            :key="row.id"
-                            class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted) transition-colors">
-                            <td class="py-4 px-6 align-middle text-sm font-semibold text-(--text)">{{ row.name }}</td>
-                            <!-- <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.nomor }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.location || '' }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.type_of_location || '' }}</td> -->
-                            <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.latitude || '' }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.longitude || '' }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.notes || '-' }}</td>
-                            <td class="py-4 px-6 align-middle">
-                                <div class="flex gap-2 items-center">
-                                    <button
-                                        type="button"
-                                        class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border-0 hover:bg-(--surface-muted) transition-colors cursor-pointer"
-                                        v-if="canWrite" @click="openEdit(row)">
-                                        Ubah
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
-                                        v-if="canWrite" @click="confirmDelete(row)">
-                                        Hapus
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="hidden gap-3 max-[920px]:flex max-[920px]:flex-col">
-                <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">Belum ada data.</div>
-                <div
-                        v-for="row in paginatedRows"
-                    :key="row.id"
-                    class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2">
-                    <div class="font-bold text-sm text-(--text)">{{ row.name }}</div>
-                    <div class="text-xs text-(--text-muted) flex flex-wrap gap-x-4 gap-y-1">
-                        <!-- <span v-if="row.nomor">No: {{ row.nomor }}</span> -->
-                        <!-- <span v-if="row.location">Tujuan: {{ row.location }}</span> -->
-                        <!-- <span v-if="row.type_of_location">Tipe: {{ row.type_of_location }}</span> -->
-                        <span v-if="row.latitude">Lat: {{ row.latitude }}</span>
-                        <span v-if="row.longitude">Lng: {{ row.longitude }}</span>
-                        <span>Catatan: {{ row.notes || '-' }}</span>
-                    </div>
-                    <div class="flex justify-end gap-2 mt-1">
-                        <button
-                            type="button"
-                            class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) hover:bg-(--surface-muted) transition-colors cursor-pointer"
-                            v-if="canWrite" @click="openEdit(row)">
-                            Ubah
-                        </button>
-                        <button
-                            type="button"
-                            class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
-                            v-if="canWrite" @click="confirmDelete(row)">
-                            Hapus
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </template>
-
-        <div v-if="actionError && !showDeleteConfirm" class="mt-3 text-xs text-red-500">{{ actionError }}</div>
-
-        <LocationForm
-            :visible="showForm"
-            :location="editingLocation"
-            :submitting="submitting"
-            @submit="onFormSubmit"
-            @cancel="closeForm" />
-
-        <Teleport to="body">
-            <div
-                v-if="showDeleteConfirm"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-                @mousedown.self="showDeleteConfirm = false">
-                <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
-                    <h3 class="text-base font-bold text-(--text) m-0">Hapus Tujuan</h3>
-                    <p class="text-sm text-(--text-muted) m-0">Hapus Tujuan <strong>{{ deletingLocation?.name }}</strong>? Tindakan ini tidak bisa dibatalkan.</p>
-                    <div v-if="actionError" class="text-xs text-red-500">{{ actionError }}</div>
-                    <div class="flex justify-end gap-3">
-                        <button
-                            type="button"
-                            class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
-                            :disabled="submitting"
-                            @click="showDeleteConfirm = false">
-                            Batal
-                        </button>
-                        <button
-                            type="button"
-                            class="border-0 bg-red-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-red-700 transition-colors disabled:opacity-60"
-                            :disabled="submitting"
-                            @click="onDeleteConfirm">
-                            <span v-if="submitting">Menghapus&hellip;</span>
-                            <span v-else>Ya, Hapus</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
+    <div class="md-kpis">
+      <MdKpi icon="truck" tone="info" label="Total tujuan" :value="rows.length" :sub="`${typeKeys.length} tipe`" action hint="Tampilkan semua" :pressed="false" @select="clearAll" />
+      <MdKpi icon="pin" tone="success" label="Berkoordinat" :value="countCoord('yes')" :sub="`${pct(countCoord('yes'))}% dari tujuan`" action :pressed="onlyCoord('yes')" @select="quickCoord('yes')" />
+      <MdKpi icon="alert" tone="warning" label="Tanpa koordinat" :value="countCoord('no')" sub="Lengkapi latitude & longitude" action :pressed="onlyCoord('no')" @select="quickCoord('no')" />
+      <MdKpi icon="layers" tone="brand" label="Tipe terbanyak" :value="topType ? topType.label : '—'" :sub="topType ? `${topType.count} tujuan` : 'Belum ada data'" action :pressed="!!topType && filterType.length === 1 && filterType[0] === topType.key" @select="topType && toggleType(topType.key)" />
     </div>
-        <MasterDataPagination id="destination" :total-items="totalItems" :current-page="currentPage" :page-size="pageSize" :total-pages="totalPages" :visible-pages="visiblePages" @update:current-page="currentPage = $event" @update:page-size="pageSize = $event" />
+
+    <MdBarChart
+      v-if="typeKeys.length"
+      title="Jumlah tujuan per tipe"
+      :subtitle="`${rows.length} tujuan di ${typeKeys.length} tipe`"
+      :legend="[{ label: 'Berkoordinat', color: 'var(--success)' }, { label: 'Tanpa koordinat', color: 'var(--border-strong)' }]"
+      :bars="bars"
+      :selected="filterType"
+      @toggle="toggleType" />
+
+    <MdDataTable
+      ref="table"
+      :columns="columns"
+      :rows="filteredRows"
+      :total-rows="rows.length"
+      :loading="loading"
+      :error="fetchError || ''"
+      entity-label="Tujuan"
+      empty-icon="truck"
+      empty-text="Tambahkan tujuan pertama agar bisa dipakai saat pengiriman hasil panen."
+      add-label="Tambah Tujuan"
+      :can-add="canWrite"
+      initial-sort="name"
+      aria-label="Daftar tujuan"
+      @retry="loadData"
+      @add="openCreate"
+      @clear-filters="clearAll">
+      <template #toolbar>
+        <label class="md-search">
+          <MdIcon name="search" />
+          <input v-model.trim="search" type="search" placeholder="Cari nama, tujuan, atau catatan…" aria-label="Cari tujuan" />
+        </label>
+        <MdDropdown v-model="filterType" label="Tipe" :options="typeFilterOptions" multiple />
+        <MdDropdown v-model="filterCoord" label="Koordinat" :options="coordFilterOptions" multiple />
+        <div class="md-chips">
+          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+            {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
+          </button>
+          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+        </div>
+      </template>
+
+      <template #cell-name="{ row }">
+        <div class="md-ident">
+          <span class="md-avatar">{{ initial(row.name) }}</span>
+          <div><b>{{ row.name }}</b><small>{{ row.location || 'Tanpa keterangan tujuan' }}</small></div>
+        </div>
+      </template>
+      <template #cell-type="{ row }">
+        <MdBadge :tone="typeKey(row) === '-' ? 'neutral' : 'info'">{{ typeLabel(typeKey(row)) }}</MdBadge>
+      </template>
+      <template #cell-latitude="{ row }">
+        <span v-if="row.latitude" class="md-num">{{ row.latitude }}</span><span v-else class="md-muted">—</span>
+      </template>
+      <template #cell-longitude="{ row }">
+        <span v-if="row.longitude" class="md-num">{{ row.longitude }}</span><span v-else class="md-muted">—</span>
+      </template>
+      <template #cell-notes="{ row }">
+        <span :class="{ 'md-muted': !row.notes }">{{ row.notes || '—' }}</span>
+      </template>
+
+      <template v-if="canWrite" #actions="{ row }">
+        <button type="button" class="md-icon-btn" :aria-label="`Ubah tujuan ${row.name}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
+        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus tujuan ${row.name}`" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+      </template>
+
+      <template #card="{ row }">
+        <div class="md-card__top">
+          <span class="md-avatar">{{ initial(row.name) }}</span>
+          <div style="flex: 1"><b class="md-strong">{{ row.name }}</b><div class="md-muted" style="font-size: 12px">{{ row.location || 'Tanpa keterangan tujuan' }}</div></div>
+          <MdBadge :tone="typeKey(row) === '-' ? 'neutral' : 'info'">{{ typeLabel(typeKey(row)) }}</MdBadge>
+        </div>
+        <div class="md-card__grid">
+          <div>Latitude<b>{{ row.latitude || '—' }}</b></div>
+          <div>Longitude<b>{{ row.longitude || '—' }}</b></div>
+          <div style="grid-column: 1 / -1">Catatan<b>{{ row.notes || '—' }}</b></div>
+        </div>
+      </template>
+    </MdDataTable>
+
+    <LocationForm :visible="showForm" :location="editingLocation" :submitting="submitting" :error="actionError || ''" @submit="onFormSubmit" @cancel="closeForm" />
+
+    <MdConfirm :open="!!deletingLocation" title="Hapus tujuan?" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
+      <template v-if="deletingLocation">Tujuan <b>{{ deletingLocation.name }}</b> akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.</template>
+    </MdConfirm>
+  </MdPage>
 </template>
 
 <script setup>
-import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
-// Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
-const canWrite = useCanManageMasterData()
 import { ref, computed, onMounted } from 'vue'
 import LocationForm from './LocationForm.vue'
-import { listLocations, createLocation, updateLocation, deleteLocation } from '../model'
+import { listLocations, createLocation, updateLocation, deleteLocation, listTypeOfLocations } from '../model'
 import { useToast } from '../../../../utils/toast'
-import { useListPagination } from '../../../shared/pagination/useListPagination.js'
-import MasterDataPagination from '../../../shared/pagination/MasterDataPagination.vue'
+import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
+import { MdPage, MdKpi, MdBarChart, MdDataTable, MdDropdown, MdBadge, MdConfirm, MdIcon } from '../../../shared/masterdata-ui'
 
+// Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
+const canWrite = useCanManageMasterData()
 const { show: showToast } = useToast()
 
+const table = ref(null)
 const rows = ref([])
+const types = ref([])
 const loading = ref(false)
 const fetchError = ref(null)
 const actionError = ref(null)
+const deleteError = ref('')
 const submitting = ref(false)
-
-const searchName = ref('')
-
+const search = ref('')
+const filterType = ref([])
+const filterCoord = ref([])
 const showForm = ref(false)
 const editingLocation = ref(null)
-
-const showDeleteConfirm = ref(false)
 const deletingLocation = ref(null)
 
-const filteredRows = computed(() => {
-    const q = searchName.value.trim().toLowerCase()
-    if (!q) return rows.value
-    return rows.value.filter(row => row.name?.toLowerCase().includes(q))
+const byName = (a, b) => String(a).localeCompare(String(b), 'id', { numeric: true })
+const initial = (n) => String(n || '#').trim().charAt(0).toUpperCase() || '#'
+const hasCoord = (r) => Boolean(r.latitude && r.longitude)
+const coordKey = (r) => (hasCoord(r) ? 'yes' : 'no')
+
+// Tipe tujuan: dari relasi bila ada, kalau tidak dari tol_id + daftar tipe.
+function typeKey(r) {
+  const id = r.tol_id ?? r.location_type?.id
+  if (id != null && id !== '') return String(id)
+  if (r.type_of_location) return `n:${r.type_of_location}`
+  return '-'
+}
+function typeLabel(key) {
+  if (key === '-') return 'Tanpa tipe'
+  if (key.startsWith('n:')) return key.slice(2)
+  const t = types.value.find((x) => String(x.id) === key)
+  if (t) return t.name
+  const r = rows.value.find((x) => typeKey(x) === key)
+  return r?.location_type?.name || r?.type_of_location || `Tipe ${key}`
+}
+
+const columns = [
+  { key: 'name', label: 'Nama' },
+  { key: 'type', label: 'Tipe', sortValue: (r) => (typeKey(r) === '-' ? '' : typeLabel(typeKey(r))) },
+  { key: 'latitude', label: 'Latitude', sortValue: (r) => (r.latitude ? Number(r.latitude) : null) },
+  { key: 'longitude', label: 'Longitude', sortValue: (r) => (r.longitude ? Number(r.longitude) : null) },
+  { key: 'notes', label: 'Catatan' }
+]
+
+const countCoord = (k) => rows.value.filter((r) => coordKey(r) === k).length
+const pct = (n) => (rows.value.length ? Math.round((n / rows.value.length) * 100) : 0)
+
+const typeKeys = computed(() => [...new Set(rows.value.map(typeKey))].sort((a, b) => byName(typeLabel(a), typeLabel(b))))
+const typeFilterOptions = computed(() =>
+  typeKeys.value.map((k) => ({ value: k, label: typeLabel(k), count: rows.value.filter((r) => typeKey(r) === k).length }))
+)
+const coordFilterOptions = computed(() => [
+  { value: 'yes', label: 'Berkoordinat', count: countCoord('yes') },
+  { value: 'no', label: 'Tanpa koordinat', count: countCoord('no') }
+])
+const topType = computed(() => {
+  const best = typeFilterOptions.value.filter((o) => o.value !== '-').sort((a, b) => b.count - a.count)[0]
+  return best ? { key: best.value, label: best.label, count: best.count } : null
 })
 
-const { currentPage, pageSize, totalItems, totalPages, paginatedItems: paginatedRows, visiblePages } = useListPagination(filteredRows)
+const bars = computed(() =>
+  typeKeys.value.map((k) => {
+    const rs = rows.value.filter((r) => typeKey(r) === k)
+    const yes = rs.filter(hasCoord).length
+    return {
+      key: k,
+      label: typeLabel(k),
+      ariaLabel: `${typeLabel(k)}: ${rs.length} tujuan, ${yes} berkoordinat`,
+      segments: [
+        { value: yes, color: 'var(--success)' },
+        { value: rs.length - yes, color: 'var(--border-strong)' }
+      ]
+    }
+  })
+)
 
-function formatDateTime(value) {
-    if (!value) return ''
-    if (typeof value === 'string') {
-        return value.replace(/\.\d+/, '').replace(/T/, ' ').replace(/Z$/, '').trim()
-    }
-    if (value instanceof Date) {
-        return value.toISOString().replace(/T/, ' ').replace(/Z$/, '').substring(0, 19)
-    }
-    return String(value)
+const filteredRows = computed(() => {
+  const q = search.value.toLowerCase()
+  return rows.value.filter((r) =>
+    (!q || `${r.name || ''} ${r.location || ''} ${r.notes || ''}`.toLowerCase().includes(q)) &&
+    (!filterType.value.length || filterType.value.includes(typeKey(r))) &&
+    (!filterCoord.value.length || filterCoord.value.includes(coordKey(r)))
+  )
+})
+
+const chips = computed(() => {
+  const c = []
+  if (search.value) c.push({ key: 'q', label: `“${search.value}”`, remove: () => (search.value = '') })
+  filterType.value.forEach((k) => c.push({ key: `t-${k}`, label: typeLabel(k), remove: () => (filterType.value = filterType.value.filter((x) => x !== k)) }))
+  filterCoord.value.forEach((k) => c.push({ key: `c-${k}`, label: k === 'yes' ? 'Berkoordinat' : 'Tanpa koordinat', remove: () => (filterCoord.value = filterCoord.value.filter((x) => x !== k)) }))
+  return c
+})
+
+function clearAll() {
+  search.value = ''
+  filterType.value = []
+  filterCoord.value = []
+}
+const onlyCoord = (k) => filterCoord.value.length === 1 && filterCoord.value[0] === k
+function quickCoord(k) {
+  filterCoord.value = onlyCoord(k) ? [] : [k]
+}
+function toggleType(k) {
+  filterType.value = filterType.value.includes(k) ? filterType.value.filter((x) => x !== k) : [...filterType.value, k]
 }
 
 async function loadData() {
-    loading.value = true
-    fetchError.value = null
-    try {
-        rows.value = await listLocations()
-    } catch (err) {
-        console.error('[Destination] Failed to load:', err)
-        fetchError.value = err?.message || 'Gagal memuat tujuan.'
-    } finally {
-        loading.value = false
-    }
+  loading.value = true
+  fetchError.value = null
+  try {
+    rows.value = await listLocations()
+  } catch (err) {
+    console.error('[Destination] Failed to load:', err)
+    fetchError.value = err?.message || 'Gagal memuat tujuan.'
+  } finally {
+    loading.value = false
+  }
+  // Nama tipe untuk filter/grafik; gagal di sini tidak menghalangi daftar.
+  try {
+    types.value = await listTypeOfLocations()
+  } catch (err) {
+    console.warn('[Destination] Failed to load type_of_location:', err)
+  }
 }
 
 function openCreate() {
-    editingLocation.value = null
-    actionError.value = null
-    showForm.value = true
+  editingLocation.value = null
+  actionError.value = null
+  showForm.value = true
 }
-
 function openEdit(location) {
-    editingLocation.value = { ...location }
-    actionError.value = null
-    showForm.value = true
+  editingLocation.value = { ...location }
+  actionError.value = null
+  showForm.value = true
 }
-
 function closeForm() {
-    showForm.value = false
-    editingLocation.value = null
+  showForm.value = false
+  editingLocation.value = null
 }
 
 async function onFormSubmit(formData) {
-    submitting.value = true
-    actionError.value = null
-    try {
-        if (editingLocation.value?.id) {
-            const updated = await updateLocation(editingLocation.value.id, formData)
-            const idx = rows.value.findIndex(r => r.id === editingLocation.value.id)
-            if (idx !== -1) rows.value[idx] = updated || { ...rows.value[idx], ...formData }
-            showToast('Tujuan berhasil diubah.')
-        } else {
-            const created = await createLocation(formData)
-            if (created) rows.value.unshift(created)
-            showToast('Tujuan berhasil ditambahkan.')
-        }
-        closeForm()
-    } catch (err) {
-        console.error('[Destination] Save failed:', err)
-        actionError.value = err?.message || 'Gagal menyimpan data.'
-    } finally {
-        submitting.value = false
+  submitting.value = true
+  actionError.value = null
+  try {
+    if (editingLocation.value?.id) {
+      const updated = await updateLocation(editingLocation.value.id, formData)
+      const idx = rows.value.findIndex((r) => r.id === editingLocation.value.id)
+      if (idx !== -1) rows.value[idx] = updated || { ...rows.value[idx], ...formData }
+      showToast('Tujuan berhasil diubah.')
+    } else {
+      const created = await createLocation(formData)
+      if (created) rows.value.unshift(created)
+      showToast('Tujuan berhasil ditambahkan.')
     }
+    closeForm()
+  } catch (err) {
+    console.error('[Destination] Save failed:', err)
+    actionError.value = err?.message || 'Gagal menyimpan data.'
+  } finally {
+    submitting.value = false
+  }
 }
 
 function confirmDelete(location) {
-    deletingLocation.value = location
-    actionError.value = null
-    showDeleteConfirm.value = true
+  deletingLocation.value = location
+  deleteError.value = ''
 }
-
+function closeDelete() {
+  deletingLocation.value = null
+  deleteError.value = ''
+}
 async function onDeleteConfirm() {
-    if (!deletingLocation.value) return
-    submitting.value = true
-    actionError.value = null
-    try {
-        await deleteLocation(deletingLocation.value.id)
-        rows.value = rows.value.filter(r => r.id !== deletingLocation.value.id)
-        showDeleteConfirm.value = false
-        deletingLocation.value = null
-        showToast('Tujuan berhasil dihapus.')
-    } catch (err) {
-        console.error('[Destination] Delete failed:', err)
-        actionError.value = err?.message || 'Gagal menghapus tujuan.'
-    } finally {
-        submitting.value = false
-    }
+  if (!deletingLocation.value) return
+  submitting.value = true
+  deleteError.value = ''
+  try {
+    await deleteLocation(deletingLocation.value.id)
+    rows.value = rows.value.filter((r) => r.id !== deletingLocation.value.id)
+    deletingLocation.value = null
+    showToast('Tujuan berhasil dihapus.')
+  } catch (err) {
+    console.error('[Destination] Delete failed:', err)
+    deleteError.value = /dirujuk|409/i.test(err?.message || '')
+      ? 'Tujuan masih dipakai data lain, jadi tidak bisa dihapus.'
+      : err?.message || 'Gagal menghapus tujuan.'
+  } finally {
+    submitting.value = false
+  }
 }
 
 onMounted(loadData)

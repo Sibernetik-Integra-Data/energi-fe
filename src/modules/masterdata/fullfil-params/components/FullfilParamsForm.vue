@@ -1,25 +1,49 @@
 <template>
-  <Teleport to="body">
-    <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @mousedown.self="emit('cancel')">
-      <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between"><h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Ubah Parameter Kebutuhan' : 'Tambah Parameter Kebutuhan' }}</h3><button type="button" class="border-0 bg-transparent text-(--text-soft) text-xl cursor-pointer" @click="emit('cancel')">&times;</button></div>
-        <form class="flex flex-col gap-4" @submit.prevent="submit">
-          <label class="field">Pemetaan Kebutuhan <span class="required">*</span><select v-model="form.fullfil_id" :class="{ invalid: errors.fullfil_id }"><option value="">Pilih pemetaan kebutuhan</option><option v-for="item in mappings" :key="item.id" :value="String(item.id)">{{ item.name || `#${item.id}` }}</option></select><span v-if="errors.fullfil_id" class="error">{{ errors.fullfil_id }}</span></label>
-          <label class="field">Nama <span class="required">*</span><input v-model.trim="form.name" maxlength="50" placeholder="Nama parameter" :class="{ invalid: errors.name }" /><span v-if="errors.name" class="error">{{ errors.name }}</span></label>
-          <label class="field">Nilai <span class="required">*</span><input v-model="form.value" type="number" step="1" placeholder="Nilai" :class="{ invalid: errors.value }" /><span v-if="errors.value" class="error">{{ errors.value }}</span></label>
-          <label class="field">Satuan <span class="required">*</span><select v-model="form.unit_id" :class="{ invalid: errors.unit_id }"><option value="">Pilih satuan</option><option v-for="item in units" :key="item.id" :value="String(item.id)">{{ item.name || `#${item.id}` }}</option></select><span v-if="errors.unit_id" class="error">{{ errors.unit_id }}</span></label>
-          <label class="field">Catatan<textarea v-model.trim="form.notes" rows="3" maxlength="500" placeholder="Catatan (opsional)" /></label>
-          <div class="flex justify-end gap-3"><button type="button" class="button secondary" :disabled="submitting" @click="emit('cancel')">Batal</button><button type="submit" class="button primary" :disabled="submitting">{{ submitting ? 'Menyimpan…' : (isEdit ? 'Simpan Perubahan' : 'Tambah Parameter Kebutuhan') }}</button></div>
-        </form>
-      </div>
-    </div>
-  </Teleport>
+  <MdModal
+    :open="visible"
+    :title="isEdit ? `Ubah Parameter ${item.name || ''}`.trim() : 'Tambah Parameter Kebutuhan'"
+    subtitle="Lengkapi data parameter. Kolom bertanda * wajib diisi."
+    as-form
+    @close="emit('cancel')"
+    @submit="submit">
+    <MdField label="Pemetaan kebutuhan" for-id="fp-map" required full :error="errors.fullfil_id">
+      <MdDropdown id="fp-map" v-model="form.fullfil_id" field :invalid="!!errors.fullfil_id" placeholder="Pilih pemetaan kebutuhan"
+        :options="mappings.map((m) => ({ value: String(m.id), label: m.name || `#${m.id}` }))" />
+    </MdField>
+
+    <MdField label="Nama" for-id="fp-name" required full :error="errors.name">
+      <input id="fp-name" v-model.trim="form.name" class="md-input" :class="{ 'is-invalid': errors.name }" maxlength="50" placeholder="Nama parameter" autocomplete="off" />
+    </MdField>
+
+    <MdField label="Nilai" for-id="fp-value" required :error="errors.value">
+      <input id="fp-value" v-model="form.value" class="md-input" :class="{ 'is-invalid': errors.value }" type="number" step="1" placeholder="Nilai" />
+    </MdField>
+
+    <MdField label="Satuan" for-id="fp-unit" required :error="errors.unit_id">
+      <MdDropdown id="fp-unit" v-model="form.unit_id" field :invalid="!!errors.unit_id" placeholder="Pilih satuan"
+        :options="units.map((u) => ({ value: String(u.id), label: u.name || `#${u.id}` }))" />
+    </MdField>
+
+    <MdField label="Catatan" for-id="fp-notes" full hint="Opsional.">
+      <textarea id="fp-notes" v-model.trim="form.notes" class="md-input" rows="3" maxlength="500" placeholder="Catatan (opsional)" style="resize: none" />
+    </MdField>
+
+    <div v-if="error" class="md-modal__error" role="alert">{{ error }}</div>
+
+    <template #footer>
+      <button type="button" class="md-btn" :disabled="submitting" @click="emit('cancel')">Batal</button>
+      <button type="submit" class="md-btn md-btn--primary" :disabled="submitting">
+        <MdIcon name="check" />{{ submitting ? 'Menyimpan…' : (isEdit ? 'Simpan Perubahan' : 'Tambah Parameter') }}
+      </button>
+    </template>
+  </MdModal>
 </template>
 
 <script setup>
 import { computed, reactive, watch } from 'vue'
+import { MdModal, MdField, MdDropdown, MdIcon } from '../../../shared/masterdata-ui'
 
-const props = defineProps({ visible: Boolean, item: Object, mappings: { type: Array, default: () => [] }, units: { type: Array, default: () => [] }, submitting: Boolean })
+const props = defineProps({ visible: Boolean, item: Object, mappings: { type: Array, default: () => [] }, units: { type: Array, default: () => [] }, submitting: Boolean, error: { type: String, default: '' } })
 const emit = defineEmits(['submit', 'cancel'])
 const isEdit = computed(() => Boolean(props.item?.id))
 const form = reactive({ fullfil_id: '', name: '', value: '', unit_id: '', notes: '' })
@@ -29,7 +53,8 @@ watch(() => props.visible, (visible) => {
   if (!visible) return
   Object.assign(form, props.item ? { fullfil_id: String(props.item.fullfil_id || ''), name: props.item.name || '', value: props.item.value ?? '', unit_id: String(props.item.unit_id || ''), notes: props.item.notes || '' } : { fullfil_id: '', name: '', value: '', unit_id: '', notes: '' })
   Object.keys(errors).forEach((key) => { errors[key] = '' })
-})
+}, { immediate: true })
+
 function submit() {
   errors.fullfil_id = form.fullfil_id ? '' : 'Pemetaan Kebutuhan wajib diisi.'
   errors.name = form.name ? '' : 'Nama wajib diisi.'
@@ -39,10 +64,3 @@ function submit() {
   emit('submit', { fullfil_id: Number(form.fullfil_id), name: form.name, value: Number(form.value), unit_id: Number(form.unit_id), notes: form.notes || null })
 }
 </script>
-
-<style scoped>
-.field { display:flex; flex-direction:column; gap:.25rem; font-size:.875rem; font-weight:600; color:var(--text); }
-.field input,.field select,.field textarea { border:1px solid var(--border); border-radius:.5rem; padding:.625rem .875rem; font-weight:400; color:var(--text); background:var(--surface-muted); outline:none; }
-.field textarea { resize:none; }.required,.error { color:#ef4444; }.error { font-size:.75rem; font-weight:400; }.invalid { border-color:#f87171 !important; }
-.button { border-radius:.5rem; padding:.625rem 1.25rem; font-size:.875rem; font-weight:600; cursor:pointer; }.button:disabled { opacity:.6; }.primary { border:0; background:#16a34a; color:white; }.secondary { border:1px solid var(--border); background:var(--surface); color:var(--text); }
-</style>

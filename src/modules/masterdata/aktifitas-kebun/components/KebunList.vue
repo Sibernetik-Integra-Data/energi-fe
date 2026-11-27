@@ -1,193 +1,117 @@
 <template>
-    <div>
-        <!-- Header row -->
-        <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
-            <div>
-                <h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Aktivitas Kebun</h2>
-                <p class="text-sm text-(--text-muted) m-0">Kelola jenis pekerjaan per kelompok</p>
-            </div>
-            <button
-                type="button"
-                class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl cursor-pointer hover:bg-green-700 transition-colors shadow-sm"
-                v-if="canWrite" @click="openCreate">
-                + Tambah Aktivitas
-            </button>
-        </div>
+  <MdPage title="Aktivitas Kebun" description="Jenis pekerjaan kebun per kelompok pekerjaan dan kebutuhan bukti fotonya. Klik kartu atau batang grafik untuk menyaring tabel.">
+    <template #actions>
+      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah Aktivitas</button>
+    </template>
 
-        <!-- Filter bar -->
-        <div class="flex flex-wrap gap-3 mb-4">
-            <input
-                v-model="searchName"
-                type="text"
-                placeholder="Cari nama aktivitas…"
-                class="border border-(--border) rounded-lg px-3.5 py-2 text-sm text-(--text) bg-(--surface) outline-none focus:border-green-500 transition-colors w-56" />
-            <select
-                v-model="filterGroup"
-                class="border border-(--border) rounded-lg px-3.5 py-2 text-sm text-(--text) bg-(--surface) outline-none focus:border-green-500 transition-colors">
-                <option value="">Semua Kelompok</option>
-                <option v-for="g in groups" :key="g.id" :value="g.id">{{ g.name }}</option>
-            </select>
-        </div>
-
-        <!-- Loading -->
-        <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">
-            Memuat data&hellip;
-        </div>
-
-        <!-- Error -->
-        <div v-else-if="fetchError" class="flex justify-center items-center py-16 text-sm text-red-600">
-            {{ fetchError }}
-        </div>
-
-        <!-- Table desktop -->
-        <template v-else>
-            <div class="bg-(--surface) rounded-xl overflow-hidden border border-(--border) shadow-sm max-[920px]:hidden">
-                <table class="w-full border-collapse">
-                    <thead>
-                        <tr class="border-b border-(--border) bg-(--surface-muted)">
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Nama</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Kelompok</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Keterangan</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Foto</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Dibuat Oleh</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Diubah Oleh</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-if="filteredRows.length === 0">
-                            <td colspan="7" class="py-10 px-6 text-center text-sm text-(--text-muted)">Belum ada data.</td>
-                        </tr>
-                        <tr
-                            v-for="row in paginatedRows"
-                            :key="row.id"
-                            class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted) transition-colors">
-                            <td class="py-4 px-6 align-middle text-sm font-semibold text-(--text)">{{ row.name }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.group_of_work_name || '' }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted) max-w-xs truncate">{{ row.detail || '' }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text)">
-                                <span
-                                    :class="Number(row.is_upload) ? 'bg-green-100 text-green-700' : 'bg-(--surface-muted) text-(--text-muted)'"
-                                    class="text-xs font-semibold px-2.5 py-1 rounded-full">
-                                    {{ Number(row.is_upload) ? 'Ya' : 'Tidak' }}
-                                </span>
-                            </td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ userName(row.created_by) }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ userName(row.updated_by) }}</td>
-                            <td class="py-4 px-6 align-middle">
-                                <div class="flex gap-2 items-center">
-                                    <button
-                                        type="button"
-                                        class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border-0 hover:bg-(--surface-muted) transition-colors cursor-pointer"
-                                        v-if="canWrite" @click="openEdit(row)">
-                                        Ubah
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
-                                        v-if="canWrite" @click="confirmDelete(row)">
-                                        Hapus
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Mobile cards -->
-            <div class="hidden gap-3 max-[920px]:flex max-[920px]:flex-col">
-                <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">Belum ada data.</div>
-                <div
-                    v-for="row in paginatedRows"
-                    :key="row.id"
-                    class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2">
-                    <div class="font-bold text-sm text-(--text)">{{ row.name }}</div>
-                    <div class="text-xs text-(--text-muted) flex flex-wrap gap-x-4 gap-y-1">
-                        <span v-if="row.group_of_work_name">Kelompok: {{ row.group_of_work_name }}</span>
-                        <span v-if="row.detail">Keterangan: {{ row.detail }}</span>
-                        <span>Foto: {{ Number(row.is_upload) ? 'Ya' : 'Tidak' }}</span>
-                        <span>Dibuat oleh: {{ userName(row.created_by) }}</span>
-                        <span>Diubah oleh: {{ userName(row.updated_by) }}</span>
-                    </div>
-                    <div class="flex justify-end gap-2 mt-1">
-                        <button
-                            type="button"
-                            class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) hover:bg-(--surface-muted) transition-colors cursor-pointer"
-                            v-if="canWrite" @click="openEdit(row)">
-                            Ubah
-                        </button>
-                        <button
-                            type="button"
-                            class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
-                            v-if="canWrite" @click="confirmDelete(row)">
-                            Hapus
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </template>
-
-        <!-- Action Error (outside modal) -->
-        <div v-if="actionError && !showDeleteConfirm" class="mt-3 text-xs text-red-500">{{ actionError }}</div>
-
-        <!-- Kebun Form Modal -->
-        <KebunForm
-            :visible="showForm"
-            :activity="editingActivity"
-            :submitting="submitting"
-            @submit="onFormSubmit"
-            @cancel="closeForm" />
-
-        <!-- Delete Confirmation Modal -->
-        <Teleport to="body">
-            <div
-                v-if="showDeleteConfirm"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-                @mousedown.self="showDeleteConfirm = false">
-                <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
-                    <h3 class="text-base font-bold text-(--text) m-0">Hapus Aktivitas</h3>
-                    <p class="text-sm text-(--text-muted) m-0">
-                        Hapus Aktivitas <strong>{{ deletingActivity?.name }}</strong>? Tindakan ini tidak bisa dibatalkan.
-                    </p>
-                    <div v-if="actionError" class="text-xs text-red-500">{{ actionError }}</div>
-                    <div class="flex justify-end gap-3">
-                        <button
-                            type="button"
-                            class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
-                            :disabled="submitting"
-                            @click="showDeleteConfirm = false">
-                            Batal
-                        </button>
-                        <button
-                            type="button"
-                            class="border-0 bg-red-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-red-700 transition-colors disabled:opacity-60"
-                            :disabled="submitting"
-                            @click="onDeleteConfirm">
-                            <span v-if="submitting">Menghapus&hellip;</span>
-                            <span v-else>Ya, Hapus</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
+    <div class="md-kpis">
+      <MdKpi icon="leaf" tone="info" label="Total aktivitas" :value="rows.length" :sub="`${usedGroups} kelompok terpakai`" action hint="Tampilkan semua" :pressed="false" @select="clearAll" />
+      <MdKpi icon="upload" tone="success" label="Perlu foto" :value="countFoto('yes')" :sub="`${pct(countFoto('yes'))}% dari aktivitas`" action :pressed="onlyFoto('yes')" @select="quickFoto('yes')" />
+      <MdKpi icon="eye" tone="warning" label="Tanpa foto" :value="countFoto('no')" sub="Tidak perlu bukti foto" action :pressed="onlyFoto('no')" @select="quickFoto('no')" />
+      <MdKpi icon="layers" tone="brand" label="Kelompok pekerjaan" :value="groups.length" :sub="emptyGroups ? `${emptyGroups} belum punya aktivitas` : 'Semua sudah terisi'" />
     </div>
-    <MasterDataPagination id="aktifitas-kebun" :total-items="totalItems" :current-page="currentPage" :page-size="pageSize" :total-pages="totalPages" :visible-pages="visiblePages" @update:current-page="currentPage = $event" @update:page-size="pageSize = $event" />
+
+    <MdBarChart
+      v-if="groupKeys.length"
+      title="Jumlah aktivitas per kelompok"
+      :subtitle="`${rows.length} aktivitas di ${groupKeys.length} kelompok`"
+      :legend="[{ label: 'Perlu foto', color: 'var(--success)' }, { label: 'Tanpa foto', color: 'var(--border-strong)' }]"
+      :bars="bars"
+      :selected="filterGroup"
+      @toggle="toggleGroup" />
+
+    <MdDataTable
+      :columns="columns"
+      :rows="filteredRows"
+      :total-rows="rows.length"
+      :loading="loading"
+      :error="fetchError || ''"
+      entity-label="Aktivitas"
+      empty-icon="leaf"
+      empty-text="Tambahkan aktivitas pertama agar bisa dipakai di perencanaan kerja."
+      add-label="Tambah Aktivitas"
+      :can-add="canWrite"
+      initial-sort="name"
+      aria-label="Daftar aktivitas kebun"
+      @retry="loadData"
+      @add="openCreate"
+      @clear-filters="clearAll">
+      <template #toolbar>
+        <label class="md-search">
+          <MdIcon name="search" />
+          <input v-model.trim="search" type="search" placeholder="Cari nama atau keterangan aktivitas…" aria-label="Cari aktivitas" />
+        </label>
+        <MdDropdown v-model="filterGroup" label="Kelompok" :options="groupFilterOptions" multiple />
+        <MdDropdown v-model="filterFoto" label="Foto" :options="fotoFilterOptions" multiple />
+        <div class="md-chips">
+          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+            {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
+          </button>
+          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+        </div>
+      </template>
+
+      <template #cell-name="{ row }">
+        <div class="md-ident">
+          <span class="md-avatar">{{ initial(row.name) }}</span>
+          <div><b>{{ row.name }}</b><small>{{ groupLabel(groupKey(row)) }}</small></div>
+        </div>
+      </template>
+      <template #cell-group_of_work_name="{ row }">
+        <MdBadge :tone="groupKey(row) === '-' ? 'neutral' : 'info'">{{ groupLabel(groupKey(row)) }}</MdBadge>
+      </template>
+      <template #cell-detail="{ row }">
+        <span :class="{ 'md-muted': !row.detail }">{{ row.detail || '—' }}</span>
+      </template>
+      <template #cell-is_upload="{ row }">
+        <MdBadge :tone="isFoto(row) ? 'success' : 'neutral'">{{ isFoto(row) ? 'Ya' : 'Tidak' }}</MdBadge>
+      </template>
+      <template #cell-created_by="{ row }">
+        <span class="md-muted">{{ userName(row.created_by) }}</span>
+      </template>
+      <template #cell-updated_by="{ row }">
+        <span class="md-muted">{{ userName(row.updated_by) }}</span>
+      </template>
+
+      <template v-if="canWrite" #actions="{ row }">
+        <button type="button" class="md-icon-btn" :aria-label="`Ubah aktivitas ${row.name}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
+        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus aktivitas ${row.name}`" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+      </template>
+
+      <template #card="{ row }">
+        <div class="md-card__top">
+          <span class="md-avatar">{{ initial(row.name) }}</span>
+          <div style="flex: 1"><b class="md-strong">{{ row.name }}</b><div class="md-muted" style="font-size: 12px">{{ groupLabel(groupKey(row)) }}</div></div>
+          <MdBadge :tone="isFoto(row) ? 'success' : 'neutral'">{{ isFoto(row) ? 'Perlu foto' : 'Tanpa foto' }}</MdBadge>
+        </div>
+        <div class="md-card__grid">
+          <div style="grid-column: 1 / -1">Keterangan<b>{{ row.detail || '—' }}</b></div>
+          <div>Dibuat oleh<b>{{ userName(row.created_by) }}</b></div>
+          <div>Diubah oleh<b>{{ userName(row.updated_by) }}</b></div>
+        </div>
+      </template>
+    </MdDataTable>
+
+    <KebunForm :visible="showForm" :activity="editingActivity" :submitting="submitting" :error="actionError || ''" @submit="onFormSubmit" @cancel="closeForm" />
+
+    <MdConfirm :open="!!deletingActivity" title="Hapus aktivitas?" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
+      <template v-if="deletingActivity">Aktivitas <b>{{ deletingActivity.name }}</b> akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.</template>
+    </MdConfirm>
+  </MdPage>
 </template>
 
 <script setup>
-import { useUserNames } from '../../../../auth/useUserNames'
-const { userName } = useUserNames()
-import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
-// Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
-const canWrite = useCanManageMasterData()
 import { ref, computed, onMounted } from 'vue'
 import KebunForm from './KebunForm.vue'
 import { listTypeOfWork, createTypeOfWork, updateTypeOfWork, deleteTypeOfWork, listGroupOfWork } from '../model'
 import { useToast } from '../../../../utils/toast'
-import { useListPagination } from '../../../shared/pagination/useListPagination.js'
-import MasterDataPagination from '../../../shared/pagination/MasterDataPagination.vue'
+import { useUserNames } from '../../../../auth/useUserNames'
+import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
+import { MdPage, MdKpi, MdBarChart, MdDataTable, MdDropdown, MdBadge, MdConfirm, MdIcon } from '../../../shared/masterdata-ui'
 
+const { userName } = useUserNames()
+// Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
+const canWrite = useCanManageMasterData()
 const { show: showToast } = useToast()
 
 const rows = ref([])
@@ -195,130 +119,186 @@ const groups = ref([])
 const loading = ref(false)
 const fetchError = ref(null)
 const actionError = ref(null)
+const deleteError = ref('')
 const submitting = ref(false)
-
-const searchName = ref('')
-const filterGroup = ref('')
-
+const search = ref('')
+const filterGroup = ref([])
+const filterFoto = ref([])
 const showForm = ref(false)
 const editingActivity = ref(null)
-
-const showDeleteConfirm = ref(false)
 const deletingActivity = ref(null)
 
+const byName = (a, b) => String(a).localeCompare(String(b), 'id', { numeric: true })
+const initial = (n) => String(n || '#').trim().charAt(0).toUpperCase() || '#'
+const isFoto = (r) => Boolean(Number(r.is_upload))
+const fotoKey = (r) => (isFoto(r) ? 'yes' : 'no')
+const groupKey = (r) => (r.group_of_work != null && r.group_of_work !== '' ? String(r.group_of_work) : '-')
+function groupLabel(key) {
+  if (key === '-') return 'Tanpa kelompok'
+  const g = groups.value.find((x) => String(x.id) === key)
+  if (g) return g.name
+  return rows.value.find((r) => groupKey(r) === key)?.group_of_work_name || `Kelompok ${key}`
+}
+
+const columns = [
+  { key: 'name', label: 'Nama' },
+  { key: 'group_of_work_name', label: 'Kelompok', sortValue: (r) => (groupKey(r) === '-' ? '' : groupLabel(groupKey(r))) },
+  { key: 'detail', label: 'Keterangan' },
+  { key: 'is_upload', label: 'Foto', sortValue: (r) => (isFoto(r) ? 1 : 0) },
+  { key: 'created_by', label: 'Dibuat oleh', sortable: false },
+  { key: 'updated_by', label: 'Diubah oleh', sortable: false }
+]
+
+const countFoto = (k) => rows.value.filter((r) => fotoKey(r) === k).length
+const pct = (n) => (rows.value.length ? Math.round((n / rows.value.length) * 100) : 0)
+const groupKeys = computed(() => [...new Set(rows.value.map(groupKey))].sort((a, b) => byName(groupLabel(a), groupLabel(b))))
+const usedGroups = computed(() => groupKeys.value.filter((k) => k !== '-').length)
+const emptyGroups = computed(() => groups.value.filter((g) => !rows.value.some((r) => groupKey(r) === String(g.id))).length)
+
+const groupFilterOptions = computed(() => {
+  const keys = [...new Set([...groups.value.map((g) => String(g.id)), ...groupKeys.value])]
+  return keys
+    .map((k) => ({ value: k, label: groupLabel(k), count: rows.value.filter((r) => groupKey(r) === k).length }))
+    .sort((a, b) => byName(a.label, b.label))
+})
+const fotoFilterOptions = computed(() => [
+  { value: 'yes', label: 'Perlu foto', count: countFoto('yes') },
+  { value: 'no', label: 'Tanpa foto', count: countFoto('no') }
+])
+
+const bars = computed(() =>
+  groupKeys.value.map((k) => {
+    const rs = rows.value.filter((r) => groupKey(r) === k)
+    const yes = rs.filter(isFoto).length
+    return {
+      key: k,
+      label: groupLabel(k),
+      ariaLabel: `${groupLabel(k)}: ${rs.length} aktivitas, ${yes} perlu foto`,
+      segments: [
+        { value: yes, color: 'var(--success)' },
+        { value: rs.length - yes, color: 'var(--border-strong)' }
+      ]
+    }
+  })
+)
+
 const filteredRows = computed(() => {
-    let result = rows.value
-    const q = searchName.value.trim().toLowerCase()
-    if (q) result = result.filter(row => row.name?.toLowerCase().includes(q))
-    if (filterGroup.value !== '') result = result.filter(row => String(row.group_of_work) === String(filterGroup.value))
-    return result
+  const q = search.value.toLowerCase()
+  return rows.value.filter((r) =>
+    (!q || `${r.name || ''} ${r.detail || ''}`.toLowerCase().includes(q)) &&
+    (!filterGroup.value.length || filterGroup.value.includes(groupKey(r))) &&
+    (!filterFoto.value.length || filterFoto.value.includes(fotoKey(r)))
+  )
 })
 
-const { currentPage, pageSize, totalItems, totalPages, paginatedItems: paginatedRows, visiblePages } = useListPagination(filteredRows)
+const chips = computed(() => {
+  const c = []
+  if (search.value) c.push({ key: 'q', label: `“${search.value}”`, remove: () => (search.value = '') })
+  filterGroup.value.forEach((k) => c.push({ key: `g-${k}`, label: groupLabel(k), remove: () => (filterGroup.value = filterGroup.value.filter((x) => x !== k)) }))
+  filterFoto.value.forEach((k) => c.push({ key: `f-${k}`, label: k === 'yes' ? 'Perlu foto' : 'Tanpa foto', remove: () => (filterFoto.value = filterFoto.value.filter((x) => x !== k)) }))
+  return c
+})
 
-function formatDateTime(value) {
-    if (!value) return ''
-    if (typeof value === 'string') {
-        return value.replace(/\.\d+/, '').replace(/T/, ' ').replace(/Z$/, '').trim()
-    }
-    if (value instanceof Date) {
-        return value.toISOString().replace(/T/, ' ').replace(/Z$/, '').substring(0, 19)
-    }
-    return String(value)
+function clearAll() {
+  search.value = ''
+  filterGroup.value = []
+  filterFoto.value = []
+}
+const onlyFoto = (k) => filterFoto.value.length === 1 && filterFoto.value[0] === k
+function quickFoto(k) {
+  filterFoto.value = onlyFoto(k) ? [] : [k]
+}
+function toggleGroup(k) {
+  filterGroup.value = filterGroup.value.includes(k) ? filterGroup.value.filter((x) => x !== k) : [...filterGroup.value, k]
 }
 
 async function loadData() {
-    loading.value = true
-    fetchError.value = null
-    try {
-        const [typeOfWorkList, groupList] = await Promise.all([
-            listTypeOfWork(),
-            listGroupOfWork()
-        ])
-        rows.value = typeOfWorkList
-        groups.value = groupList
-    } catch (err) {
-        console.error('[AktifitasKebun] Failed to load:', err)
-        fetchError.value = err?.message || 'Gagal memuat data.'
-    } finally {
-        loading.value = false
-    }
+  loading.value = true
+  fetchError.value = null
+  try {
+    const [typeOfWorkList, groupList] = await Promise.all([listTypeOfWork(), listGroupOfWork()])
+    rows.value = typeOfWorkList
+    groups.value = groupList
+  } catch (err) {
+    console.error('[AktifitasKebun] Failed to load:', err)
+    fetchError.value = err?.message || 'Gagal memuat data.'
+  } finally {
+    loading.value = false
+  }
 }
 
 function openCreate() {
-    editingActivity.value = null
-    actionError.value = null
-    showForm.value = true
+  editingActivity.value = null
+  actionError.value = null
+  showForm.value = true
 }
-
 function openEdit(activity) {
-    editingActivity.value = { ...activity }
-    actionError.value = null
-    showForm.value = true
+  editingActivity.value = { ...activity }
+  actionError.value = null
+  showForm.value = true
 }
-
 function closeForm() {
-    showForm.value = false
-    editingActivity.value = null
+  showForm.value = false
+  editingActivity.value = null
 }
 
 function enrichWithGroupName(record) {
-    if (!record) return record
-    if (!record.group_of_work_name && record.group_of_work != null) {
-        const grp = groups.value.find(g => String(g.id) === String(record.group_of_work))
-        if (grp) record.group_of_work_name = grp.name
-    }
-    return record
+  if (!record) return record
+  if (!record.group_of_work_name && record.group_of_work != null) {
+    const grp = groups.value.find((g) => String(g.id) === String(record.group_of_work))
+    if (grp) record.group_of_work_name = grp.name
+  }
+  return record
 }
 
 async function onFormSubmit(formData) {
-    submitting.value = true
-    actionError.value = null
-    try {
-        if (editingActivity.value?.id) {
-            const updated = await updateTypeOfWork(editingActivity.value.id, formData)
-            const idx = rows.value.findIndex(r => r.id === editingActivity.value.id)
-            if (idx !== -1) {
-                const merged = updated || { ...rows.value[idx], ...formData }
-                rows.value[idx] = enrichWithGroupName(merged)
-            }
-            showToast('Aktivitas berhasil diubah.')
-        } else {
-            const created = await createTypeOfWork(formData)
-            if (created) rows.value.unshift(enrichWithGroupName(created))
-            showToast('Aktivitas berhasil ditambahkan.')
-        }
-        closeForm()
-    } catch (err) {
-        console.error('[AktifitasKebun] Save failed:', err)
-        actionError.value = err?.message || 'Gagal menyimpan data.'
-    } finally {
-        submitting.value = false
+  submitting.value = true
+  actionError.value = null
+  try {
+    if (editingActivity.value?.id) {
+      const updated = await updateTypeOfWork(editingActivity.value.id, formData)
+      const idx = rows.value.findIndex((r) => r.id === editingActivity.value.id)
+      if (idx !== -1) rows.value[idx] = enrichWithGroupName(updated || { ...rows.value[idx], ...formData })
+      showToast('Aktivitas berhasil diubah.')
+    } else {
+      const created = await createTypeOfWork(formData)
+      if (created) rows.value.unshift(enrichWithGroupName(created))
+      showToast('Aktivitas berhasil ditambahkan.')
     }
+    closeForm()
+  } catch (err) {
+    console.error('[AktifitasKebun] Save failed:', err)
+    actionError.value = err?.message || 'Gagal menyimpan data.'
+  } finally {
+    submitting.value = false
+  }
 }
 
 function confirmDelete(activity) {
-    deletingActivity.value = activity
-    actionError.value = null
-    showDeleteConfirm.value = true
+  deletingActivity.value = activity
+  deleteError.value = ''
 }
-
+function closeDelete() {
+  deletingActivity.value = null
+  deleteError.value = ''
+}
 async function onDeleteConfirm() {
-    if (!deletingActivity.value) return
-    submitting.value = true
-    actionError.value = null
-    try {
-        await deleteTypeOfWork(deletingActivity.value.id)
-        rows.value = rows.value.filter(r => r.id !== deletingActivity.value.id)
-        showDeleteConfirm.value = false
-        deletingActivity.value = null
-        showToast('Aktivitas berhasil dihapus.')
-    } catch (err) {
-        console.error('[AktifitasKebun] Delete failed:', err)
-        actionError.value = err?.message || 'Gagal menghapus aktivitas.'
-    } finally {
-        submitting.value = false
-    }
+  if (!deletingActivity.value) return
+  submitting.value = true
+  deleteError.value = ''
+  try {
+    await deleteTypeOfWork(deletingActivity.value.id)
+    rows.value = rows.value.filter((r) => r.id !== deletingActivity.value.id)
+    deletingActivity.value = null
+    showToast('Aktivitas berhasil dihapus.')
+  } catch (err) {
+    console.error('[AktifitasKebun] Delete failed:', err)
+    deleteError.value = /dirujuk|409/i.test(err?.message || '')
+      ? 'Aktivitas masih dipakai rencana kerja atau data lain, jadi tidak bisa dihapus.'
+      : err?.message || 'Gagal menghapus aktivitas.'
+  } finally {
+    submitting.value = false
+  }
 }
 
 onMounted(loadData)

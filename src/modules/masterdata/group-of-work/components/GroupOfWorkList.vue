@@ -1,314 +1,241 @@
 <template>
-    <div>
-        <!-- Header row -->
-        <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
-            <div>
-                <h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Kelompok Pekerjaan</h2>
-                <p class="text-sm text-(--text-muted) m-0">Kelola kelompok pekerjaan</p>
-            </div>
-            <button
-                type="button"
-                class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl cursor-pointer hover:bg-green-700 transition-colors shadow-sm"
-                v-if="canWrite" @click="openCreate">
-                + Tambah Kelompok
-            </button>
-        </div>
+  <MdPage title="Kelompok Pekerjaan" description="Pengelompokan pekerjaan kebun dan jenis TPH yang boleh dipakai di sensus serta penugasan. Klik kartu untuk menyaring tabel.">
+    <template #actions>
+      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah Kelompok</button>
+    </template>
 
-        <!-- Search bar -->
-        <div class="flex flex-wrap gap-3 mb-4">
-            <input
-                v-model="searchName"
-                type="text"
-                placeholder="Cari nama kelompok…"
-                class="border border-(--border) rounded-lg px-3.5 py-2 text-sm text-(--text) bg-(--surface) outline-none focus:border-green-500 transition-colors w-56" />
-        </div>
-
-        <!-- Loading -->
-        <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">
-            Memuat data&hellip;
-        </div>
-
-        <!-- Error -->
-        <div v-else-if="fetchError" class="flex justify-center items-center py-16 text-sm text-red-600">
-            {{ fetchError }}
-        </div>
-
-        <!-- Table desktop -->
-        <template v-else>
-            <div
-                class="bg-(--surface) rounded-xl overflow-hidden border border-(--border) shadow-sm max-[920px]:hidden">
-                <table class="w-full border-collapse table-fixed">
-                    <thead>
-                        <tr class="border-b border-(--border) bg-(--surface-muted)">
-                            <th
-                                class="w-1/4 align-middle text-center text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">
-                                Nama
-                            </th>
-                            <th
-                                class="w-1/5 align-middle text-center text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">
-                                Jenis TPH
-                            </th>
-                            <th
-                                class="w-1/4 align-middle text-center text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">
-                                Dibuat Oleh
-                            </th>
-                            <th
-                                class="w-1/4 align-middle text-center text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">
-                                Diubah Oleh
-                            </th>
-                            <th
-                                class="w-1/4 align-middle text-center text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">
-                                Aksi
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-if="filteredRows.length === 0">
-                            <td colspan="5" class="py-10 px-6 text-center text-sm text-(--text-muted)">Belum ada data.</td>
-                        </tr>
-                        <tr
-                            v-for="row in paginatedRows"
-                            :key="row.id"
-                            class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted) transition-colors">
-                            <td class="py-4 px-4 align-middle text-sm font-semibold text-(--text) text-center">
-                                {{ row.name }}
-                            </td>
-                            <td class="py-4 px-4 align-middle text-sm text-(--text) text-center">
-                                {{ row.tph_type === 'PANEN' ? 'Panen' : row.tph_type === 'PERAWATAN' ? 'Perawatan' : '-' }}
-                            </td>
-                            <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-center">
-                                {{ userName(row.created_by) }}
-                            </td>
-                            <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-center">
-                                {{ userName(row.updated_by) }}
-                            </td>
-                            <td class="py-4 px-4 align-middle text-center">
-                                <div class="flex gap-2 items-center justify-center">
-                                    <button
-                                        type="button"
-                                        class="text-sm py-1.5 px-5 rounded-lg font-semibold text-(--text) bg-blue-500 border-0 hover:bg-blue-300 transition-colors cursor-pointer"
-                                        v-if="canWrite" @click="openEdit(row)">
-                                        Ubah
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
-                                        v-if="canWrite" @click="confirmDelete(row)">
-                                        Hapus
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Mobile cards -->
-            <div class="hidden gap-3 max-[920px]:flex max-[920px]:flex-col">
-                <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">
-                    Belum ada data.
-                </div>
-                <div
-                        v-for="row in paginatedRows"
-                    :key="row.id"
-                    class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2">
-                    <div class="font-bold text-sm text-(--text)">{{ row.name }}</div>
-                    <div class="text-xs text-(--text-muted)">Dibuat oleh: {{ userName(row.created_by) }}</div>
-                    <div class="text-xs text-(--text-muted)">Diubah oleh: {{ userName(row.updated_by) }}</div>
-                    <div class="flex justify-end gap-2 mt-1 whitespace-nowrap items-center">
-                        <button
-                            type="button"
-                            class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) hover:bg-(--surface-muted) transition-colors cursor-pointer"
-                            v-if="canWrite" @click="openEdit(row)">
-                            Ubah
-                        </button>
-                        <button
-                            type="button"
-                            class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
-                            v-if="canWrite" @click="confirmDelete(row)">
-                            Hapus
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </template>
-
-        <!-- Action Error (outside modal) -->
-        <div v-if="actionError && !showDeleteConfirm" class="mt-3 text-xs text-red-500">{{ actionError }}</div>
-
-        <!-- Group of Work Form Modal -->
-        <GroupOfWorkForm
-            :visible="showForm"
-            :group="editingGroup"
-            :submitting="submitting"
-            @submit="onFormSubmit"
-            @cancel="closeForm" />
-
-        <!-- Delete Confirmation Modal -->
-        <Teleport to="body">
-            <div
-                v-if="showDeleteConfirm"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="delete-dialog-title"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-                @mousedown.self="showDeleteConfirm = false">
-                <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
-                    <h3 id="delete-dialog-title" class="text-base font-bold text-(--text) m-0">Hapus Kelompok Pekerjaan</h3>
-                    <p class="text-sm text-(--text-muted) m-0">
-                        Hapus <strong>{{ deletingGroup?.name }}</strong
-                        >? Tindakan ini tidak bisa dibatalkan.
-                        <span class="block mt-1 text-xs text-(--text-muted)"
-                            >Catatan: data hanya ditandai terhapus; labelnya mungkin tetap tersimpan di database.</span
-                        >
-                    </p>
-                    <div v-if="actionError" class="text-xs text-red-500">{{ actionError }}</div>
-                    <div class="flex justify-end gap-3">
-                        <button
-                            type="button"
-                            class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
-                            :disabled="submitting"
-                            @click="showDeleteConfirm = false">
-                            Batal
-                        </button>
-                        <button
-                            type="button"
-                            class="border-0 bg-red-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-red-700 transition-colors disabled:opacity-60"
-                            :disabled="submitting"
-                            @click="onDeleteConfirm">
-                            <span v-if="submitting">Menghapus&hellip;</span>
-                            <span v-else>Ya, Hapus</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
+    <div class="md-kpis">
+      <MdKpi icon="layers" tone="info" label="Total kelompok" :value="rows.length" sub="Semua jenis TPH" action hint="Tampilkan semua" :pressed="false" @select="clearAll" />
+      <MdKpi icon="leaf" tone="success" label="TPH perawatan" :value="count('PERAWATAN')" :sub="`${pct(count('PERAWATAN'))}% dari kelompok`" action :pressed="onlyType('PERAWATAN')" @select="quickType('PERAWATAN')" />
+      <MdKpi icon="truck" tone="warning" label="TPH panen" :value="count('PANEN')" :sub="`${pct(count('PANEN'))}% dari kelompok`" action :pressed="onlyType('PANEN')" @select="quickType('PANEN')" />
+      <MdKpi icon="info" tone="brand" label="Tanpa keterangan" :value="noDetail" :sub="noDetail ? 'Perlu dilengkapi' : 'Semua berketerangan'" action :pressed="onlyNoDetail" @select="onlyNoDetail = !onlyNoDetail" />
     </div>
-    <MasterDataPagination id="group-of-work" :total-items="totalItems" :current-page="currentPage" :page-size="pageSize" :total-pages="totalPages" :visible-pages="visiblePages" @update:current-page="currentPage = $event" @update:page-size="pageSize = $event" />
+
+    <MdDataTable
+      :columns="columns"
+      :rows="filteredRows"
+      :total-rows="rows.length"
+      :loading="loading"
+      :error="fetchError || ''"
+      entity-label="Kelompok"
+      empty-icon="layers"
+      empty-text="Tambahkan kelompok pekerjaan pertama agar aktivitas kebun bisa dikelompokkan."
+      add-label="Tambah Kelompok"
+      :can-add="canWrite"
+      initial-sort="name"
+      aria-label="Daftar kelompok pekerjaan"
+      @retry="loadData"
+      @add="openCreate"
+      @clear-filters="clearAll">
+      <template #toolbar>
+        <label class="md-search">
+          <MdIcon name="search" />
+          <input v-model.trim="search" type="search" placeholder="Cari nama atau keterangan kelompok…" aria-label="Cari kelompok pekerjaan" />
+        </label>
+        <MdDropdown v-model="filterType" label="Jenis TPH" :options="typeFilterOptions" multiple />
+        <div class="md-chips">
+          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+            {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
+          </button>
+          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+        </div>
+      </template>
+
+      <template #cell-name="{ row }">
+        <div class="md-ident">
+          <span class="md-avatar">{{ initial(row.name) }}</span>
+          <div><b>{{ row.name }}</b><small>{{ row.detail || 'Tanpa keterangan' }}</small></div>
+        </div>
+      </template>
+      <template #cell-tph_type="{ row }">
+        <MdBadge :tone="typeTone(row.tph_type)">{{ typeLabel(row.tph_type) }}</MdBadge>
+      </template>
+      <template #cell-created_by="{ row }">
+        <span class="md-muted">{{ userName(row.created_by) }}</span>
+      </template>
+      <template #cell-updated_by="{ row }">
+        <span class="md-muted">{{ userName(row.updated_by) }}</span>
+      </template>
+
+      <template v-if="canWrite" #actions="{ row }">
+        <button type="button" class="md-icon-btn" :aria-label="`Ubah kelompok ${row.name}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
+        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus kelompok ${row.name}`" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+      </template>
+
+      <template #card="{ row }">
+        <div class="md-card__top">
+          <span class="md-avatar">{{ initial(row.name) }}</span>
+          <div style="flex: 1"><b class="md-strong">{{ row.name }}</b><div class="md-muted" style="font-size: 12px">{{ row.detail || 'Tanpa keterangan' }}</div></div>
+          <MdBadge :tone="typeTone(row.tph_type)">{{ typeLabel(row.tph_type) }}</MdBadge>
+        </div>
+        <div class="md-card__grid">
+          <div>Dibuat oleh<b>{{ userName(row.created_by) }}</b></div>
+          <div>Diubah oleh<b>{{ userName(row.updated_by) }}</b></div>
+        </div>
+      </template>
+    </MdDataTable>
+
+    <GroupOfWorkForm :visible="showForm" :group="editingGroup" :submitting="submitting" :error="actionError || ''" @submit="onFormSubmit" @cancel="closeForm" />
+
+    <MdConfirm :open="!!deletingGroup" title="Hapus kelompok pekerjaan?" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
+      <template v-if="deletingGroup">Kelompok <b>{{ deletingGroup.name }}</b> akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.</template>
+    </MdConfirm>
+  </MdPage>
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from 'vue'
+import GroupOfWorkForm from './GroupOfWorkForm.vue'
+import { listGroupOfWork, createGroupOfWork, updateGroupOfWork, deleteGroupOfWork } from '../model'
+import { useToast } from '../../../../utils/toast'
 import { useUserNames } from '../../../../auth/useUserNames'
-const { userName } = useUserNames()
 import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
+import { MdPage, MdKpi, MdDataTable, MdDropdown, MdBadge, MdConfirm, MdIcon } from '../../../shared/masterdata-ui'
+
+const { userName } = useUserNames()
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
 const canWrite = useCanManageMasterData()
-import { ref, computed, onMounted } from "vue";
-import GroupOfWorkForm from "./GroupOfWorkForm.vue";
-import { listGroupOfWork, createGroupOfWork, updateGroupOfWork, deleteGroupOfWork } from "../model";
-import { useToast } from "../../../../utils/toast";
-import { useListPagination } from "../../../shared/pagination/useListPagination.js";
-import MasterDataPagination from "../../../shared/pagination/MasterDataPagination.vue";
+const { show: showToast } = useToast()
 
-const { show: showToast } = useToast();
+const rows = ref([])
+const loading = ref(false)
+const fetchError = ref(null)
+const actionError = ref(null)
+const deleteError = ref('')
+const submitting = ref(false)
+const search = ref('')
+const filterType = ref([])
+const onlyNoDetail = ref(false)
+const showForm = ref(false)
+const editingGroup = ref(null)
+const deletingGroup = ref(null)
 
-const rows = ref([]);
-const loading = ref(false);
-const fetchError = ref(null);
-const actionError = ref(null);
-const submitting = ref(false);
+const initial = (n) => String(n || '#').trim().charAt(0).toUpperCase() || '#'
+const typeKey = (r) => r.tph_type || '-'
+const typeLabel = (t) => (t === 'PANEN' ? 'Panen' : t === 'PERAWATAN' ? 'Perawatan' : '-')
+const typeTone = (t) => (t === 'PANEN' ? 'warning' : t === 'PERAWATAN' ? 'success' : 'neutral')
+const count = (t) => rows.value.filter((r) => typeKey(r) === t).length
+const pct = (n) => (rows.value.length ? Math.round((n / rows.value.length) * 100) : 0)
+const noDetail = computed(() => rows.value.filter((r) => !r.detail).length)
 
-const searchName = ref("");
+const columns = [
+  { key: 'name', label: 'Nama' },
+  { key: 'tph_type', label: 'Jenis TPH', sortValue: (r) => (r.tph_type ? typeLabel(r.tph_type) : '') },
+  { key: 'created_by', label: 'Dibuat oleh', sortable: false },
+  { key: 'updated_by', label: 'Diubah oleh', sortable: false }
+]
 
-const showForm = ref(false);
-const editingGroup = ref(null);
-
-const showDeleteConfirm = ref(false);
-const deletingGroup = ref(null);
+const typeFilterOptions = computed(() => {
+  const o = [
+    { value: 'PERAWATAN', label: 'Perawatan', count: count('PERAWATAN') },
+    { value: 'PANEN', label: 'Panen', count: count('PANEN') }
+  ]
+  if (count('-')) o.push({ value: '-', label: 'Belum diisi', count: count('-') })
+  return o
+})
 
 const filteredRows = computed(() => {
-    const q = searchName.value.trim().toLowerCase();
-    if (!q) return rows.value;
-    return rows.value.filter((row) => row.name?.toLowerCase().includes(q));
-});
+  const q = search.value.toLowerCase()
+  return rows.value.filter((r) =>
+    (!q || `${r.name || ''} ${r.detail || ''}`.toLowerCase().includes(q)) &&
+    (!filterType.value.length || filterType.value.includes(typeKey(r))) &&
+    (!onlyNoDetail.value || !r.detail)
+  )
+})
 
-const { currentPage, pageSize, totalItems, totalPages, paginatedItems: paginatedRows, visiblePages } = useListPagination(filteredRows)
+const chips = computed(() => {
+  const c = []
+  if (search.value) c.push({ key: 'q', label: `“${search.value}”`, remove: () => (search.value = '') })
+  filterType.value.forEach((t) => c.push({ key: `t-${t}`, label: t === '-' ? 'Belum diisi' : typeLabel(t), remove: () => (filterType.value = filterType.value.filter((x) => x !== t)) }))
+  if (onlyNoDetail.value) c.push({ key: 'nd', label: 'Tanpa keterangan', remove: () => (onlyNoDetail.value = false) })
+  return c
+})
 
-function formatDateTime(value) {
-    if (!value) return "";
-    if (typeof value === "string") {
-        return value.replace(/\.\d+/, "").replace(/T/, " ").replace(/Z$/, "").trim();
-    }
-    if (value instanceof Date) {
-        return value.toISOString().replace(/T/, " ").replace(/Z$/, "").substring(0, 19);
-    }
-    return String(value);
+function clearAll() {
+  search.value = ''
+  filterType.value = []
+  onlyNoDetail.value = false
+}
+const onlyType = (t) => filterType.value.length === 1 && filterType.value[0] === t
+function quickType(t) {
+  filterType.value = onlyType(t) ? [] : [t]
 }
 
 async function loadData() {
-    loading.value = true;
-    fetchError.value = null;
-    try {
-        rows.value = await listGroupOfWork();
-    } catch (err) {
-        console.error("[GroupOfWork] Failed to load:", err);
-        fetchError.value = err?.message || "Gagal memuat data.";
-    } finally {
-        loading.value = false;
-    }
+  loading.value = true
+  fetchError.value = null
+  try {
+    rows.value = await listGroupOfWork()
+  } catch (err) {
+    console.error('[GroupOfWork] Failed to load:', err)
+    fetchError.value = err?.message || 'Gagal memuat data.'
+  } finally {
+    loading.value = false
+  }
 }
 
 function openCreate() {
-    editingGroup.value = null;
-    actionError.value = null;
-    showForm.value = true;
+  editingGroup.value = null
+  actionError.value = null
+  showForm.value = true
 }
-
 function openEdit(group) {
-    editingGroup.value = { ...group };
-    actionError.value = null;
-    showForm.value = true;
+  editingGroup.value = { ...group }
+  actionError.value = null
+  showForm.value = true
 }
-
 function closeForm() {
-    showForm.value = false;
-    editingGroup.value = null;
+  showForm.value = false
+  editingGroup.value = null
 }
 
 async function onFormSubmit(formData) {
-    submitting.value = true;
-    actionError.value = null;
-    try {
-        if (editingGroup.value?.id) {
-            await updateGroupOfWork(editingGroup.value.id, formData);
-            showToast("Kelompok Pekerjaan berhasil diubah.");
-        } else {
-            await createGroupOfWork(formData);
-            showToast("Kelompok Pekerjaan berhasil ditambahkan.");
-        }
-        closeForm();
-        await loadData();
-    } catch (err) {
-        console.error("[GroupOfWork] Save failed:", err);
-        actionError.value = err?.message || "Gagal menyimpan data.";
-    } finally {
-        submitting.value = false;
+  submitting.value = true
+  actionError.value = null
+  try {
+    if (editingGroup.value?.id) {
+      await updateGroupOfWork(editingGroup.value.id, formData)
+      showToast('Kelompok Pekerjaan berhasil diubah.')
+    } else {
+      await createGroupOfWork(formData)
+      showToast('Kelompok Pekerjaan berhasil ditambahkan.')
     }
+    closeForm()
+    await loadData()
+  } catch (err) {
+    console.error('[GroupOfWork] Save failed:', err)
+    actionError.value = err?.message || 'Gagal menyimpan data.'
+  } finally {
+    submitting.value = false
+  }
 }
 
 function confirmDelete(group) {
-    deletingGroup.value = group;
-    actionError.value = null;
-    showDeleteConfirm.value = true;
+  deletingGroup.value = group
+  deleteError.value = ''
 }
-
+function closeDelete() {
+  deletingGroup.value = null
+  deleteError.value = ''
+}
 async function onDeleteConfirm() {
-    if (!deletingGroup.value) return;
-    submitting.value = true;
-    actionError.value = null;
-    try {
-        await deleteGroupOfWork(deletingGroup.value.id);
-        showDeleteConfirm.value = false;
-        deletingGroup.value = null;
-        showToast("Kelompok Pekerjaan berhasil dihapus.");
-        await loadData();
-    } catch (err) {
-        console.error("[GroupOfWork] Delete failed:", err);
-        actionError.value = err?.message || "Gagal menghapus.";
-    } finally {
-        submitting.value = false;
-    }
+  if (!deletingGroup.value) return
+  submitting.value = true
+  deleteError.value = ''
+  try {
+    await deleteGroupOfWork(deletingGroup.value.id)
+    deletingGroup.value = null
+    showToast('Kelompok Pekerjaan berhasil dihapus.')
+    await loadData()
+  } catch (err) {
+    console.error('[GroupOfWork] Delete failed:', err)
+    deleteError.value = /dirujuk|409/i.test(err?.message || '')
+      ? 'Kelompok masih dipakai aktivitas kebun atau data lain, jadi tidak bisa dihapus.'
+      : err?.message || 'Gagal menghapus.'
+  } finally {
+    submitting.value = false
+  }
 }
 
-onMounted(loadData);
+onMounted(loadData)
 </script>

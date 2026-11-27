@@ -1,249 +1,217 @@
 <template>
-  <div>
-    <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
-      <div>
-        <h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Status Penugasan</h2>
-        <p class="text-sm text-(--text-muted) m-0">Kelola status penugasan</p>
-      </div>
-      <button
-        type="button"
-        class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl cursor-pointer hover:bg-green-700 transition-colors shadow-sm"
-        v-if="canWrite" @click="openCreate">
-        + Tambah Tipe
-      </button>
-    </div>
-
-    <div class="flex flex-wrap gap-3 mb-4">
-      <input
-        v-model="searchQuery"
-        type="text"
-        placeholder="Cari nama atau keterangan..."
-        class="border border-(--border) rounded-lg px-3.5 py-2 text-sm text-(--text) bg-(--surface) outline-none focus:border-green-500 transition-colors w-64"
-        aria-label="Cari status penugasan" />
-    </div>
-
-    <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">
-      Memuat data&hellip;
-    </div>
-
-    <div v-else-if="fetchError" class="flex justify-center items-center py-16 text-sm text-red-600">
-      {{ fetchError }}
-    </div>
-
-    <template v-else>
-      <div class="bg-(--surface) rounded-xl overflow-x-auto border border-(--border) shadow-sm max-[1100px]:hidden">
-        <table class="w-full min-w-[1100px] border-collapse table-fixed">
-          <colgroup>
-            <col style="width:6%" />
-            <col style="width:13%" />
-            <col style="width:18%" />
-            <col style="width:11%" />
-            <col style="width:9%" />
-            <col style="width:12%" />
-            <col style="width:12%" />
-            <col style="width:12%" />
-            <col style="width:7%" />
-          </colgroup>
-          <thead>
-            <tr class="border-b border-(--border) bg-(--surface-muted)">
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-center">ID</th>
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Nama</th>
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Keterangan</th>
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Catatan</th>
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Label Status</th>
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Dibuat Pada</th>
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Dibuat Oleh</th>
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Diubah Pada / Oleh</th>
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-center">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="filteredRows.length === 0">
-              <td colspan="9" class="py-10 px-6 text-center text-sm text-(--text-muted)">Belum ada data.</td>
-            </tr>
-            <tr
-              v-for="row in paginatedRows"
-              :key="row.id"
-              class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted) transition-colors">
-              <td class="py-4 px-3 align-middle text-sm text-(--text-muted) text-center">{{ row.id }}</td>
-              <td class="py-4 px-3 align-middle text-sm font-semibold text-(--text) text-left">{{ row.name || '-' }}</td>
-              <td class="py-4 px-3 align-middle text-sm text-(--text-muted) text-left whitespace-normal wrap-break-word">{{ row.detail || '-' }}</td>
-              <td class="py-4 px-3 align-middle text-sm text-(--text-muted) text-left whitespace-normal wrap-break-word">{{ row.notes || '-' }}</td>
-              <td class="py-4 px-3 align-middle text-sm text-(--text-muted) text-left">{{ row.status || '-' }}</td>
-              <td class="py-4 px-3 align-middle text-sm text-(--text-muted) text-left">{{ formatDateTime(row.created_at) || '-' }}</td>
-              <td class="py-4 px-3 align-middle text-sm text-(--text-muted) text-left">{{ displayUser(row.created_by) }}</td>
-              <td class="py-4 px-3 align-middle text-sm text-(--text-muted) text-left">
-                <div>{{ formatDateTime(row.updated_at) || '-' }}</div>
-                <div class="text-xs text-(--text-soft)">{{ displayUser(row.updated_by) }}</div>
-              </td>
-              <td class="py-4 pl-3 pr-6 align-middle text-center whitespace-nowrap">
-                <div class="flex gap-2 items-center justify-start">
-                  <button
-                    type="button"
-                    class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border border-(--border) hover:bg-(--surface-muted) transition-colors cursor-pointer"
-                    v-if="canWrite" @click="openEdit(row)">
-                    Ubah
-                  </button>
-                  <button
-                    type="button"
-                    class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
-                    v-if="canWrite" @click="confirmDelete(row)">
-                    Hapus
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="hidden gap-3 max-[1100px]:flex max-[1100px]:flex-col">
-        <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">Belum ada data.</div>
-        <div
-          v-for="row in paginatedRows"
-          :key="row.id"
-          class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <div class="font-bold text-sm text-(--text)">{{ row.name || '-' }}</div>
-              <div class="text-xs text-(--text-muted)">ID: {{ row.id }}</div>
-            </div>
-            <div class="text-xs text-(--text-muted)">{{ row.status || '-' }}</div>
-          </div>
-          <div class="text-xs text-(--text-muted) flex flex-col gap-1">
-            <span>Keterangan: {{ row.detail || '-' }}</span>
-            <span>Catatan: {{ row.notes || '-' }}</span>
-            <span>Dibuat pada: {{ formatDateTime(row.created_at) || '-' }}</span>
-            <span>Dibuat oleh: {{ displayUser(row.created_by) }}</span>
-            <span>Diubah pada: {{ formatDateTime(row.updated_at) || '-' }}</span>
-            <span>Diubah oleh: {{ displayUser(row.updated_by) }}</span>
-          </div>
-          <div class="flex justify-end gap-2 mt-1">
-            <button
-              type="button"
-              class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) hover:bg-(--surface-muted) transition-colors cursor-pointer"
-              v-if="canWrite" @click="openEdit(row)">
-              Ubah
-            </button>
-            <button
-              type="button"
-              class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
-              v-if="canWrite" @click="confirmDelete(row)">
-              Hapus
-            </button>
-          </div>
-        </div>
-      </div>
+  <MdPage title="Status Penugasan" description="Status yang dipakai saat menerima penugasan, dikelompokkan per label status. Klik kartu untuk menyaring tabel.">
+    <template #actions>
+      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah Status Penugasan</button>
     </template>
 
-    <div v-if="actionError && !showDeleteConfirm" class="mt-3 text-xs text-red-500">{{ actionError }}</div>
+    <div class="md-kpis">
+      <MdKpi icon="layers" tone="info" label="Total status" :value="rows.length" :sub="`${count('detail')} berketerangan`" action hint="Tampilkan semua" @select="clearAll" />
+      <MdKpi icon="info" tone="warning" label="Tanpa keterangan" :value="count('nodetail')" :sub="`${pct(count('nodetail'))}% dari data`" action :pressed="only('nodetail')" @select="quick('nodetail')" />
+      <MdKpi icon="bookmark" tone="success" label="Ada catatan" :value="count('notes')" :sub="`${pct(count('notes'))}% dari data`" action :pressed="only('notes')" @select="quick('notes')" />
+      <MdKpi icon="list" tone="brand" label="Label status" :value="groupOptions.length" :sub="topGroup ? `Terbanyak: ${topGroup.label} (${topGroup.count})` : 'Belum ada data'" action hint="Urutkan" @select="table?.setSort('status', 1)" />
+    </div>
 
-    <TypeOfAcceptForm
-      :visible="showForm"
-      :type-of-accept="editingType"
-      :submitting="submitting"
-      @submit="onFormSubmit"
-      @cancel="closeForm" />
+    <MdBarChart
+      v-if="groupOptions.length"
+      title="Jumlah status per label"
+      :subtitle="`${rows.length} data di ${groupOptions.length} label`"
+      :legend="[{ label: 'Ada keterangan', color: 'var(--success)' }, { label: 'Tanpa keterangan', color: 'var(--border-strong)' }]"
+      :bars="bars"
+      :selected="filterGroup"
+      @toggle="toggleGroup" />
 
-    <Teleport to="body">
-      <div
-        v-if="showDeleteConfirm"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="delete-type-of-accept-title"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-        @mousedown.self="showDeleteConfirm = false">
-        <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
-          <h3 id="delete-type-of-accept-title" class="text-base font-bold text-(--text) m-0">Hapus Status Penugasan</h3>
-          <p class="text-sm text-(--text-muted) m-0">
-            Hapus <strong>{{ deletingType?.name }}</strong>? Tindakan ini tidak bisa dibatalkan.
-          </p>
-          <div v-if="actionError" class="text-xs text-red-500">{{ actionError }}</div>
-          <div class="flex justify-end gap-3">
-            <button
-              type="button"
-              class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
-              :disabled="submitting"
-              @click="showDeleteConfirm = false">
-              Batal
-            </button>
-            <button
-              type="button"
-              class="border-0 bg-red-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-red-700 transition-colors disabled:opacity-60"
-              :disabled="submitting"
-              @click="onDeleteConfirm">
-              <span v-if="submitting">Menghapus&hellip;</span>
-              <span v-else>Ya, Hapus</span>
-            </button>
-          </div>
+    <MdDataTable
+      ref="table"
+      :columns="columns"
+      :rows="filteredRows"
+      :total-rows="rows.length"
+      :loading="loading"
+      :error="fetchError || ''"
+      entity-label="Status Penugasan"
+      empty-icon="layers"
+      empty-text="Tambahkan status penugasan pertama."
+      add-label="Tambah Status Penugasan"
+      :can-add="canWrite"
+      initial-sort="name"
+      aria-label="Daftar status penugasan"
+      @retry="loadData"
+      @add="openCreate"
+      @clear-filters="clearAll">
+      <template #toolbar>
+        <label class="md-search">
+          <MdIcon name="search" />
+          <input v-model.trim="search" type="search" placeholder="Cari nama, keterangan, atau catatan…" aria-label="Cari status penugasan" />
+        </label>
+        <MdDropdown v-model="filterGroup" label="Label status" :options="groupOptions" multiple />
+        <MdDropdown v-model="filterInfo" label="Kelengkapan" :options="infoOptions" multiple />
+        <div class="md-chips">
+          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+            {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
+          </button>
+          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
         </div>
-      </div>
-    </Teleport>
-    <MasterDataPagination id="type-of-accept" :total-items="totalItems" :current-page="currentPage" :page-size="pageSize" :total-pages="totalPages" :visible-pages="visiblePages" @update:current-page="currentPage = $event" @update:page-size="pageSize = $event" />
-  </div>
+      </template>
+
+      <template #cell-name="{ row }">
+        <div class="md-ident">
+          <span class="md-avatar">{{ initial(row.name) }}</span>
+          <div><b>{{ row.name || '-' }}</b><small>ID {{ row.id }}</small></div>
+        </div>
+      </template>
+      <template #cell-detail="{ row }">
+        <span v-if="row.detail">{{ row.detail }}</span><span v-else class="md-muted">—</span>
+      </template>
+      <template #cell-notes="{ row }">
+        <span v-if="row.notes">{{ row.notes }}</span><span v-else class="md-muted">—</span>
+      </template>
+      <template #cell-status="{ row }">
+        <MdBadge v-if="row.status" tone="info">{{ row.status }}</MdBadge><span v-else class="md-muted">—</span>
+      </template>
+      <template #cell-created_at="{ row }">
+        <div>{{ fmtDate(row.created_at) }}</div><small class="md-muted">{{ userName(row.created_by) }}</small>
+      </template>
+      <template #cell-updated_at="{ row }">
+        <div>{{ fmtDate(row.updated_at) }}</div><small class="md-muted">{{ userName(row.updated_by) }}</small>
+      </template>
+
+      <template v-if="canWrite" #actions="{ row }">
+        <button type="button" class="md-icon-btn" :aria-label="`Ubah status penugasan ${row.name}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
+        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus status penugasan ${row.name}`" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+      </template>
+
+      <template #card="{ row }">
+        <div class="md-card__top">
+          <span class="md-avatar">{{ initial(row.name) }}</span>
+          <div style="flex: 1"><b class="md-strong">{{ row.name || '-' }}</b><div class="md-muted" style="font-size: 12px">ID {{ row.id }}</div></div>
+          <MdBadge v-if="row.status" tone="info">{{ row.status }}</MdBadge>
+        </div>
+        <div class="md-card__grid">
+          <div>Keterangan<b>{{ row.detail || '—' }}</b></div>
+          <div>Catatan<b>{{ row.notes || '—' }}</b></div>
+          <div>Dibuat<b>{{ fmtDate(row.created_at) }} · {{ userName(row.created_by) }}</b></div>
+          <div>Diubah<b>{{ fmtDate(row.updated_at) }} · {{ userName(row.updated_by) }}</b></div>
+        </div>
+      </template>
+    </MdDataTable>
+
+    <TypeOfAcceptForm :visible="showForm" :type-of-accept="editing" :rows="rows" :submitting="submitting" :error="actionError || ''" @submit="onFormSubmit" @cancel="closeForm" />
+
+    <MdConfirm :open="!!deleting" title="Hapus status penugasan?" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
+      <template v-if="deleting">
+        Status penugasan <b>{{ deleting.name }}</b> akan dihapus permanen. Penghapusan ditolak bila masih dipakai data lain.
+      </template>
+    </MdConfirm>
+  </MdPage>
 </template>
 
 <script setup>
-import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
-// Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
-const canWrite = useCanManageMasterData()
 import { computed, onMounted, ref } from 'vue'
 import TypeOfAcceptForm from './TypeOfAcceptForm.vue'
 import { createTypeOfAccept, deleteTypeOfAccept, listTypeOfAccept, updateTypeOfAccept } from '../model'
 import { useToast } from '../../../../utils/toast'
-import { resolveUsernames } from '../../../../utils/userCache'
-import { useListPagination } from '../../../shared/pagination/useListPagination.js'
-import MasterDataPagination from '../../../shared/pagination/MasterDataPagination.vue'
+import { useUserNames } from '../../../../auth/useUserNames'
+import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
+import { MdPage, MdKpi, MdDataTable, MdDropdown, MdBadge, MdBarChart, MdConfirm, MdIcon } from '../../../shared/masterdata-ui'
 
+const { userName } = useUserNames()
+// Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
+const canWrite = useCanManageMasterData()
 const { show: showToast } = useToast()
 
+const columns = [
+  { key: 'name', label: 'Nama' },
+  { key: 'status', label: 'Label status', sortValue: (r) => r.status || '' },
+  { key: 'detail', label: 'Keterangan', sortValue: (r) => r.detail || '' },
+  { key: 'notes', label: 'Catatan', sortValue: (r) => r.notes || '' },
+  { key: 'created_at', label: 'Dibuat', sortValue: (r) => r.created_at || '' },
+  { key: 'updated_at', label: 'Diubah', sortValue: (r) => r.updated_at || '' }
+]
+
+const table = ref(null)
 const rows = ref([])
 const loading = ref(false)
 const fetchError = ref(null)
 const actionError = ref(null)
+const deleteError = ref('')
 const submitting = ref(false)
-
-const searchQuery = ref('')
+const search = ref('')
+const filterInfo = ref([])
+const filterGroup = ref([])
+const NONE = '—'
+const groupOf = (r) => r.status || NONE
 const showForm = ref(false)
-const editingType = ref(null)
-const showDeleteConfirm = ref(false)
-const deletingType = ref(null)
-const userNames = ref(new Map())
+const editing = ref(null)
+const deleting = ref(null)
+
+const DAY = 86400000
+const initial = (n) => String(n || '#').trim().charAt(0).toUpperCase() || '#'
+const fmtDate = (v) => {
+  if (!v) return '-'
+  const d = new Date(v)
+  return isNaN(d) ? String(v) : d.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
+}
+const INFO = {
+  detail: { label: 'Ada keterangan', test: (r) => !!r.detail },
+  nodetail: { label: 'Tanpa keterangan', test: (r) => !r.detail },
+  notes: { label: 'Ada catatan', test: (r) => !!r.notes },
+  recent: { label: 'Diubah 30 hari', test: (r) => Date.now() - new Date(r.updated_at || r.created_at || 0).getTime() <= 30 * DAY }
+}
+const count = (k) => rows.value.filter(INFO[k].test).length
+const pct = (n) => (rows.value.length ? Math.round((n / rows.value.length) * 100) : 0)
+const infoOptions = computed(() => Object.entries(INFO).map(([value, o]) => ({ value, label: o.label, count: count(value) })))
+
+const groupOptions = computed(() => {
+  const m = new Map()
+  rows.value.forEach((r) => m.set(groupOf(r), (m.get(groupOf(r)) || 0) + 1))
+  return [...m.entries()]
+    .sort((a, b) => String(a[0]).localeCompare(String(b[0]), 'id', { numeric: true }))
+    .map(([value, count]) => ({ value, label: value === NONE ? 'Tanpa label' : value, count }))
+})
+const topGroup = computed(() => groupOptions.value.reduce((t, g) => (!t || g.count > t.count ? g : t), null))
+const bars = computed(() =>
+  groupOptions.value.map((g) => {
+    const rs = rows.value.filter((r) => groupOf(r) === g.value)
+    const withDetail = rs.filter((r) => r.detail).length
+    return {
+      key: g.value,
+      label: g.label,
+      ariaLabel: `${g.label}: ${rs.length} data, ${withDetail} berketerangan`,
+      segments: [
+        { value: withDetail, color: 'var(--success)' },
+        { value: rs.length - withDetail, color: 'var(--border-strong)' }
+      ]
+    }
+  })
+)
+function toggleGroup(k) {
+  filterGroup.value = filterGroup.value.includes(k) ? filterGroup.value.filter((x) => x !== k) : [...filterGroup.value, k]
+}
 
 const filteredRows = computed(() => {
-  const q = searchQuery.value.trim().toLowerCase()
-  if (!q) return rows.value
-  return rows.value.filter((row) => {
-    return [row.name, row.detail, row.notes, row.status]
-      .some((value) => String(value || '').toLowerCase().includes(q))
-  })
+  const q = search.value.toLowerCase()
+  return rows.value.filter((r) =>
+    (!q || [r.name, r.detail, r.notes, r.status].some((v) => String(v || '').toLowerCase().includes(q))) &&
+    (!filterGroup.value.length || filterGroup.value.includes(groupOf(r))) &&
+    filterInfo.value.every((k) => INFO[k].test(r))
+  )
 })
 
-const { currentPage, pageSize, totalItems, totalPages, paginatedItems: paginatedRows, visiblePages } = useListPagination(filteredRows)
+const chips = computed(() => {
+  const c = []
+  if (search.value) c.push({ key: 'q', label: `“${search.value}”`, remove: () => (search.value = '') })
+  filterGroup.value.forEach((g) => c.push({ key: `g-${g}`, label: g === NONE ? 'Tanpa label' : g, remove: () => (filterGroup.value = filterGroup.value.filter((x) => x !== g)) }))
+  filterInfo.value.forEach((k) => c.push({ key: `i-${k}`, label: INFO[k].label, remove: () => (filterInfo.value = filterInfo.value.filter((x) => x !== k)) }))
+  return c
+})
 
-function formatDateTime(value) {
-  if (!value) return ''
-  if (typeof value === 'string') {
-    return value.replace(/\.\d+/, '').replace(/T/, ' ').replace(/Z$/, '').trim()
-  }
-  if (value instanceof Date) {
-    return value.toISOString().replace(/T/, ' ').replace(/Z$/, '').substring(0, 19)
-  }
-  return String(value)
+function clearAll() {
+  search.value = ''
+  filterInfo.value = []
+  filterGroup.value = []
 }
-
-function displayUser(userId) {
-  if (!userId) return '-'
-  return userNames.value.get(userId) || userId
-}
-
-async function resolveAuditUsers(data) {
-  const ids = data.flatMap((row) => [row.created_by, row.updated_by]).filter(Boolean)
-  if (ids.length === 0) {
-    userNames.value = new Map()
-    return
-  }
-  userNames.value = await resolveUsernames(ids)
+const only = (k) => filterInfo.value.length === 1 && filterInfo.value[0] === k
+function quick(k) {
+  filterInfo.value = only(k) ? [] : [k]
 }
 
 async function loadData() {
@@ -251,7 +219,6 @@ async function loadData() {
   fetchError.value = null
   try {
     rows.value = await listTypeOfAccept()
-    await resolveAuditUsers(rows.value)
   } catch (err) {
     console.error('[TypeOfAccept] Failed to load:', err)
     fetchError.value = err?.message || 'Gagal memuat data.'
@@ -261,28 +228,26 @@ async function loadData() {
 }
 
 function openCreate() {
-  editingType.value = null
+  editing.value = null
   actionError.value = null
   showForm.value = true
 }
-
-function openEdit(typeOfAccept) {
-  editingType.value = { ...typeOfAccept }
+function openEdit(row) {
+  editing.value = { ...row }
   actionError.value = null
   showForm.value = true
 }
-
 function closeForm() {
   showForm.value = false
-  editingType.value = null
+  editing.value = null
 }
 
 async function onFormSubmit(formData) {
   submitting.value = true
   actionError.value = null
   try {
-    if (editingType.value?.id) {
-      await updateTypeOfAccept(editingType.value.id, formData)
+    if (editing.value?.id) {
+      await updateTypeOfAccept(editing.value.id, formData)
       showToast('Status Penugasan berhasil diubah.')
     } else {
       await createTypeOfAccept(formData)
@@ -292,31 +257,36 @@ async function onFormSubmit(formData) {
     await loadData()
   } catch (err) {
     console.error('[TypeOfAccept] Save failed:', err)
-    actionError.value = err?.message || 'Gagal menyimpan data.'
+    actionError.value = /409/.test(err?.message || '')
+      ? `Nama ${formData.name} sudah dipakai. Gunakan nama lain.`
+      : err?.message || 'Gagal menyimpan data.'
   } finally {
     submitting.value = false
   }
 }
 
-function confirmDelete(typeOfAccept) {
-  deletingType.value = typeOfAccept
-  actionError.value = null
-  showDeleteConfirm.value = true
+function confirmDelete(row) {
+  deleting.value = row
+  deleteError.value = ''
 }
-
+function closeDelete() {
+  deleting.value = null
+  deleteError.value = ''
+}
 async function onDeleteConfirm() {
-  if (!deletingType.value) return
+  if (!deleting.value) return
   submitting.value = true
-  actionError.value = null
+  deleteError.value = ''
   try {
-    await deleteTypeOfAccept(deletingType.value.id)
-    showDeleteConfirm.value = false
-    deletingType.value = null
+    await deleteTypeOfAccept(deleting.value.id)
+    deleting.value = null
     showToast('Status Penugasan berhasil dihapus.')
     await loadData()
   } catch (err) {
     console.error('[TypeOfAccept] Delete failed:', err)
-    actionError.value = err?.message || 'Gagal menghapus data.'
+    deleteError.value = /dirujuk|409/i.test(err?.message || '')
+      ? 'Status penugasan masih dipakai data lain, jadi tidak bisa dihapus.'
+      : err?.message || 'Gagal menghapus data.'
   } finally {
     submitting.value = false
   }

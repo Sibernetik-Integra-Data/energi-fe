@@ -1,107 +1,69 @@
 <template>
-  <Teleport to="body">
-    <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @mousedown.self="onCancel">
-      <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Ubah TPH' : 'Tambah TPH' }}</h3>
-          <button type="button" class="border-0 bg-transparent cursor-pointer text-(--text-soft) hover:text-(--text) text-xl leading-none" aria-label="Tutup" @click="onCancel">&times;</button>
-        </div>
+  <MdModal
+    :open="visible"
+    :title="isEdit ? `Ubah TPH ${tph.code || tph.name || ''}` : 'Tambah TPH'"
+    subtitle="Lengkapi data TPH. Kolom bertanda * wajib diisi."
+    as-form
+    @close="onCancel"
+    @submit="onSubmit">
+    <MdField label="Petak" for-id="tph-petak" required full :hint="petakError || 'Sumber: Data Master → Nomor Petak'" :error="errors.id_block">
+      <MdDropdown
+        id="tph-petak"
+        v-model="form.id_block"
+        field
+        :invalid="!!errors.id_block"
+        :disabled="petakLoading"
+        :placeholder="petakLoading ? 'Memuat…' : 'Pilih petak'"
+        :options="petakOptions.map((p) => ({ value: p.id, label: `${p.name}${p.block_group ? ` · Blok ${p.block_group}` : ''}` }))" />
+    </MdField>
 
-        <form class="flex flex-col gap-4" novalidate @submit.prevent="onSubmit">
-          <!-- Petak -->
-          <div class="flex flex-col gap-1">
-            <label class="text-sm font-semibold text-(--text)" for="tph-petak">Petak <span class="text-red-500">*</span></label>
-            <select id="tph-petak" v-model="form.id_block" :disabled="petakLoading" :class="fieldClass('id_block')">
-              <option :value="null">{{ petakLoading ? 'Memuat…' : 'Pilih petak' }}</option>
-              <option v-for="p in petakOptions" :key="p.id" :value="p.id">
-                {{ p.name }}{{ p.block_group ? ` · Blok ${p.block_group}` : '' }}
-              </option>
-            </select>
-            <span v-if="errors.id_block" class="text-xs text-red-500">{{ errors.id_block }}</span>
-            <span v-else-if="petakError" class="text-xs text-red-500">{{ petakError }}</span>
-            <span v-else class="text-xs text-(--text-soft)">Sumber: Data Master → Nomor Petak</span>
-          </div>
+    <MdField label="Jenis" required full :error="errors.tph_type">
+      <MdSegmented v-model="form.tph_type" aria-label="Jenis TPH" :options="typeOptions" />
+    </MdField>
 
-          <div class="grid grid-cols-3 gap-4 max-[520px]:grid-cols-1">
-            <div class="flex flex-col gap-1">
-              <label class="text-sm font-semibold text-(--text)" for="tph-type">Jenis <span class="text-red-500">*</span></label>
-              <select id="tph-type" v-model="form.tph_type" :class="fieldClass('tph_type')">
-                <option value="">Pilih</option>
-                <option value="PERAWATAN">Perawatan</option>
-                <option value="PANEN">Panen</option>
-              </select>
-              <span v-if="errors.tph_type" class="text-xs text-red-500">{{ errors.tph_type }}</span>
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-sm font-semibold text-(--text)" for="tph-side">Sisi <span class="text-red-500">*</span></label>
-              <select id="tph-side" v-model="form.side" :class="fieldClass('side')">
-                <option value="">Pilih</option>
-                <option value="U">U (utara)</option>
-                <option value="S">S (selatan)</option>
-                <option value="US">US (utara-selatan)</option>
-              </select>
-              <span v-if="errors.side" class="text-xs text-red-500">{{ errors.side }}</span>
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-sm font-semibold text-(--text)" for="tph-line">Nomor Jalur <span class="text-red-500">*</span></label>
-              <input id="tph-line" v-model.number="form.line_no" type="number" min="1" max="99" step="1" placeholder="1–99" :class="fieldClass('line_no')" />
-              <span v-if="errors.line_no" class="text-xs text-red-500">{{ errors.line_no }}</span>
-            </div>
-          </div>
+    <MdField label="Sisi" required full :error="errors.side">
+      <MdSegmented v-model="form.side" aria-label="Sisi" :options="sideOptions" />
+    </MdField>
 
-          <div class="text-xs text-(--text-muted) -mt-2">
-            Kode TPH: <strong class="text-(--text)">{{ code || '—' }}</strong> (otomatis dari sisi + nomor jalur)
-          </div>
+    <MdField label="Nomor jalur" for-id="tph-line" required :hint="`Kode TPH: ${code || '—'} (otomatis dari sisi + nomor jalur)`" :error="errors.line_no">
+      <input id="tph-line" v-model.number="form.line_no" class="md-input" :class="{ 'is-invalid': errors.line_no }" type="number" min="1" max="99" step="1" placeholder="1–99" />
+    </MdField>
 
-          <div class="grid grid-cols-2 gap-4 max-[520px]:grid-cols-1">
-            <div class="flex flex-col gap-1">
-              <label class="text-sm font-semibold text-(--text)" for="tph-trees">Jumlah Pohon</label>
-              <input id="tph-trees" v-model.number="form.tree_count" type="number" min="0" step="1" placeholder="mis. 40" :class="fieldClass('tree_count')" />
-              <span v-if="errors.tree_count" class="text-xs text-red-500">{{ errors.tree_count }}</span>
-            </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-sm font-semibold text-(--text)">Status</span>
-              <label class="flex items-center gap-2 text-sm text-(--text) py-2.5 cursor-pointer">
-                <input v-model="form.is_active" type="checkbox" class="w-4 h-4 accent-green-600" />
-                Aktif
-              </label>
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-sm font-semibold text-(--text)" for="tph-lat">Latitude</label>
-              <input id="tph-lat" v-model.trim="form.latitude" type="text" inputmode="decimal" placeholder="mis. -0.5123" :class="fieldClass('latitude')" />
-              <span v-if="errors.latitude" class="text-xs text-red-500">{{ errors.latitude }}</span>
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-sm font-semibold text-(--text)" for="tph-lng">Longitude</label>
-              <input id="tph-lng" v-model.trim="form.longitude" type="text" inputmode="decimal" placeholder="mis. 117.1234" :class="fieldClass('longitude')" />
-              <span v-if="errors.longitude" class="text-xs text-red-500">{{ errors.longitude }}</span>
-            </div>
-          </div>
+    <MdField label="Jumlah pohon" for-id="tph-trees" hint="Opsional." :error="errors.tree_count">
+      <input id="tph-trees" v-model.number="form.tree_count" class="md-input" :class="{ 'is-invalid': errors.tree_count }" type="number" min="0" step="1" placeholder="mis. 40" />
+    </MdField>
 
-          <div class="flex flex-col gap-1">
-            <label class="text-sm font-semibold text-(--text)" for="tph-notes">Catatan</label>
-            <textarea id="tph-notes" v-model.trim="form.notes" rows="2" placeholder="Opsional"
-              class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 resize-none" />
-          </div>
+    <MdField label="Latitude" for-id="tph-lat" :error="errors.latitude">
+      <input id="tph-lat" v-model.trim="form.latitude" class="md-input" :class="{ 'is-invalid': errors.latitude }" inputmode="decimal" placeholder="mis. -0.5123" />
+    </MdField>
 
-          <div v-if="error" class="text-xs text-red-500">{{ error }}</div>
+    <MdField label="Longitude" for-id="tph-lng" :error="errors.longitude">
+      <input id="tph-lng" v-model.trim="form.longitude" class="md-input" :class="{ 'is-invalid': errors.longitude }" inputmode="decimal" placeholder="mis. 117.1234" />
+    </MdField>
 
-          <div class="flex justify-end gap-3 pt-1">
-            <button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted)" :disabled="submitting" @click="onCancel">Batal</button>
-            <button type="submit" class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-green-700 disabled:opacity-60" :disabled="submitting">
-              <span v-if="submitting">Menyimpan&hellip;</span>
-              <span v-else>{{ isEdit ? 'Simpan Perubahan' : 'Tambah TPH' }}</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </Teleport>
+    <MdField label="Catatan" for-id="tph-notes" full hint="Opsional.">
+      <textarea id="tph-notes" v-model.trim="form.notes" class="md-input" rows="2" placeholder="Opsional" style="resize: vertical; height: auto" />
+    </MdField>
+
+    <MdField full>
+      <MdSwitch v-model="form.is_active" label="Aktif" description="TPH nonaktif tidak dipakai di sensus dan penugasan baru." />
+    </MdField>
+
+    <div v-if="error" class="md-modal__error" role="alert">{{ error }}</div>
+
+    <template #footer>
+      <button type="button" class="md-btn" :disabled="submitting" @click="onCancel">Batal</button>
+      <button type="submit" class="md-btn md-btn--primary" :disabled="submitting">
+        <MdIcon name="check" />{{ submitting ? 'Menyimpan…' : 'Simpan' }}
+      </button>
+    </template>
+  </MdModal>
 </template>
 
 <script setup>
 import { ref, watch, computed } from 'vue'
 import { listPetakOptions } from '../model'
+import { MdModal, MdField, MdDropdown, MdSegmented, MdSwitch, MdIcon } from '../../../shared/masterdata-ui'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -114,6 +76,15 @@ const props = defineProps({
 const emit = defineEmits(['submit', 'cancel'])
 
 const isEdit = computed(() => Boolean(props.tph?.id))
+const typeOptions = [
+  { value: 'PERAWATAN', label: 'Perawatan' },
+  { value: 'PANEN', label: 'Panen' }
+]
+const sideOptions = [
+  { value: 'U', label: 'U (utara)' },
+  { value: 'S', label: 'S (selatan)' },
+  { value: 'US', label: 'US (utara-selatan)' }
+]
 
 const emptyForm = () => ({
   id_block: props.defaultPetakId ?? null, tph_type: '', side: '', line_no: null,
@@ -143,11 +114,6 @@ async function loadPetak() {
 const code = computed(() =>
   form.value.side && Number.isInteger(form.value.line_no) ? `${form.value.side}${String(form.value.line_no).padStart(2, '0')}` : ''
 )
-
-const fieldClass = (key) => [
-  'border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors',
-  errors.value[key] ? 'border-red-400 bg-red-50' : 'border-(--border) bg-(--surface-muted) focus:border-green-500'
-]
 
 watch(
   () => [props.visible, props.tph],

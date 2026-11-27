@@ -1,121 +1,115 @@
 <template>
-  <div>
-    <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
-      <div>
-        <h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">TPH</h2>
-        <p class="text-sm text-(--text-muted) m-0">Tempat pengumpulan hasil per petak: jenis, sisi, nomor jalur dan jumlah pohon</p>
-      </div>
-      <button v-if="canWrite" type="button"
-        class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl cursor-pointer hover:bg-green-700 shadow-sm"
-        @click="openCreate">+ Tambah TPH</button>
-    </div>
-
-    <div class="flex flex-wrap gap-3 mb-2">
-      <input v-model="search" type="text" placeholder="Cari kode, mis. U01…" :class="filterClass" class="w-44" />
-      <select v-model="filterBlok" :class="filterClass" @change="filterPetak = ''">
-        <option value="">Semua blok</option>
-        <option v-for="b in blokOptions" :key="b" :value="b">Blok {{ b }}</option>
-      </select>
-      <select v-model="filterPetak" :class="filterClass">
-        <option value="">Semua petak</option>
-        <option v-for="p in petakOptions" :key="p.id" :value="String(p.id)">{{ p.name }}</option>
-        <option value="none">Tanpa petak</option>
-      </select>
-      <select v-model="filterType" :class="filterClass">
-        <option value="">Semua jenis</option>
-        <option value="PERAWATAN">Perawatan</option>
-        <option value="PANEN">Panen</option>
-      </select>
-      <select v-model="filterActive" :class="filterClass">
-        <option value="">Aktif &amp; nonaktif</option>
-        <option value="1">Aktif</option>
-        <option value="0">Nonaktif</option>
-      </select>
-      <label class="flex items-center gap-2 text-sm text-(--text-muted) cursor-pointer">
-        <input v-model="onlyMissingTrees" type="checkbox" class="accent-green-600" /> Jumlah pohon kosong
-      </label>
-    </div>
-    <p class="text-xs text-(--text-muted) mb-4">{{ filteredRows.length }} TPH · {{ fmt(totalTrees) }} pohon</p>
-
-    <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">Memuat data&hellip;</div>
-    <div v-else-if="fetchError" class="flex justify-center items-center py-16 text-sm text-red-600">{{ fetchError }}</div>
-
-    <template v-else>
-      <div class="bg-(--surface) rounded-xl overflow-hidden border border-(--border) shadow-sm max-[920px]:hidden">
-        <table class="w-full border-collapse">
-          <thead>
-            <tr class="border-b border-(--border) bg-(--surface-muted)">
-              <th v-for="h in headers" :key="h" class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">{{ h }}</th>
-              <th v-if="canWrite" class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="filteredRows.length === 0">
-              <td :colspan="headers.length + (canWrite ? 1 : 0)" class="py-10 px-6 text-center text-sm text-(--text-muted)">Belum ada data.</td>
-            </tr>
-            <tr v-for="row in paginatedRows" :key="row.id" class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted)" :class="{ 'opacity-60': !row.is_active }">
-              <td class="py-3 px-4 text-sm font-semibold text-(--text)">{{ row.code || row.name }}</td>
-              <td class="py-3 px-4 text-sm text-(--text)">{{ row.block_name || 'Tanpa petak' }}</td>
-              <td class="py-3 px-4 text-sm text-(--text)">{{ row.block_group ? `Blok ${row.block_group}` : '-' }}</td>
-              <td class="py-3 px-4 text-sm"><span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-md" :class="typeClass(row.tph_type)">{{ typeLabel(row.tph_type) }}</span></td>
-              <td class="py-3 px-4 text-sm text-(--text)">{{ row.side || '-' }}</td>
-              <td class="py-3 px-4 text-sm text-(--text)">{{ row.line_no ?? '-' }}</td>
-              <td class="py-3 px-4 text-sm" :class="row.tree_count == null ? 'text-amber-700' : 'text-(--text)'">{{ row.tree_count == null ? 'Belum diisi' : fmt(row.tree_count) }}</td>
-              <td class="py-3 px-4 text-sm text-(--text)">{{ row.is_active ? 'Aktif' : 'Nonaktif' }}</td>
-              <td class="py-3 px-4 text-sm text-(--text-muted)">{{ userName(row.updated_by || row.created_by) }}</td>
-              <td v-if="canWrite" class="py-3 px-4">
-                <div class="flex gap-2 items-center">
-                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border-0 hover:bg-(--surface-muted) cursor-pointer" @click="openEdit(row)">Ubah</button>
-                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 cursor-pointer" @click="confirmDelete(row)">Hapus</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="hidden gap-3 max-[920px]:flex max-[920px]:flex-col">
-        <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">Belum ada data.</div>
-        <div v-for="row in paginatedRows" :key="row.id" class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2" :class="{ 'opacity-60': !row.is_active }">
-          <div class="flex justify-between items-center gap-2">
-            <span class="font-bold text-sm text-(--text)">{{ row.code || row.name }} · {{ row.block_name || 'Tanpa petak' }}</span>
-            <span class="text-xs font-semibold px-2 py-0.5 rounded-md" :class="typeClass(row.tph_type)">{{ typeLabel(row.tph_type) }}</span>
-          </div>
-          <div class="text-xs text-(--text-muted) flex flex-wrap gap-x-4 gap-y-1">
-            <span>{{ row.block_group ? `Blok ${row.block_group}` : '-' }}</span>
-            <span>Pohon: {{ row.tree_count == null ? 'belum diisi' : fmt(row.tree_count) }}</span>
-            <span>{{ row.is_active ? 'Aktif' : 'Nonaktif' }}</span>
-            <span>Diubah oleh: {{ userName(row.updated_by || row.created_by) }}</span>
-          </div>
-          <div v-if="canWrite" class="flex justify-end gap-2 mt-1">
-            <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) cursor-pointer" @click="openEdit(row)">Ubah</button>
-            <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold cursor-pointer" @click="confirmDelete(row)">Hapus</button>
-          </div>
-        </div>
-      </div>
+  <MdPage title="TPH" description="Tempat pengumpulan hasil per petak: jenis, sisi, nomor jalur dan jumlah pohon. Klik kartu atau batang grafik untuk menyaring tabel.">
+    <template #actions>
+      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah TPH</button>
     </template>
+
+    <div class="md-kpis">
+      <MdKpi icon="pin" tone="info" label="Total TPH" :value="rows.length" :sub="`${countActive} aktif · ${rows.length - countActive} nonaktif`" action hint="Tampilkan semua" @select="clearAll" />
+      <MdKpi icon="leaf" tone="success" label="TPH panen" :value="countType('PANEN')" :sub="`${countType('PERAWATAN')} TPH perawatan`" action :pressed="filterType === 'PANEN'" @select="quickType('PANEN')" />
+      <MdKpi icon="alert" tone="warning" label="Pohon belum diisi" :value="countMissing" :sub="`${pct(countMissing)}% dari TPH`" action :pressed="onlyMissingTrees" @select="onlyMissingTrees = !onlyMissingTrees" />
+      <MdKpi icon="tree" tone="brand" label="Total pohon" :value="fmt(totalTreesAll)" :sub="`${fmt(totalTrees)} pada hasil saringan`" action hint="Urutkan" @select="table?.setSort('tree_count', -1)" />
+    </div>
+
+    <MdBarChart
+      v-if="rows.length"
+      title="Jumlah TPH per blok"
+      :subtitle="`${rows.length} TPH di ${blokOptions.length} blok`"
+      :legend="[{ label: 'Panen', color: 'var(--success)' }, { label: 'Perawatan', color: '#0ea5e9' }]"
+      :bars="bars"
+      :selected="filterBlok"
+      @toggle="toggleBlok" />
+
+    <MdDataTable
+      ref="table"
+      :columns="columns"
+      :rows="filteredRows"
+      :total-rows="rows.length"
+      :loading="loading"
+      :error="fetchError || ''"
+      entity-label="TPH"
+      empty-icon="pin"
+      empty-text="Tambahkan TPH pertama agar bisa dipakai di sensus dan penugasan."
+      add-label="Tambah TPH"
+      :can-add="canWrite"
+      initial-sort="code"
+      aria-label="Daftar TPH"
+      @retry="loadData"
+      @add="openCreate"
+      @clear-filters="clearAll">
+      <template #toolbar>
+        <label class="md-search">
+          <MdIcon name="search" />
+          <input v-model.trim="search" type="search" placeholder="Cari kode, mis. U01…" aria-label="Cari TPH" />
+        </label>
+        <MdDropdown v-model="filterBlok" label="Blok" :options="blokFilterOptions" multiple @change="filterPetak = null" />
+        <MdDropdown v-model="filterPetak" label="Petak" :options="petakFilterOptions" />
+        <MdDropdown v-model="filterType" label="Jenis" :options="typeFilterOptions" />
+        <MdDropdown v-model="filterActive" label="Status" :options="activeFilterOptions" all-text="Aktif & nonaktif" />
+        <div class="md-chips">
+          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+            {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
+          </button>
+          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+        </div>
+      </template>
+
+      <template #cell-code="{ row }">
+        <div class="md-ident">
+          <span class="md-avatar">{{ row.side || '#' }}</span>
+          <div><b>{{ row.code || row.name }}</b><small>Jalur {{ row.line_no ?? '—' }}</small></div>
+        </div>
+      </template>
+      <template #cell-block_name="{ row }">
+        <span v-if="row.block_name">{{ row.block_name }}</span><span v-else class="md-muted">Tanpa petak</span>
+      </template>
+      <template #cell-block_group="{ row }">
+        <span v-if="row.block_group">Blok {{ row.block_group }}</span><span v-else class="md-muted">—</span>
+      </template>
+      <template #cell-tph_type="{ row }">
+        <MdBadge :tone="typeTone(row.tph_type)">{{ typeLabel(row.tph_type) }}</MdBadge>
+      </template>
+      <template #cell-line_no="{ row }"><span class="md-num">{{ row.line_no ?? '—' }}</span></template>
+      <template #cell-tree_count="{ row }">
+        <MdBadge v-if="row.tree_count == null" tone="warning">Belum diisi</MdBadge>
+        <MdBarCell v-else :value="row.tree_count" :max="maxTrees" />
+      </template>
+      <template #cell-is_active="{ row }">
+        <MdBadge :tone="row.is_active ? 'success' : 'neutral'">{{ row.is_active ? 'Aktif' : 'Nonaktif' }}</MdBadge>
+      </template>
+      <template #cell-updated_by="{ row }">
+        <span class="md-muted">{{ userName(row.updated_by || row.created_by) }}</span>
+      </template>
+
+      <template v-if="canWrite" #actions="{ row }">
+        <button type="button" class="md-icon-btn" :aria-label="`Ubah TPH ${row.code || row.name}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
+        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus TPH ${row.code || row.name}`" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+      </template>
+
+      <template #card="{ row }">
+        <div class="md-card__top" :style="row.is_active ? undefined : 'opacity: .6'">
+          <span class="md-avatar">{{ row.side || '#' }}</span>
+          <div style="flex: 1"><b class="md-strong">{{ row.code || row.name }} · {{ row.block_name || 'Tanpa petak' }}</b><div class="md-muted" style="font-size: 12px">{{ row.block_group ? `Blok ${row.block_group}` : '—' }}</div></div>
+          <MdBadge :tone="typeTone(row.tph_type)">{{ typeLabel(row.tph_type) }}</MdBadge>
+        </div>
+        <div class="md-card__grid">
+          <div>Pohon<b>{{ row.tree_count == null ? 'Belum diisi' : fmt(row.tree_count) }}</b></div>
+          <div>Status<b>{{ row.is_active ? 'Aktif' : 'Nonaktif' }}</b></div>
+          <div>Jalur<b>{{ row.line_no ?? '—' }}</b></div>
+          <div>Diubah oleh<b>{{ userName(row.updated_by || row.created_by) }}</b></div>
+        </div>
+      </template>
+    </MdDataTable>
 
     <TphForm :visible="showForm" :tph="editing" :default-petak-id="defaultPetakId" :submitting="submitting" :error="actionError || ''" @submit="onFormSubmit" @cancel="closeForm" />
 
-    <Teleport to="body">
-      <div v-if="deleting" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @mousedown.self="deleting = null">
-        <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
-          <h3 class="text-base font-bold text-(--text) m-0">Hapus TPH</h3>
-          <p class="text-sm text-(--text-muted) m-0">Hapus TPH <strong>{{ deleting.code || deleting.name }}</strong> di {{ deleting.block_name || 'tanpa petak' }}? Tidak bisa dibatalkan.</p>
-          <p class="text-xs text-(--text-muted) m-0">TPH yang sudah dipakai sensus atau penugasan tidak bisa dihapus; nonaktifkan lewat Ubah.</p>
-          <div v-if="actionError" class="text-xs text-red-500">{{ actionError }}</div>
-          <div class="flex justify-end gap-3">
-            <button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer" :disabled="submitting" @click="deleting = null">Batal</button>
-            <button type="button" class="border-0 bg-red-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer disabled:opacity-60" :disabled="submitting" @click="onDeleteConfirm">
-              <span v-if="submitting">Menghapus&hellip;</span><span v-else>Ya, Hapus</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
-
-    <MasterDataPagination id="tph" :total-items="totalItems" :current-page="currentPage" :page-size="pageSize" :total-pages="totalPages" :visible-pages="visiblePages" @update:current-page="currentPage = $event" @update:page-size="pageSize = $event" />
-  </div>
+    <MdConfirm :open="!!deleting" title="Hapus TPH?" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
+      <template v-if="deleting">
+        TPH <b>{{ deleting.code || deleting.name }}</b> di {{ deleting.block_name || 'tanpa petak' }} akan dihapus permanen.
+        TPH yang sudah dipakai sensus atau penugasan tidak bisa dihapus; nonaktifkan lewat Ubah.
+      </template>
+    </MdConfirm>
+  </MdPage>
 </template>
 
 <script setup>
@@ -123,59 +117,106 @@ import { ref, computed, onMounted } from 'vue'
 import TphForm from './TphForm.vue'
 import { listTph, createTph, updateTph, deleteTph } from '../model'
 import { useToast } from '../../../../utils/toast'
-import { useListPagination } from '../../../shared/pagination/useListPagination.js'
-import MasterDataPagination from '../../../shared/pagination/MasterDataPagination.vue'
 import { useUserNames } from '../../../../auth/useUserNames'
 import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
+import { MdPage, MdKpi, MdBarChart, MdDataTable, MdDropdown, MdBadge, MdBarCell, MdConfirm, MdIcon } from '../../../shared/masterdata-ui'
 
 const { userName } = useUserNames()
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
 const canWrite = useCanManageMasterData()
 const { show: showToast } = useToast()
 
-const headers = ['Kode', 'Petak', 'Blok', 'Jenis', 'Sisi', 'Jalur', 'Pohon', 'Status', 'Diubah Oleh']
-const filterClass = 'border border-(--border) rounded-lg px-3.5 py-2 text-sm text-(--text) bg-(--surface) outline-none focus:border-green-500'
+const columns = [
+  { key: 'code', label: 'Kode', sortValue: (r) => r.code || r.name || '' },
+  { key: 'block_name', label: 'Petak' },
+  { key: 'block_group', label: 'Blok' },
+  { key: 'tph_type', label: 'Jenis' },
+  { key: 'side', label: 'Sisi' },
+  { key: 'line_no', label: 'Jalur' },
+  { key: 'tree_count', label: 'Pohon' },
+  { key: 'is_active', label: 'Status', sortValue: (r) => (r.is_active ? 1 : 0) },
+  { key: 'updated_by', label: 'Diubah oleh', sortable: false }
+]
 
+const table = ref(null)
 const rows = ref([])
 const loading = ref(false)
 const fetchError = ref(null)
 const actionError = ref(null)
+const deleteError = ref('')
 const submitting = ref(false)
 const search = ref('')
-const filterBlok = ref('')
-const filterPetak = ref('')
-const filterType = ref('')
-const filterActive = ref('')
+const filterBlok = ref([])
+const filterPetak = ref(null) // id petak (angka) | 'none' | null
+const filterType = ref(null)
+const filterActive = ref(null)
 const onlyMissingTrees = ref(false)
 const showForm = ref(false)
 const editing = ref(null)
 const deleting = ref(null)
 
-const fmt = (n) => (n == null ? '-' : Number(n).toLocaleString('id-ID'))
-const typeLabel = (t) => (t === 'PANEN' ? 'Panen' : t === 'PERAWATAN' ? 'Perawatan' : '-')
-const typeClass = (t) => (t === 'PANEN' ? 'bg-green-50 text-green-700' : t === 'PERAWATAN' ? 'bg-sky-50 text-sky-700' : 'bg-(--surface-muted) text-(--text-muted)')
+const fmt = (n) => (n == null ? '—' : Number(n).toLocaleString('id-ID'))
+const typeLabel = (t) => (t === 'PANEN' ? 'Panen' : t === 'PERAWATAN' ? 'Perawatan' : '—')
+const typeTone = (t) => (t === 'PANEN' ? 'success' : t === 'PERAWATAN' ? 'info' : 'neutral')
 const byName = (a, b) => String(a).localeCompare(String(b), 'id', { numeric: true })
+const countType = (t) => rows.value.filter((r) => r.tph_type === t).length
+const pct = (n) => (rows.value.length ? Math.round((n / rows.value.length) * 100) : 0)
+
+const countActive = computed(() => rows.value.filter((r) => r.is_active).length)
+const countMissing = computed(() => rows.value.filter((r) => r.tree_count == null).length)
+const totalTreesAll = computed(() => rows.value.reduce((s, r) => s + (r.tree_count || 0), 0))
+const maxTrees = computed(() => Math.max(1, ...rows.value.map((r) => r.tree_count || 0)))
 
 const blokOptions = computed(() => [...new Set(rows.value.map((r) => r.block_group).filter(Boolean))].sort(byName))
-
-const petakOptions = computed(() => {
+const blokFilterOptions = computed(() =>
+  blokOptions.value.map((b) => ({ value: b, label: `Blok ${b}`, count: rows.value.filter((r) => r.block_group === b).length }))
+)
+const petakFilterOptions = computed(() => {
   const seen = new Map()
   for (const r of rows.value) {
-    if (!r.id_block || (filterBlok.value && r.block_group !== filterBlok.value)) continue
-    seen.set(r.id_block, r.block_name)
+    if (!r.id_block || (filterBlok.value.length && !filterBlok.value.includes(r.block_group))) continue
+    const cur = seen.get(r.id_block) || { name: r.block_name, count: 0 }
+    cur.count++
+    seen.set(r.id_block, cur)
   }
-  return [...seen].map(([id, name]) => ({ id, name })).sort((a, b) => byName(a.name, b.name))
+  const opts = [...seen].map(([id, v]) => ({ value: id, label: v.name, count: v.count })).sort((a, b) => byName(a.label, b.label))
+  opts.push({ value: 'none', label: 'Tanpa petak', count: rows.value.filter((r) => !r.id_block).length })
+  return opts
 })
+const typeFilterOptions = computed(() => [
+  { value: 'PERAWATAN', label: 'Perawatan', count: countType('PERAWATAN') },
+  { value: 'PANEN', label: 'Panen', count: countType('PANEN') }
+])
+const activeFilterOptions = computed(() => [
+  { value: '1', label: 'Aktif', count: countActive.value },
+  { value: '0', label: 'Nonaktif', count: rows.value.length - countActive.value }
+])
 
-const defaultPetakId = computed(() => (/^\d+$/.test(filterPetak.value) ? Number(filterPetak.value) : null))
+const defaultPetakId = computed(() => (filterPetak.value != null && filterPetak.value !== 'none' ? Number(filterPetak.value) : null))
+
+const bars = computed(() =>
+  blokOptions.value.map((b) => {
+    const rs = rows.value.filter((r) => r.block_group === b)
+    const panen = rs.filter((r) => r.tph_type === 'PANEN').length
+    return {
+      key: b,
+      label: b,
+      ariaLabel: `Blok ${b}: ${rs.length} TPH, ${panen} panen, ${rs.length - panen} perawatan`,
+      segments: [
+        { value: panen, color: 'var(--success)' },
+        { value: rs.length - panen, color: '#0ea5e9' }
+      ]
+    }
+  })
+)
 
 const filteredRows = computed(() => {
-  const q = search.value.trim().toLowerCase()
+  const q = search.value.toLowerCase()
   return rows.value.filter((r) => {
     if (q && !String(r.code || r.name || '').toLowerCase().includes(q)) return false
-    if (filterBlok.value && r.block_group !== filterBlok.value) return false
+    if (filterBlok.value.length && !filterBlok.value.includes(r.block_group)) return false
     if (filterPetak.value === 'none' && r.id_block) return false
-    if (/^\d+$/.test(filterPetak.value) && String(r.id_block) !== filterPetak.value) return false
+    if (filterPetak.value != null && filterPetak.value !== 'none' && String(r.id_block) !== String(filterPetak.value)) return false
     if (filterType.value && r.tph_type !== filterType.value) return false
     if (filterActive.value && String(Number(!!r.is_active)) !== filterActive.value) return false
     if (onlyMissingTrees.value && r.tree_count != null) return false
@@ -185,7 +226,35 @@ const filteredRows = computed(() => {
 
 const totalTrees = computed(() => filteredRows.value.reduce((s, r) => s + (r.tree_count || 0), 0))
 
-const { currentPage, pageSize, totalItems, totalPages, paginatedItems: paginatedRows, visiblePages } = useListPagination(filteredRows)
+const chips = computed(() => {
+  const c = []
+  if (search.value) c.push({ key: 'q', label: `“${search.value}”`, remove: () => (search.value = '') })
+  filterBlok.value.forEach((b) => c.push({ key: `b-${b}`, label: `Blok ${b}`, remove: () => { filterBlok.value = filterBlok.value.filter((x) => x !== b); filterPetak.value = null } }))
+  if (filterPetak.value != null) {
+    const label = petakFilterOptions.value.find((o) => String(o.value) === String(filterPetak.value))?.label || 'Petak'
+    c.push({ key: 'p', label: filterPetak.value === 'none' ? 'Tanpa petak' : `Petak ${label}`, remove: () => (filterPetak.value = null) })
+  }
+  if (filterType.value) c.push({ key: 't', label: typeLabel(filterType.value), remove: () => (filterType.value = null) })
+  if (filterActive.value) c.push({ key: 'a', label: filterActive.value === '1' ? 'Aktif' : 'Nonaktif', remove: () => (filterActive.value = null) })
+  if (onlyMissingTrees.value) c.push({ key: 'm', label: 'Jumlah pohon kosong', remove: () => (onlyMissingTrees.value = false) })
+  return c
+})
+
+function clearAll() {
+  search.value = ''
+  filterBlok.value = []
+  filterPetak.value = null
+  filterType.value = null
+  filterActive.value = null
+  onlyMissingTrees.value = false
+}
+function quickType(t) {
+  filterType.value = filterType.value === t ? null : t
+}
+function toggleBlok(b) {
+  filterBlok.value = filterBlok.value.includes(b) ? filterBlok.value.filter((x) => x !== b) : [...filterBlok.value, b]
+  filterPetak.value = null
+}
 
 async function loadData() {
   loading.value = true
@@ -205,13 +274,11 @@ function openCreate() {
   actionError.value = null
   showForm.value = true
 }
-
 function openEdit(row) {
   editing.value = { ...row }
   actionError.value = null
   showForm.value = true
 }
-
 function closeForm() {
   showForm.value = false
   editing.value = null
@@ -220,7 +287,7 @@ function closeForm() {
 const friendly = (err, fallback) => {
   const m = err?.message || ''
   if (/tph_block_type_side_line_uq|sudah ada/i.test(m)) return 'Petak ini sudah punya TPH dengan jenis, sisi dan nomor jalur yang sama.'
-  if (/dipakai|nonaktifkan/i.test(m)) return 'TPH sudah dipakai sensus atau penugasan. Nonaktifkan lewat Ubah (hapus centang Aktif).'
+  if (/dipakai|nonaktifkan/i.test(m)) return 'TPH sudah dipakai sensus atau penugasan. Nonaktifkan lewat Ubah (matikan Aktif).'
   return m || fallback
 }
 
@@ -247,13 +314,16 @@ async function onFormSubmit(payload) {
 
 function confirmDelete(row) {
   deleting.value = row
-  actionError.value = null
+  deleteError.value = ''
 }
-
+function closeDelete() {
+  deleting.value = null
+  deleteError.value = ''
+}
 async function onDeleteConfirm() {
   if (!deleting.value) return
   submitting.value = true
-  actionError.value = null
+  deleteError.value = ''
   try {
     await deleteTph(deleting.value.id)
     rows.value = rows.value.filter((r) => r.id !== deleting.value.id)
@@ -261,7 +331,7 @@ async function onDeleteConfirm() {
     showToast('TPH berhasil dihapus.')
   } catch (err) {
     console.error('[TPH] Delete failed:', err)
-    actionError.value = friendly(err, 'Gagal menghapus TPH.')
+    deleteError.value = friendly(err, 'Gagal menghapus TPH.')
   } finally {
     submitting.value = false
   }

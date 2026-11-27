@@ -1,128 +1,56 @@
 <template>
-    <Teleport to="body">
-        <div
-            v-if="visible"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-            @mousedown.self="onCancel">
-            <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Ubah Kendaraan' : 'Tambah Kendaraan' }}</h3>
-                    <button
-                        type="button"
-                        class="border-0 bg-transparent cursor-pointer text-(--text-soft) hover:text-(--text) text-xl leading-none transition-colors"
-                        aria-label="Tutup"
-                        @click="onCancel">
-                        &times;
-                    </button>
-                </div>
+    <MdModal
+        :open="visible"
+        :title="isEdit ? `Ubah Kendaraan ${vehicle.name}` : 'Tambah Kendaraan'"
+        subtitle="Lengkapi data kendaraan. Kolom bertanda * wajib diisi."
+        as-form
+        @close="onCancel"
+        @submit="onSubmit">
+        <MdField label="Nama" for-id="vehicle-name" required :error="errors.name">
+            <input id="vehicle-name" v-model.trim="form.name" class="md-input" :class="{ 'is-invalid': errors.name }" placeholder="mis. Truck A" autocomplete="off" />
+        </MdField>
 
-                <form @submit.prevent="onSubmit" class="flex flex-col gap-4" novalidate>
-                    <!-- Name -->
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="vehicle-name">
-                            Nama <span class="text-red-500">*</span>
-                        </label>
-                        <input
-                            id="vehicle-name"
-                            v-model.trim="form.name"
-                            type="text"
-                            placeholder="mis. Truck A"
-                            class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
-                            :class="
-                                errors.name
-                                    ? 'border-red-400 bg-red-50 focus:border-red-500'
-                                    : 'border-(--border) bg-(--surface-muted) focus:border-green-500'
-                            "
-                            autocomplete="off" />
-                        <span v-if="errors.name" class="text-xs text-red-500">{{ errors.name }}</span>
-                    </div>
+        <MdField label="Nomor polisi" for-id="vehicle-plate" required hint="Otomatis huruf besar, mis. KT 1234 AB." :error="errors.plate_number">
+            <input id="vehicle-plate" v-model="form.plate_number" class="md-input" :class="{ 'is-invalid': errors.plate_number }" maxlength="30" placeholder="mis. KT 1234 AB" style="text-transform: uppercase" autocomplete="off" />
+        </MdField>
 
-                    <!-- Title -->
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="vehicle-title">Judul</label>
-                        <input
-                            id="vehicle-title"
-                            v-model.trim="form.title"
-                            type="text"
-                            placeholder="mis. Heavy Truck"
-                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors"
-                            autocomplete="off" />
-                    </div>
+        <MdField label="Judul" for-id="vehicle-title" hint="Opsional.">
+            <input id="vehicle-title" v-model.trim="form.title" class="md-input" placeholder="mis. Heavy Truck" autocomplete="off" />
+        </MdField>
 
-                    <!-- Type -->
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="vehicle-type">Tipe</label>
-                        <input
-                            id="vehicle-type"
-                            v-model.trim="form.type"
-                            type="text"
-                            placeholder="mis. Dump Truck"
-                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors"
-                            autocomplete="off" />
-                    </div>
+        <MdField label="Tipe" for-id="vehicle-type" hint="Opsional.">
+            <input id="vehicle-type" v-model.trim="form.type" class="md-input" placeholder="mis. Dump Truck" autocomplete="off" :list="typeSuggestions.length ? 'vehicle-type-list' : undefined" />
+            <datalist id="vehicle-type-list">
+                <option v-for="t in typeSuggestions" :key="t" :value="t" />
+            </datalist>
+        </MdField>
 
-                    <!-- Plate Number -->
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="vehicle-plate">
-                            Nomor Polisi <span class="text-red-500">*</span>
-                        </label>
-                        <input
-                            id="vehicle-plate"
-                            v-model="form.plate_number"
-                            type="text"
-                            maxlength="30"
-                            placeholder="mis. KT 1234 AB"
-                            class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors uppercase"
-                            :class="
-                                errors.plate_number
-                                    ? 'border-red-400 bg-red-50 focus:border-red-500'
-                                    : 'border-(--border) bg-(--surface-muted) focus:border-green-500'
-                            "
-                            autocomplete="off" />
-                        <span v-if="errors.plate_number" class="text-xs text-red-500">{{ errors.plate_number }}</span>
-                    </div>
+        <MdField label="Catatan" for-id="vehicle-notes" full hint="Opsional.">
+            <textarea id="vehicle-notes" v-model.trim="form.notes" class="md-input" rows="3" placeholder="Catatan tambahan" style="resize: vertical; height: auto" />
+        </MdField>
 
-                    <!-- Notes -->
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="vehicle-notes">Catatan</label>
-                        <textarea
-                            id="vehicle-notes"
-                            v-model.trim="form.notes"
-                            rows="3"
-                            placeholder="Catatan tambahan"
-                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors resize-none" />
-                    </div>
+        <div v-if="error" class="md-modal__error" role="alert">{{ error }}</div>
 
-                    <!-- Actions -->
-                    <div class="flex justify-end gap-3 pt-1">
-                        <button
-                            type="button"
-                            class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
-                            :disabled="submitting"
-                            @click="onCancel">
-                            Batal
-                        </button>
-                        <button
-                            type="submit"
-                            class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-green-700 transition-colors disabled:opacity-60"
-                            :disabled="submitting">
-                            <span v-if="submitting">Menyimpan&hellip;</span>
-                            <span v-else>{{ isEdit ? 'Simpan Perubahan' : 'Tambah Kendaraan' }}</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </Teleport>
+        <template #footer>
+            <button type="button" class="md-btn" :disabled="submitting" @click="onCancel">Batal</button>
+            <button type="submit" class="md-btn md-btn--primary" :disabled="submitting">
+                <MdIcon name="check" />{{ submitting ? 'Menyimpan…' : 'Simpan' }}
+            </button>
+        </template>
+    </MdModal>
 </template>
 
 <script setup>
 import { ref, watch, computed } from 'vue'
+import { MdModal, MdField, MdIcon } from '../../../shared/masterdata-ui'
 
 const props = defineProps({
     visible: { type: Boolean, default: false },
     vehicle: { type: Object, default: null },
-    submitting: { type: Boolean, default: false }
+    submitting: { type: Boolean, default: false },
+    error: { type: String, default: '' },
+    // Tipe yang sudah ada, untuk saran isian.
+    typeSuggestions: { type: Array, default: () => [] }
 })
 
 const emit = defineEmits(['submit', 'cancel'])

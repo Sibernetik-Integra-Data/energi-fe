@@ -1,101 +1,106 @@
 <template>
-  <div>
-    <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
-      <div>
-        <h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Blocks</h2>
-        <p class="text-sm text-(--text-muted) m-0">Blok kebun; tiap blok berisi beberapa petak (Data Master → Nomor Petak)</p>
-      </div>
-      <button v-if="canWrite" type="button"
-        class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl cursor-pointer hover:bg-green-700 shadow-sm"
-        @click="openCreate">+ Tambah Blok</button>
-    </div>
-
-    <div class="flex flex-wrap gap-3 mb-4">
-      <input v-model="search" type="text" placeholder="Cari nomor blok…"
-        class="border border-(--border) rounded-lg px-3.5 py-2 text-sm text-(--text) bg-(--surface) outline-none focus:border-green-500 w-56" />
-    </div>
-
-    <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">Memuat data&hellip;</div>
-    <div v-else-if="fetchError" class="flex justify-center items-center py-16 text-sm text-red-600">{{ fetchError }}</div>
-
-    <template v-else>
-      <div class="bg-(--surface) rounded-xl overflow-hidden border border-(--border) shadow-sm max-[920px]:hidden">
-        <table class="w-full border-collapse">
-          <thead>
-            <tr class="border-b border-(--border) bg-(--surface-muted)">
-              <th v-for="h in headers" :key="h" class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">{{ h }}</th>
-              <th v-if="canWrite" class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="filteredRows.length === 0">
-              <td :colspan="headers.length + (canWrite ? 1 : 0)" class="py-10 px-6 text-center text-sm text-(--text-muted)">Belum ada data.</td>
-            </tr>
-            <tr v-for="row in paginatedRows" :key="row.id" class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted)">
-              <td class="py-3 px-4 text-sm font-semibold text-(--text)">Blok {{ row.name }}</td>
-              <td class="py-3 px-4 text-sm text-(--text)">{{ row.block_count || 0 }}</td>
-              <td class="py-3 px-4 text-sm text-(--text)">{{ row.tph_count || 0 }}</td>
-              <td class="py-3 px-4 text-sm text-(--text)">{{ fmt(row.tree_count) }}</td>
-              <td class="py-3 px-4 text-sm text-(--text)">{{ fmt(row.tree_harvest_count) }}</td>
-              <td class="py-3 px-4 text-sm">
-                <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-md" :class="row.has_tm ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'">
-                  {{ row.has_tm ? 'Ada TM' : 'TBM' }}
-                </span>
-              </td>
-              <td class="py-3 px-4 text-sm text-(--text-muted) max-w-xs truncate">{{ row.notes || '-' }}</td>
-              <td class="py-3 px-4 text-sm text-(--text-muted)">{{ userName(row.updated_by || row.created_by) }}</td>
-              <td v-if="canWrite" class="py-3 px-4">
-                <div class="flex gap-2 items-center">
-                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border-0 hover:bg-(--surface-muted) cursor-pointer" @click="openEdit(row)">Ubah</button>
-                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                    :disabled="row.block_count > 0" :title="row.block_count > 0 ? 'Masih berisi petak' : undefined" @click="confirmDelete(row)">Hapus</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="hidden gap-3 max-[920px]:flex max-[920px]:flex-col">
-        <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">Belum ada data.</div>
-        <div v-for="row in paginatedRows" :key="row.id" class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2">
-          <div class="font-bold text-sm text-(--text)">Blok {{ row.name }}</div>
-          <div class="text-xs text-(--text-muted) flex flex-wrap gap-x-4 gap-y-1">
-            <span>Petak: {{ row.block_count || 0 }}</span>
-            <span>TPH: {{ row.tph_count || 0 }}</span>
-            <span>Pohon perawatan: {{ fmt(row.tree_count) }}</span>
-            <span>Pohon panen: {{ fmt(row.tree_harvest_count) }}</span>
-            <span>{{ row.has_tm ? 'Ada TM' : 'TBM' }}</span>
-            <span>Diubah oleh: {{ userName(row.updated_by || row.created_by) }}</span>
-          </div>
-          <div v-if="canWrite" class="flex justify-end gap-2 mt-1">
-            <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) cursor-pointer" @click="openEdit(row)">Ubah</button>
-            <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold cursor-pointer disabled:opacity-40" :disabled="row.block_count > 0" @click="confirmDelete(row)">Hapus</button>
-          </div>
-        </div>
-      </div>
+  <MdPage title="Blok" description="Blok kebun; tiap blok berisi beberapa petak (Data Master → Nomor Petak). Klik kartu atau batang grafik untuk menyaring tabel.">
+    <template #actions>
+      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah Blok</button>
     </template>
+
+    <div class="md-kpis">
+      <MdKpi icon="grid" tone="info" label="Total blok" :value="rows.length" :sub="`${fmt(totalPetak)} petak`" action hint="Tampilkan semua" @select="clearAll" />
+      <MdKpi icon="leaf" tone="success" label="Blok ada TM" :value="countStatus('tm')" :sub="`${pct(countStatus('tm'))}% dari blok`" action :pressed="onlyStatus('tm')" @select="quickStatus('tm')" />
+      <MdKpi icon="tree" tone="warning" label="Blok TBM" :value="countStatus('tbm')" :sub="`${countEmpty} blok tanpa petak`" action :pressed="onlyStatus('tbm')" @select="quickStatus('tbm')" />
+      <MdKpi icon="pin" tone="brand" label="TPH · pohon panen" :value="fmt(totalTph)" :sub="`${fmt(totalHarvest)} pohon panen`" action hint="Urutkan" @select="table?.setSort('tph_count', -1)" />
+    </div>
+
+    <MdBarChart
+      v-if="rows.length"
+      title="Jumlah petak per blok"
+      :subtitle="`${fmt(totalPetak)} petak di ${rows.length} blok`"
+      :legend="[{ label: 'Ada TM', color: 'var(--success)' }, { label: 'TBM', color: '#f59e0b' }]"
+      :bars="bars"
+      :selected="filterBlok"
+      @toggle="toggleBlok" />
+
+    <MdDataTable
+      ref="table"
+      :columns="columns"
+      :rows="filteredRows"
+      :total-rows="rows.length"
+      :loading="loading"
+      :error="fetchError || ''"
+      entity-label="Blok"
+      empty-icon="grid"
+      empty-text="Tambahkan blok pertama, lalu isi petaknya di Nomor Petak."
+      add-label="Tambah Blok"
+      :can-add="canWrite"
+      initial-sort="name"
+      aria-label="Daftar blok"
+      @retry="loadData"
+      @add="openCreate"
+      @clear-filters="clearAll">
+      <template #toolbar>
+        <label class="md-search">
+          <MdIcon name="search" />
+          <input v-model.trim="search" type="search" placeholder="Cari nomor blok atau catatan…" aria-label="Cari blok" />
+        </label>
+        <MdDropdown v-model="filterStatus" label="Status" :options="statusFilterOptions" multiple />
+        <MdDropdown v-model="filterPetak" label="Petak" :options="petakFilterOptions" />
+        <div class="md-chips">
+          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+            {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
+          </button>
+          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+        </div>
+      </template>
+
+      <template #cell-name="{ row }">
+        <div class="md-ident">
+          <span class="md-avatar">{{ row.name }}</span>
+          <div><b>Blok {{ row.name }}</b><small>{{ row.block_count || 0 }} petak</small></div>
+        </div>
+      </template>
+      <template #cell-block_count="{ row }"><span class="md-num">{{ row.block_count || 0 }}</span></template>
+      <template #cell-tph_count="{ row }"><span class="md-num">{{ row.tph_count || 0 }}</span></template>
+      <template #cell-tree_count="{ row }"><MdBarCell :value="row.tree_count" :max="maxTrees" /></template>
+      <template #cell-tree_harvest_count="{ row }"><span class="md-num">{{ fmt(row.tree_harvest_count) }}</span></template>
+      <template #cell-has_tm="{ row }">
+        <MdBadge :tone="row.has_tm ? 'success' : 'warning'">{{ row.has_tm ? 'Ada TM' : 'TBM' }}</MdBadge>
+      </template>
+      <template #cell-notes="{ row }">
+        <span class="md-muted" :title="row.notes || undefined" style="display: inline-block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom">{{ row.notes || '—' }}</span>
+      </template>
+      <template #cell-updated_by="{ row }">
+        <span class="md-muted">{{ userName(row.updated_by || row.created_by) }}</span>
+      </template>
+
+      <template v-if="canWrite" #actions="{ row }">
+        <button type="button" class="md-icon-btn" :aria-label="`Ubah blok ${row.name}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
+        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus blok ${row.name}`" :disabled="row.block_count > 0" :title="row.block_count > 0 ? 'Masih berisi petak' : undefined" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+      </template>
+
+      <template #card="{ row }">
+        <div class="md-card__top">
+          <span class="md-avatar">{{ row.name }}</span>
+          <div style="flex: 1"><b class="md-strong">Blok {{ row.name }}</b><div class="md-muted" style="font-size: 12px">Diubah oleh {{ userName(row.updated_by || row.created_by) }}</div></div>
+          <MdBadge :tone="row.has_tm ? 'success' : 'warning'">{{ row.has_tm ? 'Ada TM' : 'TBM' }}</MdBadge>
+        </div>
+        <div class="md-card__grid">
+          <div>Petak<b>{{ row.block_count || 0 }}</b></div>
+          <div>TPH<b>{{ row.tph_count || 0 }}</b></div>
+          <div>Pohon perawatan<b>{{ fmt(row.tree_count) }}</b></div>
+          <div>Pohon panen<b>{{ fmt(row.tree_harvest_count) }}</b></div>
+        </div>
+      </template>
+    </MdDataTable>
 
     <BlockForm :visible="showForm" :block="editing" :submitting="submitting" :error="actionError || ''" @submit="onFormSubmit" @cancel="closeForm" />
 
-    <Teleport to="body">
-      <div v-if="deleting" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @mousedown.self="deleting = null">
-        <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
-          <h3 class="text-base font-bold text-(--text) m-0">Hapus Blok</h3>
-          <p class="text-sm text-(--text-muted) m-0">Hapus <strong>Blok {{ deleting.name }}</strong>? Tidak bisa dibatalkan.</p>
-          <div v-if="actionError" class="text-xs text-red-500">{{ actionError }}</div>
-          <div class="flex justify-end gap-3">
-            <button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer" :disabled="submitting" @click="deleting = null">Batal</button>
-            <button type="button" class="border-0 bg-red-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer disabled:opacity-60" :disabled="submitting" @click="onDeleteConfirm">
-              <span v-if="submitting">Menghapus&hellip;</span><span v-else>Ya, Hapus</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
-
-    <MasterDataPagination id="blocks" :total-items="totalItems" :current-page="currentPage" :page-size="pageSize" :total-pages="totalPages" :visible-pages="visiblePages" @update:current-page="currentPage = $event" @update:page-size="pageSize = $event" />
-  </div>
+    <MdConfirm :open="!!deleting" title="Hapus blok?" :busy="submitting" :blocked="(deleting?.block_count || 0) > 0" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
+      <template v-if="deleting">
+        <b>Blok {{ deleting.name }}</b> akan dihapus permanen. Tidak bisa dibatalkan.
+        <template v-if="deleting.block_count > 0"> Blok ini masih berisi <b>{{ deleting.block_count }} petak</b>; pindahkan atau hapus petaknya dulu.</template>
+      </template>
+    </MdConfirm>
+  </MdPage>
 </template>
 
 <script setup>
@@ -103,36 +108,103 @@ import { ref, computed, onMounted } from 'vue'
 import BlockForm from './BlockForm.vue'
 import { listBlocks, createBlock, updateBlock, deleteBlock } from '../model'
 import { useToast } from '../../../../utils/toast'
-import { useListPagination } from '../../../shared/pagination/useListPagination.js'
-import MasterDataPagination from '../../../shared/pagination/MasterDataPagination.vue'
 import { useUserNames } from '../../../../auth/useUserNames'
 import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
+import { MdPage, MdKpi, MdBarChart, MdDataTable, MdDropdown, MdBadge, MdBarCell, MdConfirm, MdIcon } from '../../../shared/masterdata-ui'
 
 const { userName } = useUserNames()
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
 const canWrite = useCanManageMasterData()
 const { show: showToast } = useToast()
 
-const headers = ['Blok', 'Petak', 'TPH', 'Pohon Perawatan', 'Pohon Panen', 'Status', 'Catatan', 'Diubah Oleh']
+const columns = [
+  { key: 'name', label: 'Blok' },
+  { key: 'block_count', label: 'Petak', sortValue: (r) => r.block_count || 0 },
+  { key: 'tph_count', label: 'TPH', sortValue: (r) => r.tph_count || 0 },
+  { key: 'tree_count', label: 'Pohon perawatan', sortValue: (r) => r.tree_count || 0 },
+  { key: 'tree_harvest_count', label: 'Pohon panen', sortValue: (r) => r.tree_harvest_count || 0 },
+  { key: 'has_tm', label: 'Status', sortValue: (r) => (r.has_tm ? 1 : 0) },
+  { key: 'notes', label: 'Catatan', sortable: false },
+  { key: 'updated_by', label: 'Diubah oleh', sortable: false }
+]
 
+const table = ref(null)
 const rows = ref([])
 const loading = ref(false)
 const fetchError = ref(null)
 const actionError = ref(null)
+const deleteError = ref('')
 const submitting = ref(false)
 const search = ref('')
+const filterStatus = ref([])
+const filterPetak = ref(null)
+const filterBlok = ref([])
 const showForm = ref(false)
 const editing = ref(null)
 const deleting = ref(null)
 
-const fmt = (n) => (n == null ? '-' : Number(n).toLocaleString('id-ID'))
+const fmt = (n) => (n == null ? '—' : Number(n).toLocaleString('id-ID'))
+const statusKey = (r) => (r.has_tm ? 'tm' : 'tbm')
+const countStatus = (s) => rows.value.filter((r) => statusKey(r) === s).length
+const pct = (n) => (rows.value.length ? Math.round((n / rows.value.length) * 100) : 0)
+const byName = (a, b) => String(a.name).localeCompare(String(b.name), 'id', { numeric: true })
+
+const totalPetak = computed(() => rows.value.reduce((s, r) => s + (r.block_count || 0), 0))
+const totalTph = computed(() => rows.value.reduce((s, r) => s + (r.tph_count || 0), 0))
+const totalHarvest = computed(() => rows.value.reduce((s, r) => s + (r.tree_harvest_count || 0), 0))
+const countEmpty = computed(() => rows.value.filter((r) => !r.block_count).length)
+const maxTrees = computed(() => Math.max(1, ...rows.value.map((r) => r.tree_count || 0)))
+
+const statusFilterOptions = computed(() => [
+  { value: 'tm', label: 'Ada TM', count: countStatus('tm') },
+  { value: 'tbm', label: 'TBM', count: countStatus('tbm') }
+])
+const petakFilterOptions = computed(() => [
+  { value: 'has', label: 'Berisi petak', count: rows.value.length - countEmpty.value },
+  { value: 'empty', label: 'Tanpa petak', count: countEmpty.value }
+])
+
+const bars = computed(() =>
+  rows.value.slice().sort(byName).map((r) => ({
+    key: r.name,
+    label: r.name,
+    ariaLabel: `Blok ${r.name}: ${r.block_count || 0} petak, ${r.has_tm ? 'ada TM' : 'TBM'}`,
+    segments: [{ value: r.block_count || 0, color: r.has_tm ? 'var(--success)' : '#f59e0b' }]
+  }))
+)
 
 const filteredRows = computed(() => {
-  const q = search.value.trim().toLowerCase()
-  return rows.value.filter((r) => !q || String(r.name).toLowerCase().includes(q))
+  const q = search.value.toLowerCase()
+  return rows.value.filter((r) =>
+    (!q || `${r.name} ${r.notes || ''}`.toLowerCase().includes(q)) &&
+    (!filterStatus.value.length || filterStatus.value.includes(statusKey(r))) &&
+    (!filterBlok.value.length || filterBlok.value.includes(r.name)) &&
+    (!filterPetak.value || (filterPetak.value === 'has' ? r.block_count > 0 : !r.block_count))
+  )
 })
 
-const { currentPage, pageSize, totalItems, totalPages, paginatedItems: paginatedRows, visiblePages } = useListPagination(filteredRows)
+const chips = computed(() => {
+  const c = []
+  if (search.value) c.push({ key: 'q', label: `“${search.value}”`, remove: () => (search.value = '') })
+  filterStatus.value.forEach((s) => c.push({ key: `s-${s}`, label: s === 'tm' ? 'Ada TM' : 'TBM', remove: () => (filterStatus.value = filterStatus.value.filter((x) => x !== s)) }))
+  filterBlok.value.forEach((b) => c.push({ key: `b-${b}`, label: `Blok ${b}`, remove: () => (filterBlok.value = filterBlok.value.filter((x) => x !== b)) }))
+  if (filterPetak.value) c.push({ key: 'p', label: filterPetak.value === 'has' ? 'Berisi petak' : 'Tanpa petak', remove: () => (filterPetak.value = null) })
+  return c
+})
+
+function clearAll() {
+  search.value = ''
+  filterStatus.value = []
+  filterBlok.value = []
+  filterPetak.value = null
+}
+const onlyStatus = (s) => filterStatus.value.length === 1 && filterStatus.value[0] === s
+function quickStatus(s) {
+  filterStatus.value = onlyStatus(s) ? [] : [s]
+}
+function toggleBlok(b) {
+  filterBlok.value = filterBlok.value.includes(b) ? filterBlok.value.filter((x) => x !== b) : [...filterBlok.value, b]
+}
 
 async function loadData() {
   loading.value = true
@@ -152,13 +224,11 @@ function openCreate() {
   actionError.value = null
   showForm.value = true
 }
-
 function openEdit(row) {
   editing.value = { ...row }
   actionError.value = null
   showForm.value = true
 }
-
 function closeForm() {
   showForm.value = false
   editing.value = null
@@ -194,13 +264,16 @@ async function onFormSubmit(payload) {
 
 function confirmDelete(row) {
   deleting.value = row
-  actionError.value = null
+  deleteError.value = ''
 }
-
+function closeDelete() {
+  deleting.value = null
+  deleteError.value = ''
+}
 async function onDeleteConfirm() {
   if (!deleting.value) return
   submitting.value = true
-  actionError.value = null
+  deleteError.value = ''
   try {
     await deleteBlock(deleting.value.id)
     rows.value = rows.value.filter((r) => r.id !== deleting.value.id)
@@ -208,7 +281,7 @@ async function onDeleteConfirm() {
     showToast('Blok berhasil dihapus.')
   } catch (err) {
     console.error('[Blocks] Delete failed:', err)
-    actionError.value = friendly(err, 'Gagal menghapus blok.')
+    deleteError.value = friendly(err, 'Gagal menghapus blok.')
   } finally {
     submitting.value = false
   }

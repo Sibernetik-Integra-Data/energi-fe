@@ -1,150 +1,69 @@
 <template>
-    <Teleport to="body">
-        <div
-            v-if="visible"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-            @mousedown.self="onCancel">
-            <div
-                class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? "Ubah Pengemudi" : "Tambah Pengemudi" }}</h3>
-                    <button
-                        type="button"
-                        class="border-0 bg-transparent cursor-pointer text-(--text-soft) hover:text-(--text) text-xl leading-none transition-colors"
-                        aria-label="Tutup"
-                        @click="onCancel">
-                        &times;
-                    </button>
-                </div>
+    <MdModal
+        :open="visible"
+        :title="isEdit ? `Ubah Pengemudi ${driver.name}` : 'Tambah Pengemudi'"
+        subtitle="Lengkapi data pengemudi. Kolom bertanda * wajib diisi."
+        as-form
+        @close="onCancel"
+        @submit="onSubmit">
+        <MdField label="Nama" for-id="driver-name" required full :error="errors.name">
+            <input id="driver-name" v-model.trim="form.name" class="md-input" :class="{ 'is-invalid': errors.name }" placeholder="mis. Budi" autocomplete="off" />
+        </MdField>
 
-                <form @submit.prevent="onSubmit" class="flex flex-col gap-4" novalidate>
-                    <!-- Name -->
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="driver-name">
-                            Nama <span class="text-red-500">*</span>
-                        </label>
-                        <input
-                            id="driver-name"
-                            v-model.trim="form.name"
-                            type="text"
-                            placeholder="mis. John Doe"
-                            class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
-                            :class="
-                                errors.name
-                                    ? 'border-red-400 bg-red-50 focus:border-red-500'
-                                    : 'border-(--border) bg-(--surface-muted) focus:border-green-500'
-                            "
-                            autocomplete="off" />
-                        <span v-if="errors.name" class="text-xs text-red-500">{{ errors.name }}</span>
-                    </div>
+        <MdField label="Alamat" for-id="driver-address" full hint="Opsional.">
+            <textarea id="driver-address" v-model.trim="form.address" class="md-input" rows="2" placeholder="Alamat jalan" style="resize: vertical; height: auto" />
+        </MdField>
 
-                    <!-- Address -->
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="driver-address">Alamat</label>
-                        <textarea
-                            id="driver-address"
-                            v-model.trim="form.address"
-                            rows="2"
-                            placeholder="Alamat jalan"
-                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors resize-none" />
-                    </div>
+        <MdField label="Lokasi" for-id="driver-location" full :hint="locationLoadError || 'Sumber: Data Master → Tujuan'">
+            <MdDropdown
+                id="driver-location"
+                v-model="form.location"
+                field
+                :disabled="locationsLoading"
+                :placeholder="locationsLoading ? 'Memuat lokasi…' : '— Tidak ada —'"
+                :options="locationDropdown" />
+        </MdField>
 
-                    <!-- Location -->
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="driver-location">Lokasi</label>
-                        <select
-                            id="driver-location"
-                            v-model="form.location"
-                            :disabled="locationsLoading"
-                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors">
-                            <option value="">{{ locationsLoading ? "Loading locations…" : "— None —" }}</option>
-                            <option v-if="legacyLocation" :value="legacyLocation">
-                                {{ legacyLocation }} (nilai lama, belum ada di Destination)
-                            </option>
-                            <option v-for="l in locationOptions" :key="l.id" :value="l.name">
-                                {{ l.label }}
-                            </option>
-                        </select>
-                        <span v-if="locationLoadError" class="text-xs text-red-500">{{ locationLoadError }}</span>
-                        <span v-else class="text-xs text-(--text-soft)">Sumber: Data Master → Tujuan</span>
-                    </div>
+        <MdField label="Kendaraan" for-id="driver-vehicle" :hint="vehicleLoadError || 'Sumber: Data Master → Kendaraan'">
+            <MdDropdown
+                id="driver-vehicle"
+                v-model="form.vehicle_id"
+                field
+                :disabled="vehiclesLoading"
+                :placeholder="vehiclesLoading ? 'Memuat kendaraan…' : '— Tidak ada —'"
+                :options="vehicleDropdown" />
+        </MdField>
 
-                    <!-- Vehicle Select -->
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="driver-vehicle">Kendaraan</label>
-                        <select
-                            id="driver-vehicle"
-                            v-model="form.vehicle_id"
-                            :disabled="vehiclesLoading"
-                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors">
-                            <option :value="null">{{ vehiclesLoading ? "Loading vehicles…" : "— None —" }}</option>
-                            <option v-for="v in vehicles" :key="v.id" :value="v.id">
-                                {{ vehicleLabel(v) }}
-                            </option>
-                        </select>
-                        <span v-if="vehicleLoadError" class="text-xs text-red-500">{{ vehicleLoadError }}</span>
-                        <span v-else class="text-xs text-(--text-soft)">Sumber: Data Master → Kendaraan</span>
-                    </div>
+        <MdField label="Nomor polisi" for-id="driver-vehicle-number" hint="Otomatis dari kendaraan.">
+            <input id="driver-vehicle-number" :value="form.vehicle_number" class="md-input" placeholder="Pilih kendaraan dulu" readonly aria-readonly="true" style="cursor: not-allowed" />
+        </MdField>
 
-                    <!-- Plate Number -->
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="driver-vehicle-number"
-                            >Nomor Polisi</label
-                        >
-                        <input
-                            id="driver-vehicle-number"
-                            :value="form.vehicle_number"
-                            type="text"
-                            placeholder="Pilih kendaraan dulu"
-                            readonly
-                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none transition-colors cursor-not-allowed"
-                            autocomplete="off"
-                            aria-readonly="true" />
-                    </div>
+        <MdField label="Catatan" for-id="driver-notes" full hint="Opsional.">
+            <textarea id="driver-notes" v-model.trim="form.notes" class="md-input" rows="2" placeholder="Catatan tambahan" style="resize: vertical; height: auto" />
+        </MdField>
 
-                    <!-- Notes -->
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="driver-notes">Catatan</label>
-                        <textarea
-                            id="driver-notes"
-                            v-model.trim="form.notes"
-                            rows="2"
-                            placeholder="Catatan tambahan"
-                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors resize-none" />
-                    </div>
+        <div v-if="error" class="md-modal__error" role="alert">{{ error }}</div>
 
-                    <!-- Actions -->
-                    <div class="flex justify-end gap-3 pt-1">
-                        <button
-                            type="button"
-                            class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
-                            :disabled="submitting"
-                            @click="onCancel">
-                            Batal
-                        </button>
-                        <button
-                            type="submit"
-                            class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-green-700 transition-colors disabled:opacity-60"
-                            :disabled="submitting">
-                            <span v-if="submitting">Menyimpan&hellip;</span>
-                            <span v-else>{{ isEdit ? "Simpan Perubahan" : "Tambah Pengemudi" }}</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </Teleport>
+        <template #footer>
+            <button type="button" class="md-btn" :disabled="submitting" @click="onCancel">Batal</button>
+            <button type="submit" class="md-btn md-btn--primary" :disabled="submitting">
+                <MdIcon name="check" />{{ submitting ? 'Menyimpan…' : 'Simpan' }}
+            </button>
+        </template>
+    </MdModal>
 </template>
 
 <script setup>
 import { ref, watch, computed } from "vue";
 import { listVehicles } from "../model";
 import { listLocations } from "../../destination/model";
+import { MdModal, MdField, MdDropdown, MdIcon } from "../../../shared/masterdata-ui";
 
 const props = defineProps({
     visible: { type: Boolean, default: false },
     driver: { type: Object, default: null },
     submitting: { type: Boolean, default: false },
+    error: { type: String, default: "" },
 });
 
 const emit = defineEmits(["submit", "cancel"]);
@@ -195,6 +114,17 @@ const legacyLocation = computed(() => {
     if (!cur || locationsLoading.value) return "";
     return locationOptions.value.some((l) => l.name === cur) ? "" : cur;
 });
+
+// Opsi dropdown; nilai kosong = tidak ada.
+const locationDropdown = computed(() => [
+    { value: "", label: "— Tidak ada —" },
+    ...(legacyLocation.value ? [{ value: legacyLocation.value, label: `${legacyLocation.value} (nilai lama, belum ada di Destination)` }] : []),
+    ...locationOptions.value.map((l) => ({ value: l.name, label: l.label })),
+]);
+const vehicleDropdown = computed(() => [
+    { value: null, label: "— Tidak ada —" },
+    ...vehicles.value.map((v) => ({ value: v.id, label: vehicleLabel(v) })),
+]);
 
 async function loadLocations() {
     if (locations.value.length > 0) return;

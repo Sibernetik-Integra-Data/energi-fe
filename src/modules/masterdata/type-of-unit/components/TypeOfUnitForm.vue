@@ -1,153 +1,78 @@
 <template>
-  <Teleport to="body">
-    <div
-      v-if="visible"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-      @mousedown.self="onCancel">
-      <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Ubah Satuan' : 'Tambah Satuan' }}</h3>
-          <button
-            type="button"
-            class="border-0 bg-transparent cursor-pointer text-(--text-soft) hover:text-(--text) text-xl leading-none transition-colors"
-            aria-label="Tutup"
-            @click="onCancel">
-            &times;
-          </button>
-        </div>
+  <MdModal
+    :open="visible"
+    :title="isEdit ? `Ubah Satuan ${typeOfUnit.name || ''}` : 'Tambah Satuan'"
+    subtitle="Lengkapi data satuan. Kolom bertanda * wajib diisi."
+    as-form
+    @close="onCancel"
+    @submit="onSubmit">
+    <MdField label="Nama" for-id="tou-name" required full hint="Singkatan satuan, maksimal 100 karakter." :error="errors.name">
+      <input id="tou-name" v-model.trim="form.name" class="md-input" :class="{ 'is-invalid': errors.name }" maxlength="100" placeholder="mis. HK" autocomplete="off" />
+    </MdField>
 
-        <form @submit.prevent="onSubmit" class="flex flex-col gap-4" novalidate>
-          <div class="flex flex-col gap-1">
-            <label class="text-sm font-semibold text-(--text)" for="tou-name">
-              Nama <span class="text-red-500" aria-hidden="true">*</span>
-            </label>
-            <input
-              id="tou-name"
-              v-model.trim="form.name"
-              type="text"
-              placeholder="mis. HK"
-              maxlength="100"
-              autocomplete="off"
-              aria-required="true"
-              :aria-invalid="Boolean(errors.name)"
-              class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
-              :class="
-                errors.name
-                  ? 'border-red-400 bg-red-50 focus:border-red-500'
-                  : 'border-(--border) bg-(--surface-muted) focus:border-green-500'
-              " />
-            <span v-if="errors.name" class="text-xs text-red-500" role="alert">{{ errors.name }}</span>
-          </div>
+    <MdField label="Keterangan" for-id="tou-detail" full hint="Opsional, mis. kepanjangan satuan. Maksimal 500 karakter." :error="errors.detail">
+      <textarea id="tou-detail" v-model.trim="form.detail" class="md-input" :class="{ 'is-invalid': errors.detail }" rows="3" maxlength="500" placeholder="Keterangan (opsional)" />
+    </MdField>
 
-          <div class="flex flex-col gap-1">
-            <label class="text-sm font-semibold text-(--text)" for="tou-detail">Keterangan</label>
-            <textarea
-              id="tou-detail"
-              v-model.trim="form.detail"
-              rows="3"
-              maxlength="500"
-              placeholder="Keterangan (opsional)"
-              class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors resize-none" />
-            <span v-if="errors.detail" class="text-xs text-red-500" role="alert">{{ errors.detail }}</span>
-          </div>
+    <MdField label="Catatan" for-id="tou-notes" full hint="Opsional, maksimal 500 karakter." :error="errors.notes">
+      <textarea id="tou-notes" v-model.trim="form.notes" class="md-input" :class="{ 'is-invalid': errors.notes }" rows="3" maxlength="500" placeholder="Catatan (opsional)" />
+    </MdField>
 
-          <div class="flex flex-col gap-1">
-            <label class="text-sm font-semibold text-(--text)" for="tou-notes">Catatan</label>
-            <textarea
-              id="tou-notes"
-              v-model.trim="form.notes"
-              rows="3"
-              maxlength="500"
-              placeholder="Catatan (opsional)"
-              class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors resize-none" />
-            <span v-if="errors.notes" class="text-xs text-red-500" role="alert">{{ errors.notes }}</span>
-          </div>
+    <div v-if="error" class="md-modal__error" role="alert">{{ error }}</div>
 
-
-          <div class="flex justify-end gap-3 pt-1">
-            <button
-              type="button"
-              class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
-              :disabled="submitting"
-              @click="onCancel">
-              Batal
-            </button>
-            <button
-              type="submit"
-              class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-green-700 transition-colors disabled:opacity-60"
-              :disabled="submitting">
-              <span v-if="submitting">Menyimpan&hellip;</span>
-              <span v-else>{{ isEdit ? 'Simpan Perubahan' : 'Tambah Tipe' }}</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </Teleport>
+    <template #footer>
+      <button type="button" class="md-btn" :disabled="submitting" @click="onCancel">Batal</button>
+      <button type="submit" class="md-btn md-btn--primary" :disabled="submitting">
+        <MdIcon name="check" />{{ submitting ? 'Menyimpan…' : isEdit ? 'Simpan Perubahan' : 'Simpan' }}
+      </button>
+    </template>
+  </MdModal>
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { MdModal, MdField, MdIcon } from '../../../shared/masterdata-ui'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
   typeOfUnit: { type: Object, default: null },
-  submitting: { type: Boolean, default: false }
+  rows: { type: Array, default: () => [] }, // untuk cek nama ganda
+  submitting: { type: Boolean, default: false },
+  error: { type: String, default: '' }
 })
-
 const emit = defineEmits(['submit', 'cancel'])
 
 const isEdit = computed(() => Boolean(props.typeOfUnit?.id))
-
-const emptyForm = () => ({ name: '', detail: '', notes: '', status: '' })
-
+const emptyForm = () => ({ name: '', detail: '', notes: '' })
 const form = ref(emptyForm())
 const errors = ref({})
 
 watch(
   () => props.visible,
   (val) => {
-    if (val) {
-      form.value = props.typeOfUnit
-        ? {
-            name: props.typeOfUnit.name || '',
-            detail: props.typeOfUnit.detail || '',
-            notes: props.typeOfUnit.notes || '',
-            status: props.typeOfUnit.status || ''
-          }
-        : emptyForm()
-      errors.value = {}
-    }
-  }
+    if (!val) return
+    const t = props.typeOfUnit
+    form.value = t ? { name: t.name || '', detail: t.detail || '', notes: t.notes || '' } : emptyForm()
+    errors.value = {}
+  },
+  { immediate: true }
 )
 
 function validate() {
   const errs = {}
-  if (!form.value.name) {
-    errs.name = 'Nama wajib diisi.'
-  } else if (form.value.name.length > 100) {
-    errs.name = 'Nama maksimal 100 karakter.'
-  }
-  if (form.value.detail && form.value.detail.length > 500) {
-    errs.detail = 'Keterangan maksimal 500 karakter.'
-  }
-  if (form.value.notes && form.value.notes.length > 500) {
-    errs.notes = 'Catatan maksimal 500 karakter.'
-  }
+  const f = form.value
+  if (!f.name) errs.name = 'Nama wajib diisi.'
+  else if (f.name.length > 100) errs.name = 'Nama maksimal 100 karakter.'
+  else if (props.rows.some((r) => r.id !== props.typeOfUnit?.id && String(r.name || '').toLowerCase() === f.name.toLowerCase())) errs.name = `Satuan ${f.name} sudah ada.`
+  if (f.detail && f.detail.length > 500) errs.detail = 'Keterangan maksimal 500 karakter.'
+  if (f.notes && f.notes.length > 500) errs.notes = 'Catatan maksimal 500 karakter.'
   errors.value = errs
   return Object.keys(errs).length === 0
 }
 
-function appendNullable(payload, key) {
-  payload[key] = form.value[key] || null
-}
-
 function onSubmit() {
   if (!validate()) return
-  const payload = { name: form.value.name }
-  appendNullable(payload, 'detail')
-  appendNullable(payload, 'notes')
-  emit('submit', payload)
+  emit('submit', { name: form.value.name, detail: form.value.detail || null, notes: form.value.notes || null })
 }
 
 function onCancel() {
