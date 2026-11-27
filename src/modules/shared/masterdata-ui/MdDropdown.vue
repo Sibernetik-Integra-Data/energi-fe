@@ -88,12 +88,14 @@ const menu = ref(null)
 const chosen = computed(() =>
   props.multiple ? (Array.isArray(props.modelValue) ? props.modelValue : []) : props.modelValue
 )
-const isChosen = (v) => (props.multiple ? chosen.value.includes(v) : chosen.value === v)
+// Bandingkan sebagai teks: id dari API bisa angka atau string.
+const same = (a, b) => a != null && b != null && String(a) === String(b)
+const isChosen = (v) => (props.multiple ? chosen.value.some((x) => same(x, v)) : same(chosen.value, v))
 const isSet = computed(() => {
   if (props.active !== undefined) return props.active
   return props.multiple ? chosen.value.length > 0 : chosen.value !== null && chosen.value !== undefined && chosen.value !== ''
 })
-const labelOf = (v) => props.options.find((o) => o.value === v)?.label ?? String(v)
+const labelOf = (v) => props.options.find((o) => same(o.value, v))?.label ?? String(v)
 const summary = computed(() => {
   if (props.summaryText) return props.summaryText
   if (!isSet.value) return props.allText
@@ -107,7 +109,7 @@ function set(v) {
 }
 function choose(v) {
   if (props.multiple) {
-    const next = chosen.value.includes(v) ? chosen.value.filter((x) => x !== v) : [...chosen.value, v]
+    const next = chosen.value.some((x) => same(x, v)) ? chosen.value.filter((x) => !same(x, v)) : [...chosen.value, v]
     set(next)
   } else {
     set(v)
