@@ -3,15 +3,15 @@
     <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @mousedown.self="onCancel">
       <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Edit Petak' : 'Add Petak' }}</h3>
-          <button type="button" class="border-0 bg-transparent cursor-pointer text-(--text-soft) hover:text-(--text) text-xl leading-none" aria-label="Close" @click="onCancel">&times;</button>
+          <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Ubah Petak' : 'Tambah Petak' }}</h3>
+          <button type="button" class="border-0 bg-transparent cursor-pointer text-(--text-soft) hover:text-(--text) text-xl leading-none" aria-label="Tutup" @click="onCancel">&times;</button>
         </div>
 
         <form class="flex flex-col gap-4" novalidate @submit.prevent="onSubmit">
           <!-- Nomor petak -->
           <div class="flex flex-col gap-1">
             <label class="text-sm font-semibold text-(--text)" for="petak-name">Nomor Petak <span class="text-red-500">*</span></label>
-            <input id="petak-name" v-model.trim="form.name" type="text" maxlength="20" placeholder="e.g. 113a" autocomplete="off"
+            <input id="petak-name" v-model.trim="form.name" type="text" maxlength="20" placeholder="mis. 113a" autocomplete="off"
               class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
               :class="errors.name ? 'border-red-400 bg-red-50' : 'border-(--border) bg-(--surface-muted) focus:border-green-500'"
               @blur="suggestBlok" />
@@ -24,12 +24,12 @@
             <select id="petak-blok" v-model="form.id_block_group" :disabled="bloksLoading"
               class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
               :class="errors.id_block_group ? 'border-red-400 bg-red-50' : 'border-(--border) bg-(--surface-muted) focus:border-green-500'">
-              <option :value="null">{{ bloksLoading ? 'Loading…' : 'Select blok' }}</option>
+              <option :value="null">{{ bloksLoading ? 'Memuat…' : 'Pilih blok' }}</option>
               <option v-for="b in bloks" :key="b.id" :value="b.id">Blok {{ b.name }}</option>
             </select>
             <span v-if="errors.id_block_group" class="text-xs text-red-500">{{ errors.id_block_group }}</span>
             <span v-else-if="blokError" class="text-xs text-red-500">{{ blokError }}</span>
-            <span v-else class="text-xs text-(--text-soft)">Source: Master Data → Blocks. Dipilih otomatis dari angka awal nomor petak.</span>
+            <span v-else class="text-xs text-(--text-soft)">Sumber: Data Master → Blok. Dipilih otomatis dari angka awal nomor petak.</span>
           </div>
 
           <div class="grid grid-cols-2 gap-4 max-[520px]:grid-cols-1">
@@ -48,7 +48,7 @@
             <!-- Tahun tanam -->
             <div class="flex flex-col gap-1">
               <label class="text-sm font-semibold text-(--text)" for="petak-year">Tahun Tanam</label>
-              <input id="petak-year" v-model.number="form.planting_year" type="number" min="1950" :max="maxYear" step="1" placeholder="e.g. 2015"
+              <input id="petak-year" v-model.number="form.planting_year" type="number" min="1950" :max="maxYear" step="1" placeholder="mis. 2015"
                 class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
                 :class="errors.planting_year ? 'border-red-400 bg-red-50' : 'border-(--border) bg-(--surface-muted) focus:border-green-500'" />
               <span v-if="errors.planting_year" class="text-xs text-red-500">{{ errors.planting_year }}</span>
@@ -57,7 +57,7 @@
             <!-- Jumlah pohon -->
             <div class="flex flex-col gap-1">
               <label class="text-sm font-semibold text-(--text)" for="petak-plants">Jumlah Pohon</label>
-              <input id="petak-plants" v-model.number="form.plants_count" type="number" min="0" step="1" placeholder="e.g. 1500"
+              <input id="petak-plants" v-model.number="form.plants_count" type="number" min="0" step="1" placeholder="mis. 1500"
                 class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
                 :class="errors.plants_count ? 'border-red-400 bg-red-50' : 'border-(--border) bg-(--surface-muted) focus:border-green-500'" />
               <span v-if="errors.plants_count" class="text-xs text-red-500">{{ errors.plants_count }}</span>
@@ -66,7 +66,7 @@
             <!-- Luas -->
             <div class="flex flex-col gap-1">
               <label class="text-sm font-semibold text-(--text)" for="petak-wide">Luas (ha)</label>
-              <input id="petak-wide" v-model.number="form.wide" type="number" min="0" step="0.01" placeholder="e.g. 12.5"
+              <input id="petak-wide" v-model.number="form.wide" type="number" min="0" step="0.01" placeholder="mis. 12.5"
                 class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
                 :class="errors.wide ? 'border-red-400 bg-red-50' : 'border-(--border) bg-(--surface-muted) focus:border-green-500'" />
               <span v-if="errors.wide" class="text-xs text-red-500">{{ errors.wide }}</span>
@@ -76,10 +76,10 @@
           <div v-if="error" class="text-xs text-red-500">{{ error }}</div>
 
           <div class="flex justify-end gap-3 pt-1">
-            <button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted)" :disabled="submitting" @click="onCancel">Cancel</button>
+            <button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted)" :disabled="submitting" @click="onCancel">Batal</button>
             <button type="submit" class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-green-700 disabled:opacity-60" :disabled="submitting">
-              <span v-if="submitting">Saving&hellip;</span>
-              <span v-else>{{ isEdit ? 'Save Changes' : 'Add Petak' }}</span>
+              <span v-if="submitting">Menyimpan&hellip;</span>
+              <span v-else>{{ isEdit ? 'Simpan Perubahan' : 'Tambah Petak' }}</span>
             </button>
           </div>
         </form>
@@ -118,7 +118,7 @@ async function loadBloks() {
   try {
     bloks.value = await listBlok()
   } catch (err) {
-    blokError.value = err?.message || 'Failed to load blok.'
+    blokError.value = err?.message || 'Gagal memuat blok.'
   } finally {
     bloksLoading.value = false
   }

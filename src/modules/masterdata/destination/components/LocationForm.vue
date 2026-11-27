@@ -7,11 +7,11 @@
             <div
                 class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Edit Destination' : 'Add Destination' }}</h3>
+                    <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Ubah Tujuan' : 'Tambah Tujuan' }}</h3>
                     <button
                         type="button"
                         class="border-0 bg-transparent cursor-pointer text-(--text-soft) hover:text-(--text) text-xl leading-none transition-colors"
-                        aria-label="Close"
+                        aria-label="Tutup"
                         @click="onCancel">
                         &times;
                     </button>
@@ -20,13 +20,13 @@
                 <form @submit.prevent="onSubmit" class="flex flex-col gap-4" novalidate>
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="loc-name">
-                            Name <span class="text-red-500">*</span>
+                            Nama <span class="text-red-500">*</span>
                         </label>
                         <input
                             id="loc-name"
                             v-model.trim="form.name"
                             type="text"
-                            placeholder="e.g. Block A"
+                            placeholder="mis. PKS Utara"
                             class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
                             :class="
                                 errors.name
@@ -38,21 +38,21 @@
                     </div>
 
                     <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="loc-location">Destination</label>
+                        <label class="text-sm font-semibold text-(--text)" for="loc-location">Tujuan</label>
                         <input
                             id="loc-location"
                             v-model.trim="form.location"
                             type="text"
-                            placeholder="e.g. Block 1"
+                            placeholder="mis. Pabrik Utara"
                             class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors"
                             autocomplete="off" />
                     </div>
 
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="loc-type">
-                            Type of Destination <span class="text-red-500">*</span>
+                            Tipe Tujuan <span class="text-red-500">*</span>
                         </label>
-                        <div v-if="typeOfLocationsLoading" class="text-xs text-(--text-muted)">Loading types&hellip;</div>
+                        <div v-if="typeOfLocationsLoading" class="text-xs text-(--text-muted)">Memuat tipe&hellip;</div>
                         <select
                             v-else
                             id="loc-type"
@@ -63,7 +63,7 @@
                                     ? 'border-red-400 bg-red-50 focus:border-red-500'
                                     : 'border-(--border) bg-(--surface-muted) focus:border-green-500'
                             ">
-                            <option value="">Select type of destination</option>
+                            <option value="">Pilih tipe tujuan</option>
                             <option v-for="t in typeOfLocations" :key="t.id" :value="String(t.id)">{{ t.name }}</option>
                         </select>
                         <span v-if="errors.tol_id" class="text-xs text-red-500">{{ errors.tol_id }}</span>
@@ -75,7 +75,7 @@
                             id="loc-lat"
                             v-model.trim="form.latitude"
                             type="text"
-                            placeholder="e.g. -1.234567"
+                            placeholder="mis. -1.234567"
                             class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors"
                             autocomplete="off" />
                     </div>
@@ -86,18 +86,18 @@
                             id="loc-lng"
                             v-model.trim="form.longitude"
                             type="text"
-                            placeholder="e.g. 103.123456"
+                            placeholder="mis. 103.123456"
                             class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors"
                             autocomplete="off" />
                     </div>
 
                     <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="loc-notes">Notes</label>
+                        <label class="text-sm font-semibold text-(--text)" for="loc-notes">Catatan</label>
                         <textarea
                             id="loc-notes"
                             v-model.trim="form.notes"
                             rows="2"
-                            placeholder="Additional notes"
+                            placeholder="Catatan tambahan"
                             class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors resize-none" />
                     </div>
 
@@ -107,14 +107,14 @@
                             class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
                             :disabled="submitting"
                             @click="onCancel">
-                            Cancel
+                            Batal
                         </button>
                         <button
                             type="submit"
                             class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-green-700 transition-colors disabled:opacity-60"
                             :disabled="submitting">
-                            <span v-if="submitting">Saving&hellip;</span>
-                            <span v-else>{{ isEdit ? 'Save Changes' : 'Add Destination' }}</span>
+                            <span v-if="submitting">Menyimpan&hellip;</span>
+                            <span v-else>{{ isEdit ? 'Simpan Perubahan' : 'Tambah Tujuan' }}</span>
                         </button>
                     </div>
                 </form>
@@ -193,9 +193,9 @@ onMounted(() => {
 
 function validate() {
     const errs = {}
-    if (!form.value.name) errs.name = 'Name is required.'
+    if (!form.value.name) errs.name = 'Nama wajib diisi.'
     // The database requires a type; without this check the server answered 500.
-    if (!form.value.tol_id) errs.tol_id = 'Type of Destination is required.'
+    if (!form.value.tol_id) errs.tol_id = 'Pilih tipe tujuan.'
     errors.value = errs
     return Object.keys(errs).length === 0
 }

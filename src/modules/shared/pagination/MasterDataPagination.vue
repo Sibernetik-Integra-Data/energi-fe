@@ -2,10 +2,10 @@
   <div>
     <div v-if="totalItems > 0" class="flex items-center justify-between mt-5 gap-4 flex-wrap">
       <p class="text-xs text-(--text-muted) font-medium m-0">
-        Showing {{ totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1 }}–{{ Math.min(currentPage * pageSize, totalItems) }} of {{ totalItems }} records
+        Menampilkan {{ totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1 }}–{{ Math.min(currentPage * pageSize, totalItems) }} dari {{ totalItems }} data
       </p>
       <div class="flex items-center gap-2">
-        <label class="text-xs text-(--text-muted) font-medium" :for="`${id}-page-size`">Rows:</label>
+        <label class="text-xs text-(--text-muted) font-medium" :for="`${id}-page-size`">Baris:</label>
         <select
           :id="`${id}-page-size`"
           :value="pageSize"
@@ -20,12 +20,12 @@
     </div>
 
     <div v-if="totalPages > 1" class="flex items-center justify-end mt-3 gap-4 flex-wrap">
-      <nav class="flex items-center gap-1" aria-label="Pagination">
+      <nav class="flex items-center gap-1" aria-label="Navigasi halaman">
         <button
           type="button"
           :disabled="currentPage === 1"
           class="flex items-center justify-center w-9 h-9 rounded-lg border border-(--border) bg-(--surface) text-(--text) hover:bg-(--surface-muted) disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 cursor-pointer"
-          aria-label="Previous page"
+          aria-label="Halaman sebelumnya"
           @click="$emit('update:currentPage', currentPage - 1)">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
         </button>
@@ -43,7 +43,7 @@
           type="button"
           :disabled="currentPage === totalPages"
           class="flex items-center justify-center w-9 h-9 rounded-lg border border-(--border) bg-(--surface) text-(--text) hover:bg-(--surface-muted) disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 cursor-pointer"
-          aria-label="Next page"
+          aria-label="Halaman berikutnya"
           @click="$emit('update:currentPage', currentPage + 1)">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
         </button>

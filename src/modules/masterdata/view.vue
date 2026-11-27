@@ -4,8 +4,8 @@
 
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
       <BaseHeader
-        eyebrow="Master Data"
-        title="Master Data"
+        eyebrow="Data Master"
+        title="Data Master"
         :notifications="0"
         :user="user"
         :on-logout="logoutFromKeycloak"

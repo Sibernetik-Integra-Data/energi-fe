@@ -2,14 +2,14 @@
     <div>
         <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
             <div>
-                <h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Destination List</h2>
-                <p class="text-sm text-(--text-muted) m-0">Manage destinations</p>
+                <h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Daftar Tujuan</h2>
+                <p class="text-sm text-(--text-muted) m-0">Kelola tujuan</p>
             </div>
             <button
                 type="button"
                 class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl cursor-pointer hover:bg-green-700 transition-colors shadow-sm"
                 v-if="canWrite" @click="openCreate">
-                + Add Destination
+                + Tambah Tujuan
             </button>
         </div>
 
@@ -17,12 +17,12 @@
             <input
                 v-model="searchName"
                 type="text"
-                placeholder="Search destination name…"
+                placeholder="Cari nama tujuan…"
                 class="border border-(--border) rounded-lg px-3.5 py-2 text-sm text-(--text) bg-(--surface) outline-none focus:border-green-500 transition-colors w-56" />
         </div>
 
         <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">
-            Loading data&hellip;
+            Memuat data&hellip;
         </div>
 
         <div v-else-if="fetchError" class="flex justify-center items-center py-16 text-sm text-red-600">
@@ -34,19 +34,19 @@
                 <table class="w-full border-collapse">
                     <thead>
                         <tr class="border-b border-(--border) bg-(--surface-muted)">
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Name</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Nama</th>
                             <!-- <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">No.</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Destination</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Type</th> -->
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Tujuan</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Tipe</th> -->
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Latitude</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Longitude</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Notes</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Actions</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Catatan</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="filteredRows.length === 0">
-                            <td colspan="6" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
+                            <td colspan="6" class="py-10 px-6 text-center text-sm text-(--text-muted)">Belum ada data.</td>
                         </tr>
                         <tr
                             v-for="row in paginatedRows"
@@ -65,13 +65,13 @@
                                         type="button"
                                         class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border-0 hover:bg-(--surface-muted) transition-colors cursor-pointer"
                                         v-if="canWrite" @click="openEdit(row)">
-                                        Edit
+                                        Ubah
                                     </button>
                                     <button
                                         type="button"
                                         class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
                                         v-if="canWrite" @click="confirmDelete(row)">
-                                        Delete
+                                        Hapus
                                     </button>
                                 </div>
                             </td>
@@ -81,7 +81,7 @@
             </div>
 
             <div class="hidden gap-3 max-[920px]:flex max-[920px]:flex-col">
-                <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">No data.</div>
+                <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">Belum ada data.</div>
                 <div
                         v-for="row in paginatedRows"
                     :key="row.id"
@@ -89,24 +89,24 @@
                     <div class="font-bold text-sm text-(--text)">{{ row.name }}</div>
                     <div class="text-xs text-(--text-muted) flex flex-wrap gap-x-4 gap-y-1">
                         <!-- <span v-if="row.nomor">No: {{ row.nomor }}</span> -->
-                        <!-- <span v-if="row.location">Destination: {{ row.location }}</span> -->
-                        <!-- <span v-if="row.type_of_location">Type: {{ row.type_of_location }}</span> -->
+                        <!-- <span v-if="row.location">Tujuan: {{ row.location }}</span> -->
+                        <!-- <span v-if="row.type_of_location">Tipe: {{ row.type_of_location }}</span> -->
                         <span v-if="row.latitude">Lat: {{ row.latitude }}</span>
                         <span v-if="row.longitude">Lng: {{ row.longitude }}</span>
-                        <span>Notes: {{ row.notes || '-' }}</span>
+                        <span>Catatan: {{ row.notes || '-' }}</span>
                     </div>
                     <div class="flex justify-end gap-2 mt-1">
                         <button
                             type="button"
                             class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) hover:bg-(--surface-muted) transition-colors cursor-pointer"
                             v-if="canWrite" @click="openEdit(row)">
-                            Edit
+                            Ubah
                         </button>
                         <button
                             type="button"
                             class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
                             v-if="canWrite" @click="confirmDelete(row)">
-                            Delete
+                            Hapus
                         </button>
                     </div>
                 </div>
@@ -128,8 +128,8 @@
                 class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
                 @mousedown.self="showDeleteConfirm = false">
                 <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
-                    <h3 class="text-base font-bold text-(--text) m-0">Delete Destination</h3>
-                    <p class="text-sm text-(--text-muted) m-0">Delete destination <strong>{{ deletingLocation?.name }}</strong>? This action cannot be undone.</p>
+                    <h3 class="text-base font-bold text-(--text) m-0">Hapus Tujuan</h3>
+                    <p class="text-sm text-(--text-muted) m-0">Hapus Tujuan <strong>{{ deletingLocation?.name }}</strong>? Tindakan ini tidak bisa dibatalkan.</p>
                     <div v-if="actionError" class="text-xs text-red-500">{{ actionError }}</div>
                     <div class="flex justify-end gap-3">
                         <button
@@ -137,15 +137,15 @@
                             class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
                             :disabled="submitting"
                             @click="showDeleteConfirm = false">
-                            Cancel
+                            Batal
                         </button>
                         <button
                             type="button"
                             class="border-0 bg-red-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-red-700 transition-colors disabled:opacity-60"
                             :disabled="submitting"
                             @click="onDeleteConfirm">
-                            <span v-if="submitting">Deleting&hellip;</span>
-                            <span v-else>Yes, Delete</span>
+                            <span v-if="submitting">Menghapus&hellip;</span>
+                            <span v-else>Ya, Hapus</span>
                         </button>
                     </div>
                 </div>
@@ -208,7 +208,7 @@ async function loadData() {
         rows.value = await listLocations()
     } catch (err) {
         console.error('[Destination] Failed to load:', err)
-        fetchError.value = err?.message || 'Failed to load destinations.'
+        fetchError.value = err?.message || 'Gagal memuat tujuan.'
     } finally {
         loading.value = false
     }
@@ -239,16 +239,16 @@ async function onFormSubmit(formData) {
             const updated = await updateLocation(editingLocation.value.id, formData)
             const idx = rows.value.findIndex(r => r.id === editingLocation.value.id)
             if (idx !== -1) rows.value[idx] = updated || { ...rows.value[idx], ...formData }
-            showToast('Destination updated successfully.')
+            showToast('Tujuan berhasil diubah.')
         } else {
             const created = await createLocation(formData)
             if (created) rows.value.unshift(created)
-            showToast('Destination created successfully.')
+            showToast('Tujuan berhasil ditambahkan.')
         }
         closeForm()
     } catch (err) {
         console.error('[Destination] Save failed:', err)
-        actionError.value = err?.message || 'Failed to save data.'
+        actionError.value = err?.message || 'Gagal menyimpan data.'
     } finally {
         submitting.value = false
     }
@@ -269,10 +269,10 @@ async function onDeleteConfirm() {
         rows.value = rows.value.filter(r => r.id !== deletingLocation.value.id)
         showDeleteConfirm.value = false
         deletingLocation.value = null
-        showToast('Destination deleted successfully.')
+        showToast('Tujuan berhasil dihapus.')
     } catch (err) {
         console.error('[Destination] Delete failed:', err)
-        actionError.value = err?.message || 'Failed to delete destination.'
+        actionError.value = err?.message || 'Gagal menghapus tujuan.'
     } finally {
         submitting.value = false
     }

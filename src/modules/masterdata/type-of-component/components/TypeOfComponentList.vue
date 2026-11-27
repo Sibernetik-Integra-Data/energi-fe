@@ -2,19 +2,19 @@
   <div>
     <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
       <div>
-        <h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Type of Component</h2>
-        <p class="text-sm text-(--text-muted) m-0">Manage type of component entries</p>
+        <h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Jenis Komponen</h2>
+        <p class="text-sm text-(--text-muted) m-0">Kelola jenis komponen</p>
       </div>
       <button type="button" class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl cursor-pointer hover:bg-green-700 transition-colors shadow-sm" v-if="canWrite" @click="openCreate">
-        + Add Type
+        + Tambah Tipe
       </button>
     </div>
 
     <div class="flex flex-wrap gap-3 mb-4">
-      <input v-model="searchQuery" type="text" placeholder="Search name or detail..." class="border border-(--border) rounded-lg px-3.5 py-2 text-sm text-(--text) bg-(--surface) outline-none focus:border-green-500 transition-colors w-64" aria-label="Search type of component" />
+      <input v-model="searchQuery" type="text" placeholder="Cari nama atau keterangan..." class="border border-(--border) rounded-lg px-3.5 py-2 text-sm text-(--text) bg-(--surface) outline-none focus:border-green-500 transition-colors w-64" aria-label="Cari jenis komponen" />
     </div>
 
-    <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">Loading data&hellip;</div>
+    <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">Memuat data&hellip;</div>
     <div v-else-if="fetchError" class="flex justify-center items-center py-16 text-sm text-red-600">{{ fetchError }}</div>
 
     <template v-else>
@@ -34,18 +34,18 @@
           <thead>
             <tr class="border-b border-(--border) bg-(--surface-muted)">
               <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-center">ID</th>
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Name</th>
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Detail</th>
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Notes</th>
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Created At</th>
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Created By</th>
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Updated At / By</th>
-              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-center">Actions</th>
+              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Nama</th>
+              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Keterangan</th>
+              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Catatan</th>
+              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Dibuat Pada</th>
+              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Dibuat Oleh</th>
+              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-left">Diubah Pada / Oleh</th>
+              <th class="text-xs font-extrabold text-(--text-muted) py-4 px-3 uppercase tracking-widest text-center">Aksi</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="filteredRows.length === 0">
-              <td colspan="8" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
+              <td colspan="8" class="py-10 px-6 text-center text-sm text-(--text-muted)">Belum ada data.</td>
             </tr>
             <tr v-for="row in paginatedRows" :key="row.id" class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted) transition-colors">
               <td class="py-4 px-3 align-middle text-sm text-(--text-muted) text-center">{{ row.id }}</td>
@@ -60,8 +60,8 @@
               </td>
               <td class="py-4 pl-3 pr-6 align-middle text-center whitespace-nowrap">
                 <div class="flex gap-2 items-center justify-start">
-                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border border-(--border) hover:bg-(--surface-muted) transition-colors cursor-pointer" v-if="canWrite" @click="openEdit(row)">Edit</button>
-                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer" v-if="canWrite" @click="confirmDelete(row)">Delete</button>
+                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border border-(--border) hover:bg-(--surface-muted) transition-colors cursor-pointer" v-if="canWrite" @click="openEdit(row)">Ubah</button>
+                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer" v-if="canWrite" @click="confirmDelete(row)">Hapus</button>
                 </div>
               </td>
             </tr>
@@ -70,7 +70,7 @@
       </div>
 
       <div class="hidden gap-3 max-[1100px]:flex max-[1100px]:flex-col">
-        <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">No data.</div>
+        <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">Belum ada data.</div>
         <div v-for="row in paginatedRows" :key="row.id" class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2">
           <div class="flex items-start justify-between gap-3">
             <div>
@@ -79,16 +79,16 @@
             </div>
           </div>
           <div class="text-xs text-(--text-muted) flex flex-col gap-1">
-            <span>Detail: {{ row.detail || '-' }}</span>
-            <span>Notes: {{ row.notes || '-' }}</span>
-            <span>Created at: {{ formatDateTime(row.created_at) || '-' }}</span>
-            <span>Created by: {{ displayUser(row.created_by) }}</span>
-            <span>Updated at: {{ formatDateTime(row.updated_at) || '-' }}</span>
-            <span>Updated by: {{ displayUser(row.updated_by) }}</span>
+            <span>Keterangan: {{ row.detail || '-' }}</span>
+            <span>Catatan: {{ row.notes || '-' }}</span>
+            <span>Dibuat pada: {{ formatDateTime(row.created_at) || '-' }}</span>
+            <span>Dibuat oleh: {{ displayUser(row.created_by) }}</span>
+            <span>Diubah pada: {{ formatDateTime(row.updated_at) || '-' }}</span>
+            <span>Diubah oleh: {{ displayUser(row.updated_by) }}</span>
           </div>
           <div class="flex justify-end gap-2 mt-1">
-            <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) hover:bg-(--surface-muted) transition-colors cursor-pointer" v-if="canWrite" @click="openEdit(row)">Edit</button>
-            <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer" v-if="canWrite" @click="confirmDelete(row)">Delete</button>
+            <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) hover:bg-(--surface-muted) transition-colors cursor-pointer" v-if="canWrite" @click="openEdit(row)">Ubah</button>
+            <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer" v-if="canWrite" @click="confirmDelete(row)">Hapus</button>
           </div>
         </div>
       </div>
@@ -101,14 +101,14 @@
     <Teleport to="body">
       <div v-if="showDeleteConfirm" role="dialog" aria-modal="true" aria-labelledby="delete-type-of-component-title" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @mousedown.self="showDeleteConfirm = false">
         <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
-          <h3 id="delete-type-of-component-title" class="text-base font-bold text-(--text) m-0">Delete Type of Component</h3>
-          <p class="text-sm text-(--text-muted) m-0">Delete <strong>{{ deletingType?.name }}</strong>? This action cannot be undone.</p>
+          <h3 id="delete-type-of-component-title" class="text-base font-bold text-(--text) m-0">Hapus Jenis Komponen</h3>
+          <p class="text-sm text-(--text-muted) m-0">Hapus <strong>{{ deletingType?.name }}</strong>? Tindakan ini tidak bisa dibatalkan.</p>
           <div v-if="actionError" class="text-xs text-red-500">{{ actionError }}</div>
           <div class="flex justify-end gap-3">
-            <button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors" :disabled="submitting" @click="showDeleteConfirm = false">Cancel</button>
+            <button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors" :disabled="submitting" @click="showDeleteConfirm = false">Batal</button>
             <button type="button" class="border-0 bg-red-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-red-700 transition-colors disabled:opacity-60" :disabled="submitting" @click="onDeleteConfirm">
-              <span v-if="submitting">Deleting&hellip;</span>
-              <span v-else>Yes, Delete</span>
+              <span v-if="submitting">Menghapus&hellip;</span>
+              <span v-else>Ya, Hapus</span>
             </button>
           </div>
         </div>
@@ -180,7 +180,7 @@ async function loadData() {
     await resolveAuditUsers(rows.value)
   } catch (err) {
     console.error('[TypeOfComponent] Failed to load:', err)
-    fetchError.value = err?.message || 'Failed to load data.'
+    fetchError.value = err?.message || 'Gagal memuat data.'
   } finally {
     loading.value = false
   }
@@ -209,16 +209,16 @@ async function onFormSubmit(formData) {
   try {
     if (editingType.value?.id) {
       await updateTypeOfComponent(editingType.value.id, formData)
-      showToast('Type of Component updated successfully.')
+      showToast('Jenis Komponen berhasil diubah.')
     } else {
       await createTypeOfComponent(formData)
-      showToast('Type of Component created successfully.')
+      showToast('Jenis Komponen berhasil ditambahkan.')
     }
     closeForm()
     await loadData()
   } catch (err) {
     console.error('[TypeOfComponent] Save failed:', err)
-    actionError.value = err?.message || 'Failed to save data.'
+    actionError.value = err?.message || 'Gagal menyimpan data.'
   } finally {
     submitting.value = false
   }
@@ -238,11 +238,11 @@ async function onDeleteConfirm() {
     await deleteTypeOfComponent(deletingType.value.id)
     showDeleteConfirm.value = false
     deletingType.value = null
-    showToast('Type of Component deleted successfully.')
+    showToast('Jenis Komponen berhasil dihapus.')
     await loadData()
   } catch (err) {
     console.error('[TypeOfComponent] Delete failed:', err)
-    actionError.value = err?.message || 'Failed to delete data.'
+    actionError.value = err?.message || 'Gagal menghapus data.'
   } finally {
     submitting.value = false
   }

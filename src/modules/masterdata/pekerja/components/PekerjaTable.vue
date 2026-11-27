@@ -61,7 +61,7 @@
                                 type="button"
                                 class="pekerja-btn-view"
                                 @click="onView(row)">
-                                View
+                                Lihat
                             </button>
                         </td>
                     </tr>

@@ -3,14 +3,14 @@
         <!-- Header row -->
         <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
             <div>
-                <h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Aktifitas Kebun</h2>
-                <p class="text-sm text-(--text-muted) m-0">Manage type of work</p>
+                <h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Aktivitas Kebun</h2>
+                <p class="text-sm text-(--text-muted) m-0">Kelola jenis pekerjaan per kelompok</p>
             </div>
             <button
                 type="button"
                 class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl cursor-pointer hover:bg-green-700 transition-colors shadow-sm"
                 v-if="canWrite" @click="openCreate">
-                + Add Activity
+                + Tambah Aktivitas
             </button>
         </div>
 
@@ -19,19 +19,19 @@
             <input
                 v-model="searchName"
                 type="text"
-                placeholder="Search activity name…"
+                placeholder="Cari nama aktivitas…"
                 class="border border-(--border) rounded-lg px-3.5 py-2 text-sm text-(--text) bg-(--surface) outline-none focus:border-green-500 transition-colors w-56" />
             <select
                 v-model="filterGroup"
                 class="border border-(--border) rounded-lg px-3.5 py-2 text-sm text-(--text) bg-(--surface) outline-none focus:border-green-500 transition-colors">
-                <option value="">All Groups</option>
+                <option value="">Semua Kelompok</option>
                 <option v-for="g in groups" :key="g.id" :value="g.id">{{ g.name }}</option>
             </select>
         </div>
 
         <!-- Loading -->
         <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">
-            Loading data&hellip;
+            Memuat data&hellip;
         </div>
 
         <!-- Error -->
@@ -45,18 +45,18 @@
                 <table class="w-full border-collapse">
                     <thead>
                         <tr class="border-b border-(--border) bg-(--surface-muted)">
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Name</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Group</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Detail</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Nama</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Kelompok</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Keterangan</th>
                             <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Foto</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Created By</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Updated By</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Actions</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Dibuat Oleh</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Diubah Oleh</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="filteredRows.length === 0">
-                            <td colspan="7" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
+                            <td colspan="7" class="py-10 px-6 text-center text-sm text-(--text-muted)">Belum ada data.</td>
                         </tr>
                         <tr
                             v-for="row in paginatedRows"
@@ -80,13 +80,13 @@
                                         type="button"
                                         class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border-0 hover:bg-(--surface-muted) transition-colors cursor-pointer"
                                         v-if="canWrite" @click="openEdit(row)">
-                                        Edit
+                                        Ubah
                                     </button>
                                     <button
                                         type="button"
                                         class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
                                         v-if="canWrite" @click="confirmDelete(row)">
-                                        Delete
+                                        Hapus
                                     </button>
                                 </div>
                             </td>
@@ -97,31 +97,31 @@
 
             <!-- Mobile cards -->
             <div class="hidden gap-3 max-[920px]:flex max-[920px]:flex-col">
-                <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">No data.</div>
+                <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">Belum ada data.</div>
                 <div
                     v-for="row in paginatedRows"
                     :key="row.id"
                     class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2">
                     <div class="font-bold text-sm text-(--text)">{{ row.name }}</div>
                     <div class="text-xs text-(--text-muted) flex flex-wrap gap-x-4 gap-y-1">
-                        <span v-if="row.group_of_work_name">Group: {{ row.group_of_work_name }}</span>
-                        <span v-if="row.detail">Detail: {{ row.detail }}</span>
+                        <span v-if="row.group_of_work_name">Kelompok: {{ row.group_of_work_name }}</span>
+                        <span v-if="row.detail">Keterangan: {{ row.detail }}</span>
                         <span>Foto: {{ Number(row.is_upload) ? 'Ya' : 'Tidak' }}</span>
-                        <span>Created by: {{ userName(row.created_by) }}</span>
-                        <span>Updated by: {{ userName(row.updated_by) }}</span>
+                        <span>Dibuat oleh: {{ userName(row.created_by) }}</span>
+                        <span>Diubah oleh: {{ userName(row.updated_by) }}</span>
                     </div>
                     <div class="flex justify-end gap-2 mt-1">
                         <button
                             type="button"
                             class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) hover:bg-(--surface-muted) transition-colors cursor-pointer"
                             v-if="canWrite" @click="openEdit(row)">
-                            Edit
+                            Ubah
                         </button>
                         <button
                             type="button"
                             class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
                             v-if="canWrite" @click="confirmDelete(row)">
-                            Delete
+                            Hapus
                         </button>
                     </div>
                 </div>
@@ -146,9 +146,9 @@
                 class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
                 @mousedown.self="showDeleteConfirm = false">
                 <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
-                    <h3 class="text-base font-bold text-(--text) m-0">Delete Activity</h3>
+                    <h3 class="text-base font-bold text-(--text) m-0">Hapus Aktivitas</h3>
                     <p class="text-sm text-(--text-muted) m-0">
-                        Delete activity <strong>{{ deletingActivity?.name }}</strong>? This action cannot be undone.
+                        Hapus Aktivitas <strong>{{ deletingActivity?.name }}</strong>? Tindakan ini tidak bisa dibatalkan.
                     </p>
                     <div v-if="actionError" class="text-xs text-red-500">{{ actionError }}</div>
                     <div class="flex justify-end gap-3">
@@ -157,15 +157,15 @@
                             class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
                             :disabled="submitting"
                             @click="showDeleteConfirm = false">
-                            Cancel
+                            Batal
                         </button>
                         <button
                             type="button"
                             class="border-0 bg-red-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-red-700 transition-colors disabled:opacity-60"
                             :disabled="submitting"
                             @click="onDeleteConfirm">
-                            <span v-if="submitting">Deleting&hellip;</span>
-                            <span v-else>Yes, Delete</span>
+                            <span v-if="submitting">Menghapus&hellip;</span>
+                            <span v-else>Ya, Hapus</span>
                         </button>
                     </div>
                 </div>
@@ -239,7 +239,7 @@ async function loadData() {
         groups.value = groupList
     } catch (err) {
         console.error('[AktifitasKebun] Failed to load:', err)
-        fetchError.value = err?.message || 'Failed to load data.'
+        fetchError.value = err?.message || 'Gagal memuat data.'
     } finally {
         loading.value = false
     }
@@ -282,16 +282,16 @@ async function onFormSubmit(formData) {
                 const merged = updated || { ...rows.value[idx], ...formData }
                 rows.value[idx] = enrichWithGroupName(merged)
             }
-            showToast('Activity updated successfully.')
+            showToast('Aktivitas berhasil diubah.')
         } else {
             const created = await createTypeOfWork(formData)
             if (created) rows.value.unshift(enrichWithGroupName(created))
-            showToast('Activity created successfully.')
+            showToast('Aktivitas berhasil ditambahkan.')
         }
         closeForm()
     } catch (err) {
         console.error('[AktifitasKebun] Save failed:', err)
-        actionError.value = err?.message || 'Failed to save data.'
+        actionError.value = err?.message || 'Gagal menyimpan data.'
     } finally {
         submitting.value = false
     }
@@ -312,10 +312,10 @@ async function onDeleteConfirm() {
         rows.value = rows.value.filter(r => r.id !== deletingActivity.value.id)
         showDeleteConfirm.value = false
         deletingActivity.value = null
-        showToast('Activity deleted successfully.')
+        showToast('Aktivitas berhasil dihapus.')
     } catch (err) {
         console.error('[AktifitasKebun] Delete failed:', err)
-        actionError.value = err?.message || 'Failed to delete activity.'
+        actionError.value = err?.message || 'Gagal menghapus aktivitas.'
     } finally {
         submitting.value = false
     }

@@ -3,8 +3,8 @@
     <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @mousedown.self="onCancel">
       <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Edit TPH' : 'Add TPH' }}</h3>
-          <button type="button" class="border-0 bg-transparent cursor-pointer text-(--text-soft) hover:text-(--text) text-xl leading-none" aria-label="Close" @click="onCancel">&times;</button>
+          <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Ubah TPH' : 'Tambah TPH' }}</h3>
+          <button type="button" class="border-0 bg-transparent cursor-pointer text-(--text-soft) hover:text-(--text) text-xl leading-none" aria-label="Tutup" @click="onCancel">&times;</button>
         </div>
 
         <form class="flex flex-col gap-4" novalidate @submit.prevent="onSubmit">
@@ -12,21 +12,21 @@
           <div class="flex flex-col gap-1">
             <label class="text-sm font-semibold text-(--text)" for="tph-petak">Petak <span class="text-red-500">*</span></label>
             <select id="tph-petak" v-model="form.id_block" :disabled="petakLoading" :class="fieldClass('id_block')">
-              <option :value="null">{{ petakLoading ? 'Loading…' : 'Select petak' }}</option>
+              <option :value="null">{{ petakLoading ? 'Memuat…' : 'Pilih petak' }}</option>
               <option v-for="p in petakOptions" :key="p.id" :value="p.id">
                 {{ p.name }}{{ p.block_group ? ` · Blok ${p.block_group}` : '' }}
               </option>
             </select>
             <span v-if="errors.id_block" class="text-xs text-red-500">{{ errors.id_block }}</span>
             <span v-else-if="petakError" class="text-xs text-red-500">{{ petakError }}</span>
-            <span v-else class="text-xs text-(--text-soft)">Source: Master Data → Nomor Petak</span>
+            <span v-else class="text-xs text-(--text-soft)">Sumber: Data Master → Nomor Petak</span>
           </div>
 
           <div class="grid grid-cols-3 gap-4 max-[520px]:grid-cols-1">
             <div class="flex flex-col gap-1">
               <label class="text-sm font-semibold text-(--text)" for="tph-type">Jenis <span class="text-red-500">*</span></label>
               <select id="tph-type" v-model="form.tph_type" :class="fieldClass('tph_type')">
-                <option value="">Select</option>
+                <option value="">Pilih</option>
                 <option value="PERAWATAN">Perawatan</option>
                 <option value="PANEN">Panen</option>
               </select>
@@ -35,7 +35,7 @@
             <div class="flex flex-col gap-1">
               <label class="text-sm font-semibold text-(--text)" for="tph-side">Sisi <span class="text-red-500">*</span></label>
               <select id="tph-side" v-model="form.side" :class="fieldClass('side')">
-                <option value="">Select</option>
+                <option value="">Pilih</option>
                 <option value="U">U (utara)</option>
                 <option value="S">S (selatan)</option>
                 <option value="US">US (utara-selatan)</option>
@@ -56,7 +56,7 @@
           <div class="grid grid-cols-2 gap-4 max-[520px]:grid-cols-1">
             <div class="flex flex-col gap-1">
               <label class="text-sm font-semibold text-(--text)" for="tph-trees">Jumlah Pohon</label>
-              <input id="tph-trees" v-model.number="form.tree_count" type="number" min="0" step="1" placeholder="e.g. 40" :class="fieldClass('tree_count')" />
+              <input id="tph-trees" v-model.number="form.tree_count" type="number" min="0" step="1" placeholder="mis. 40" :class="fieldClass('tree_count')" />
               <span v-if="errors.tree_count" class="text-xs text-red-500">{{ errors.tree_count }}</span>
             </div>
             <div class="flex flex-col gap-1">
@@ -68,12 +68,12 @@
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-sm font-semibold text-(--text)" for="tph-lat">Latitude</label>
-              <input id="tph-lat" v-model.trim="form.latitude" type="text" inputmode="decimal" placeholder="e.g. -0.5123" :class="fieldClass('latitude')" />
+              <input id="tph-lat" v-model.trim="form.latitude" type="text" inputmode="decimal" placeholder="mis. -0.5123" :class="fieldClass('latitude')" />
               <span v-if="errors.latitude" class="text-xs text-red-500">{{ errors.latitude }}</span>
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-sm font-semibold text-(--text)" for="tph-lng">Longitude</label>
-              <input id="tph-lng" v-model.trim="form.longitude" type="text" inputmode="decimal" placeholder="e.g. 117.1234" :class="fieldClass('longitude')" />
+              <input id="tph-lng" v-model.trim="form.longitude" type="text" inputmode="decimal" placeholder="mis. 117.1234" :class="fieldClass('longitude')" />
               <span v-if="errors.longitude" class="text-xs text-red-500">{{ errors.longitude }}</span>
             </div>
           </div>
@@ -87,10 +87,10 @@
           <div v-if="error" class="text-xs text-red-500">{{ error }}</div>
 
           <div class="flex justify-end gap-3 pt-1">
-            <button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted)" :disabled="submitting" @click="onCancel">Cancel</button>
+            <button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted)" :disabled="submitting" @click="onCancel">Batal</button>
             <button type="submit" class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-green-700 disabled:opacity-60" :disabled="submitting">
-              <span v-if="submitting">Saving&hellip;</span>
-              <span v-else>{{ isEdit ? 'Save Changes' : 'Add TPH' }}</span>
+              <span v-if="submitting">Menyimpan&hellip;</span>
+              <span v-else>{{ isEdit ? 'Simpan Perubahan' : 'Tambah TPH' }}</span>
             </button>
           </div>
         </form>
@@ -134,7 +134,7 @@ async function loadPetak() {
     const rows = await listPetakOptions()
     petakOptions.value = rows.slice().sort((a, b) => String(a.name).localeCompare(String(b.name), 'id', { numeric: true }))
   } catch (err) {
-    petakError.value = err?.message || 'Failed to load petak.'
+    petakError.value = err?.message || 'Gagal memuat petak.'
   } finally {
     petakLoading.value = false
   }

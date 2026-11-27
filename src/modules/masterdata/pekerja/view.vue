@@ -3,7 +3,7 @@
         <BaseSidebar :items="navigation" :user="user" />
         <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
             <BaseHeader
-                eyebrow="Master Data"
+                eyebrow="Data Master"
                 title="Pekerja"
                 :notifications="0"
                 :user="user"
@@ -16,7 +16,7 @@
                             Daftar Pekerja
                         </h1>
                         <button v-if="isOwner" type="button" class="add-user-button" :disabled="openingAdd" @click="openAddUser">
-                            <span aria-hidden="true">+</span>{{ openingAdd ? 'Memuat…' : 'Tambah User' }}
+                            <span aria-hidden="true">+</span>{{ openingAdd ? 'Memuat…' : 'Tambah Pengguna' }}
                         </button>
                     </div>
 
@@ -98,7 +98,7 @@ async function openAddUser() {
         configuration.value = await userManagementService.getConfiguration()
         addModalOpen.value = true
     } catch (err) {
-        showToast(userManagementErrorMessage(err, 'Gagal memuat konfigurasi user.'), 'error')
+        showToast(userManagementErrorMessage(err, 'Gagal memuat konfigurasi pengguna.'), 'error')
     } finally {
         openingAdd.value = false
     }
@@ -125,10 +125,10 @@ async function createUser(form) {
             encryptedPassword
         })
         addModalOpen.value = false
-        showToast('User berhasil dibuat.')
+        showToast('Pengguna berhasil dibuat.')
         await loadData()
     } catch (err) {
-        modalError.value = userManagementErrorMessage(err, 'Gagal membuat user.')
+        modalError.value = userManagementErrorMessage(err, 'Gagal membuat pengguna.')
     } finally {
         savingAdd.value = false
     }

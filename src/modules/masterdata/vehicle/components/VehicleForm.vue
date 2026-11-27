@@ -6,11 +6,11 @@
             @mousedown.self="onCancel">
             <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Edit Vehicle' : 'Add Vehicle' }}</h3>
+                    <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Ubah Kendaraan' : 'Tambah Kendaraan' }}</h3>
                     <button
                         type="button"
                         class="border-0 bg-transparent cursor-pointer text-(--text-soft) hover:text-(--text) text-xl leading-none transition-colors"
-                        aria-label="Close"
+                        aria-label="Tutup"
                         @click="onCancel">
                         &times;
                     </button>
@@ -20,13 +20,13 @@
                     <!-- Name -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="vehicle-name">
-                            Name <span class="text-red-500">*</span>
+                            Nama <span class="text-red-500">*</span>
                         </label>
                         <input
                             id="vehicle-name"
                             v-model.trim="form.name"
                             type="text"
-                            placeholder="e.g. Truck A"
+                            placeholder="mis. Truck A"
                             class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
                             :class="
                                 errors.name
@@ -39,24 +39,24 @@
 
                     <!-- Title -->
                     <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="vehicle-title">Title</label>
+                        <label class="text-sm font-semibold text-(--text)" for="vehicle-title">Judul</label>
                         <input
                             id="vehicle-title"
                             v-model.trim="form.title"
                             type="text"
-                            placeholder="e.g. Heavy Truck"
+                            placeholder="mis. Heavy Truck"
                             class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors"
                             autocomplete="off" />
                     </div>
 
                     <!-- Type -->
                     <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="vehicle-type">Type</label>
+                        <label class="text-sm font-semibold text-(--text)" for="vehicle-type">Tipe</label>
                         <input
                             id="vehicle-type"
                             v-model.trim="form.type"
                             type="text"
-                            placeholder="e.g. Dump Truck"
+                            placeholder="mis. Dump Truck"
                             class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors"
                             autocomplete="off" />
                     </div>
@@ -64,14 +64,14 @@
                     <!-- Plate Number -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="vehicle-plate">
-                            Plate Number <span class="text-red-500">*</span>
+                            Nomor Polisi <span class="text-red-500">*</span>
                         </label>
                         <input
                             id="vehicle-plate"
                             v-model="form.plate_number"
                             type="text"
                             maxlength="30"
-                            placeholder="e.g. KT 1234 AB"
+                            placeholder="mis. KT 1234 AB"
                             class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors uppercase"
                             :class="
                                 errors.plate_number
@@ -84,12 +84,12 @@
 
                     <!-- Notes -->
                     <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="vehicle-notes">Notes</label>
+                        <label class="text-sm font-semibold text-(--text)" for="vehicle-notes">Catatan</label>
                         <textarea
                             id="vehicle-notes"
                             v-model.trim="form.notes"
                             rows="3"
-                            placeholder="Additional notes"
+                            placeholder="Catatan tambahan"
                             class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors resize-none" />
                     </div>
 
@@ -100,14 +100,14 @@
                             class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
                             :disabled="submitting"
                             @click="onCancel">
-                            Cancel
+                            Batal
                         </button>
                         <button
                             type="submit"
                             class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-green-700 transition-colors disabled:opacity-60"
                             :disabled="submitting">
-                            <span v-if="submitting">Saving&hellip;</span>
-                            <span v-else>{{ isEdit ? 'Save Changes' : 'Add Vehicle' }}</span>
+                            <span v-if="submitting">Menyimpan&hellip;</span>
+                            <span v-else>{{ isEdit ? 'Simpan Perubahan' : 'Tambah Kendaraan' }}</span>
                         </button>
                     </div>
                 </form>
@@ -165,8 +165,8 @@ watch(
 
 function validate() {
     const errs = {}
-    if (!form.value.name) errs.name = 'Name is required.'
-    if (!normalizePlate(form.value.plate_number)) errs.plate_number = 'Plate number is required.'
+    if (!form.value.name) errs.name = 'Nama wajib diisi.'
+    if (!normalizePlate(form.value.plate_number)) errs.plate_number = 'Nomor polisi wajib diisi.'
     errors.value = errs
     return Object.keys(errs).length === 0
 }

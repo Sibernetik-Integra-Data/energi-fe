@@ -3,7 +3,7 @@
         <BaseSidebar :items="navigation" :user="user" />
         <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
             <BaseHeader
-                eyebrow="Master Data"
+                eyebrow="Data Master"
                 :title="pageTitle"
                 :notifications="0"
                 :user="user"
@@ -28,7 +28,7 @@ import { loadStrapiSidebarNavigation } from '../../shared/sidebar/strapiNavigati
 const appStore = useAppStore()
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 const navigation = sharedNavigation
-const pageTitle = ref('Aktifitas Kebun')
+const pageTitle = ref('Aktivitas Kebun')
 const targetPath = '/master-data/aktifitas-kebun'
 let refreshTimerId = null
 

@@ -6,11 +6,11 @@
             @mousedown.self="onCancel">
             <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Edit Status' : 'Add Status' }}</h3>
+                    <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Ubah Status' : 'Tambah Status' }}</h3>
                     <button
                         type="button"
                         class="border-0 bg-transparent cursor-pointer text-(--text-soft) hover:text-(--text) text-xl leading-none transition-colors"
-                        aria-label="Close"
+                        aria-label="Tutup"
                         @click="onCancel">
                         &times;
                     </button>
@@ -20,13 +20,13 @@
                     <!-- Name -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="sps-name">
-                            Name <span class="text-red-500" aria-hidden="true">*</span>
+                            Nama <span class="text-red-500" aria-hidden="true">*</span>
                         </label>
                         <input
                             id="sps-name"
                             v-model.trim="form.name"
                             type="text"
-                            placeholder="e.g. In Progress"
+                            placeholder="mis. In Progress"
                             maxlength="100"
                             autocomplete="off"
                             aria-required="true"
@@ -42,13 +42,13 @@
 
                     <!-- Detail -->
                     <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="sps-detail">Detail</label>
+                        <label class="text-sm font-semibold text-(--text)" for="sps-detail">Keterangan</label>
                         <textarea
                             id="sps-detail"
                             v-model.trim="form.detail"
                             rows="3"
                             maxlength="500"
-                            placeholder="Optional description"
+                            placeholder="Keterangan (opsional)"
                             class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors resize-none" />
                         <span v-if="errors.detail" class="text-xs text-red-500" role="alert">{{ errors.detail }}</span>
                     </div>
@@ -60,14 +60,14 @@
                             class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
                             :disabled="submitting"
                             @click="onCancel">
-                            Cancel
+                            Batal
                         </button>
                         <button
                             type="submit"
                             class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-green-700 transition-colors disabled:opacity-60"
                             :disabled="submitting">
-                            <span v-if="submitting">Saving&hellip;</span>
-                            <span v-else>{{ isEdit ? 'Save Changes' : 'Add Status' }}</span>
+                            <span v-if="submitting">Menyimpan&hellip;</span>
+                            <span v-else>{{ isEdit ? 'Simpan Perubahan' : 'Tambah Status' }}</span>
                         </button>
                     </div>
                 </form>
@@ -109,12 +109,12 @@ watch(
 function validate() {
     const errs = {}
     if (!form.value.name) {
-        errs.name = 'Name is required.'
+        errs.name = 'Nama wajib diisi.'
     } else if (form.value.name.length > 100) {
-        errs.name = 'Name must be 100 characters or fewer.'
+        errs.name = 'Nama maksimal 100 karakter.'
     }
     if (form.value.detail && form.value.detail.length > 500) {
-        errs.detail = 'Detail must be 500 characters or fewer.'
+        errs.detail = 'Keterangan maksimal 500 karakter.'
     }
     errors.value = errs
     return Object.keys(errs).length === 0

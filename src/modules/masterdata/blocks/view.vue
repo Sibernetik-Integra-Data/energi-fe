@@ -3,8 +3,8 @@
         <BaseSidebar :items="navigation" :user="user" />
         <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
             <BaseHeader
-                eyebrow="Master Data"
-                title="Blocks"
+                eyebrow="Data Master"
+                title="Blok"
                 :notifications="0"
                 :user="user"
                 :on-logout="logoutFromKeycloak" />

@@ -2,7 +2,7 @@
   <div class="flex h-screen bg-(--bg) text-(--text)">
     <BaseSidebar :items="navigation" :user="user" />
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <BaseHeader eyebrow="Profile" title="Profile" :notifications="0" :user="user" :on-logout="logoutFromKeycloak" />
+      <BaseHeader eyebrow="Profil" title="Profil" :notifications="0" :user="user" :on-logout="logoutFromKeycloak" />
       <main class="flex-1 overflow-y-auto p-8 max-[920px]:p-4">
         <div class="mb-5">
           <button type="button" class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-(--border) bg-(--surface) px-3 py-2 text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:border-(--border-strong)" @click="goBack">
@@ -22,9 +22,9 @@
               </div>
               <div class="mx-6 h-px bg-(--border)"></div>
               <nav class="flex flex-col gap-1 p-6">
-                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'profile' ? 'is-active bg-(--brand-soft)' : ''" @click="setTab('profile')"><BaseIcon name="profile" :size="16" /> Profile</button>
+                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'profile' ? 'is-active bg-(--brand-soft)' : ''" @click="setTab('profile')"><BaseIcon name="profile" :size="16" /> Profil</button>
                 <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'performance' ? 'is-active bg-(--brand-soft)' : ''" @click="setTab('performance')"><BaseIcon name="dashboard" :size="16" /> Performance Overview</button>
-                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'account' ? 'is-active bg-(--brand-soft)' : ''" @click="setTab('account')"><BaseIcon name="settings" :size="16" /> Account Config</button>
+                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'account' ? 'is-active bg-(--brand-soft)' : ''" @click="setTab('account')"><BaseIcon name="settings" :size="16" /> Konfigurasi Akun</button>
               </nav>
             </div>
           </aside>
@@ -34,15 +34,15 @@
             <div v-else-if="error" class="rounded-2xl bg-(--surface) p-10 text-center text-sm text-red-600">{{ error }}</div>
             <template v-else-if="tab === 'profile'">
               <div class="overflow-hidden rounded-2xl bg-(--surface)">
-                <div class="flex items-start gap-4 p-6"><div class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#fbc66b] text-xl font-bold text-white"><img v-if="avatarUrl" :src="avatarUrl" :alt="fullName" class="h-full w-full object-cover" /><span v-else>{{ initials }}</span></div><div><p class="m-0 text-base font-bold">Foto Profil</p><p class="m-0 text-sm leading-5 text-(--text-muted)">Optimal size 300 x 300 pixels with file size: Maximum 10 MB.</p><p class="m-0 text-sm leading-5 text-(--text-muted)">Allowed file extensions: JPG, JPEG, PNG.</p></div></div>
+                <div class="flex items-start gap-4 p-6"><div class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#fbc66b] text-xl font-bold text-white"><img v-if="avatarUrl" :src="avatarUrl" :alt="fullName" class="h-full w-full object-cover" /><span v-else>{{ initials }}</span></div><div><p class="m-0 text-base font-bold">Foto Profil</p><p class="m-0 text-sm leading-5 text-(--text-muted)">Ukuran ideal 300 x 300 piksel, maksimal 10 MB.</p><p class="m-0 text-sm leading-5 text-(--text-muted)">Allowed file extensions: JPG, JPEG, PNG.</p></div></div>
                 <div class="grid grid-cols-2 gap-6 px-6 pb-6 max-[640px]:grid-cols-1"><ProfileField label="Nama Depan" :value="worker?.firstName || worker?.first_name" /><ProfileField label="Nama Belakang" :value="worker?.lastName || worker?.last_name" /><ProfileField label="Tanggal Lahir" :value="worker?.birthDate" /><ProfileField label="Marital Status" :value="worker?.maritalStatus" /><ProfileField label="Email" :value="worker?.email" /><ProfileField label="Gender" :value="worker?.gender" /><ProfileField label="User Access" :value="worker?.access || worker?.jabatan" /><ProfileField label="Address 1" :value="worker?.address1" full /><ProfileField label="Address 2" :value="worker?.address2" full /></div>
-                <div v-if="isOwner" class="flex justify-end border-t border-(--border) p-6"><button type="button" class="cursor-pointer rounded-full bg-(--text) px-4 py-3 text-base font-medium text-(--surface) transition-opacity hover:opacity-80" :disabled="openingEdit" @click="openEdit">{{ openingEdit ? 'Memuat…' : 'Edit Profile' }}</button></div>
+                <div v-if="isOwner" class="flex justify-end border-t border-(--border) p-6"><button type="button" class="cursor-pointer rounded-full bg-(--text) px-4 py-3 text-base font-medium text-(--surface) transition-opacity hover:opacity-80" :disabled="openingEdit" @click="openEdit">{{ openingEdit ? 'Memuat…' : 'Ubah Profil' }}</button></div>
               </div>
             </template>
             <template v-else-if="tab === 'performance'">
               <WorkerPerformanceTab :user-id="String(worker?.user_id || worker?.id || '')" />
             </template>
-            <div v-else class="rounded-2xl bg-(--surface) p-8"><h2 class="m-0 text-lg font-bold">Account Config</h2><p class="mt-2 text-sm text-(--text-muted)">-</p></div>
+            <div v-else class="rounded-2xl bg-(--surface) p-8"><h2 class="m-0 text-lg font-bold">Konfigurasi Akun</h2><p class="mt-2 text-sm text-(--text-muted)">-</p></div>
           </section>
         </div>
       </main>
@@ -151,7 +151,7 @@ onMounted(async () => {
     isOwner.value = access?.isOwner === true
     canViewProfiles.value = access?.canViewWorkerProfiles === true
     worker.value = workerRow
-    if (!worker.value) error.value = 'User tidak ditemukan.'
+    if (!worker.value) error.value = 'Pengguna tidak ditemukan.'
     else {
       if (canViewProfiles.value) {
         const managedUser = await userManagementService.getUser(route.params.userId)
@@ -167,7 +167,7 @@ onMounted(async () => {
       await loadAvatar(worker.value.avatar_uri)
     }
   } catch (err) {
-    error.value = err?.message || 'Gagal memuat profil user.'
+    error.value = err?.message || 'Gagal memuat profil pengguna.'
   } finally {
     loading.value = false
   }
@@ -180,7 +180,7 @@ async function openEdit() {
     configuration.value = await userManagementService.getConfiguration()
     editModalOpen.value = true
   } catch (err) {
-    showToast(userManagementErrorMessage(err, 'Gagal memuat konfigurasi user.'), 'error')
+    showToast(userManagementErrorMessage(err, 'Gagal memuat konfigurasi pengguna.'), 'error')
   } finally {
     openingEdit.value = false
   }
@@ -222,9 +222,9 @@ async function saveUser(form) {
       jabatan: updatedUser.access
     }
     editModalOpen.value = false
-    showToast('Profile user berhasil diperbarui.')
+    showToast('Profil pengguna berhasil diperbarui.')
   } catch (err) {
-    formError.value = userManagementErrorMessage(err, 'Gagal memperbarui profile user.')
+    formError.value = userManagementErrorMessage(err, 'Gagal memperbarui profil pengguna.')
   } finally {
     saving.value = false
   }

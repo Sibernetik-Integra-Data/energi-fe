@@ -6,11 +6,11 @@
             @mousedown.self="onCancel">
             <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Edit Activity' : 'Add Activity' }}</h3>
+                    <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? 'Ubah Aktivitas' : 'Tambah Aktivitas' }}</h3>
                     <button
                         type="button"
                         class="border-0 bg-transparent cursor-pointer text-(--text-soft) hover:text-(--text) text-xl leading-none transition-colors"
-                        aria-label="Close"
+                        aria-label="Tutup"
                         @click="onCancel">
                         &times;
                     </button>
@@ -20,13 +20,13 @@
                     <!-- Name -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="kebun-name">
-                            Name <span class="text-red-500">*</span>
+                            Nama <span class="text-red-500">*</span>
                         </label>
                         <input
                             id="kebun-name"
                             v-model.trim="form.name"
                             type="text"
-                            placeholder="e.g. Pemupukan Dasar"
+                            placeholder="mis. Pemupukan Dasar"
                             class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
                             :class="
                                 errors.name
@@ -39,19 +39,19 @@
 
                     <!-- Detail -->
                     <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="kebun-detail">Detail</label>
+                        <label class="text-sm font-semibold text-(--text)" for="kebun-detail">Keterangan</label>
                         <textarea
                             id="kebun-detail"
                             v-model.trim="form.detail"
                             rows="3"
-                            placeholder="Activity description"
+                            placeholder="Keterangan aktivitas"
                             class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors resize-none" />
                     </div>
 
                     <!-- Group of Work -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="kebun-group">
-                            Group of Work <span class="text-red-500">*</span>
+                            Kelompok Pekerjaan <span class="text-red-500">*</span>
                         </label>
                         <select
                             id="kebun-group"
@@ -62,11 +62,11 @@
                                     ? 'border-red-400 bg-red-50 focus:border-red-500'
                                     : 'border-(--border) bg-(--surface-muted) focus:border-green-500'
                             ">
-                            <option value="" disabled>Select group…</option>
+                            <option value="" disabled>Pilih kelompok…</option>
                             <option v-for="g in groups" :key="g.id" :value="g.id">{{ g.name }}</option>
                         </select>
                         <span v-if="errors.group_of_work" class="text-xs text-red-500">{{ errors.group_of_work }}</span>
-                        <div v-if="groupsLoading" class="text-xs text-(--text-muted)">Loading groups&hellip;</div>
+                        <div v-if="groupsLoading" class="text-xs text-(--text-muted)">Memuat kelompok&hellip;</div>
                         <div v-if="groupLoadError" class="text-xs text-red-500">{{ groupLoadError }}</div>
                     </div>
 
@@ -88,14 +88,14 @@
                             class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
                             :disabled="submitting"
                             @click="onCancel">
-                            Cancel
+                            Batal
                         </button>
                         <button
                             type="submit"
                             class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-green-700 transition-colors disabled:opacity-60"
                             :disabled="submitting">
-                            <span v-if="submitting">Saving&hellip;</span>
-                            <span v-else>{{ isEdit ? 'Save Changes' : 'Add Activity' }}</span>
+                            <span v-if="submitting">Menyimpan&hellip;</span>
+                            <span v-else>{{ isEdit ? 'Simpan Perubahan' : 'Tambah Aktivitas' }}</span>
                         </button>
                     </div>
                 </form>
@@ -140,7 +140,7 @@ async function loadGroups() {
         groups.value = await listGroupOfWork()
     } catch (err) {
         console.error('[KebunForm] Failed to load groups:', err)
-        groupLoadError.value = err?.message || 'Failed to load groups.'
+        groupLoadError.value = err?.message || 'Gagal memuat kelompok pekerjaan.'
     } finally {
         groupsLoading.value = false
     }
@@ -167,9 +167,9 @@ watch(
 
 function validate() {
     const errs = {}
-    if (!form.value.name) errs.name = 'Name is required.'
+    if (!form.value.name) errs.name = 'Nama wajib diisi.'
     if (form.value.group_of_work === '' || form.value.group_of_work == null) {
-        errs.group_of_work = 'Group of Work is required.'
+        errs.group_of_work = 'Kelompok Pekerjaan wajib diisi.'
     }
     errors.value = errs
     return Object.keys(errs).length === 0

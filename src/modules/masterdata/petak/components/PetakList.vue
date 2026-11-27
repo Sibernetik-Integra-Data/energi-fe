@@ -7,7 +7,7 @@
       </div>
       <button v-if="canWrite" type="button"
         class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl cursor-pointer hover:bg-green-700 shadow-sm"
-        @click="openCreate">+ Add Petak</button>
+        @click="openCreate">+ Tambah Petak</button>
     </div>
 
     <div class="flex flex-wrap gap-3 mb-4">
@@ -25,7 +25,7 @@
       </select>
     </div>
 
-    <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">Loading data&hellip;</div>
+    <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">Memuat data&hellip;</div>
     <div v-else-if="fetchError" class="flex justify-center items-center py-16 text-sm text-red-600">{{ fetchError }}</div>
 
     <template v-else>
@@ -34,12 +34,12 @@
           <thead>
             <tr class="border-b border-(--border) bg-(--surface-muted)">
               <th v-for="h in headers" :key="h" class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">{{ h }}</th>
-              <th v-if="canWrite" class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">Actions</th>
+              <th v-if="canWrite" class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">Aksi</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="filteredRows.length === 0">
-              <td :colspan="headers.length + (canWrite ? 1 : 0)" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
+              <td :colspan="headers.length + (canWrite ? 1 : 0)" class="py-10 px-6 text-center text-sm text-(--text-muted)">Belum ada data.</td>
             </tr>
             <tr v-for="row in paginatedRows" :key="row.id" class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted)">
               <td class="py-3 px-4 text-sm font-semibold text-(--text)">{{ row.name }}</td>
@@ -52,8 +52,8 @@
               <td class="py-3 px-4 text-sm text-(--text-muted)">{{ userName(row.updated_by || row.created_by) }}</td>
               <td v-if="canWrite" class="py-3 px-4">
                 <div class="flex gap-2 items-center">
-                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border-0 hover:bg-(--surface-muted) cursor-pointer" @click="openEdit(row)">Edit</button>
-                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 cursor-pointer" @click="confirmDelete(row)">Delete</button>
+                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border-0 hover:bg-(--surface-muted) cursor-pointer" @click="openEdit(row)">Ubah</button>
+                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 cursor-pointer" @click="confirmDelete(row)">Hapus</button>
                 </div>
               </td>
             </tr>
@@ -62,7 +62,7 @@
       </div>
 
       <div class="hidden gap-3 max-[920px]:flex max-[920px]:flex-col">
-        <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">No data.</div>
+        <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">Belum ada data.</div>
         <div v-for="row in paginatedRows" :key="row.id" class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2">
           <div class="flex justify-between items-center gap-2">
             <span class="font-bold text-sm text-(--text)">{{ row.name }} · {{ row.block_group ? `Blok ${row.block_group}` : '-' }}</span>
@@ -73,11 +73,11 @@
             <span>Pohon: {{ fmt(row.plants_count) }}</span>
             <span>Luas: {{ row.wide == null ? '-' : `${Number(row.wide)} ha` }}</span>
             <span>TPH: {{ tphCount(row) }}</span>
-            <span>Updated by: {{ userName(row.updated_by || row.created_by) }}</span>
+            <span>Diubah oleh: {{ userName(row.updated_by || row.created_by) }}</span>
           </div>
           <div v-if="canWrite" class="flex justify-end gap-2 mt-1">
-            <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) cursor-pointer" @click="openEdit(row)">Edit</button>
-            <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold cursor-pointer" @click="confirmDelete(row)">Delete</button>
+            <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) cursor-pointer" @click="openEdit(row)">Ubah</button>
+            <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold cursor-pointer" @click="confirmDelete(row)">Hapus</button>
           </div>
         </div>
       </div>
@@ -88,14 +88,14 @@
     <Teleport to="body">
       <div v-if="deleting" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @mousedown.self="deleting = null">
         <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
-          <h3 class="text-base font-bold text-(--text) m-0">Delete Petak</h3>
+          <h3 class="text-base font-bold text-(--text) m-0">Hapus Petak</h3>
           <p class="text-sm text-(--text-muted) m-0">Hapus petak <strong>{{ deleting.name }}</strong>? Tidak bisa dibatalkan.</p>
           <p v-if="tphCount(deleting) > 0" class="text-xs text-amber-700 m-0">Petak ini masih punya {{ tphCount(deleting) }} TPH aktif; hapus atau pindahkan TPH-nya dulu.</p>
           <div v-if="actionError" class="text-xs text-red-500">{{ actionError }}</div>
           <div class="flex justify-end gap-3">
-            <button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer" :disabled="submitting" @click="deleting = null">Cancel</button>
+            <button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer" :disabled="submitting" @click="deleting = null">Batal</button>
             <button type="button" class="border-0 bg-red-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer disabled:opacity-60" :disabled="submitting" @click="onDeleteConfirm">
-              <span v-if="submitting">Deleting&hellip;</span><span v-else>Yes, Delete</span>
+              <span v-if="submitting">Menghapus&hellip;</span><span v-else>Ya, Hapus</span>
             </button>
           </div>
         </div>
@@ -121,7 +121,7 @@ const { userName } = useUserNames()
 const canWrite = useCanManageMasterData()
 const { show: showToast } = useToast()
 
-const headers = ['Petak', 'Blok', 'Status', 'Tahun Tanam', 'Pohon', 'Luas', 'TPH', 'Updated By']
+const headers = ['Petak', 'Blok', 'Status', 'Tahun Tanam', 'Pohon', 'Luas', 'TPH', 'Diubah Oleh']
 
 const rows = ref([])
 const loading = ref(false)
@@ -170,7 +170,7 @@ async function loadData() {
     rows.value = await listPetak()
   } catch (err) {
     console.error('[Petak] Failed to load:', err)
-    fetchError.value = err?.message || 'Failed to load petak.'
+    fetchError.value = err?.message || 'Gagal memuat petak.'
   } finally {
     loading.value = false
   }
@@ -199,16 +199,16 @@ async function onFormSubmit(payload) {
   try {
     if (editing.value?.id) {
       await updatePetak(editing.value.id, payload)
-      showToast('Petak updated successfully.')
+      showToast('Petak berhasil diubah.')
     } else {
       await createPetak(payload)
-      showToast('Petak created successfully.')
+      showToast('Petak berhasil ditambahkan.')
     }
     closeForm()
     await loadData() // status/TPH dihitung server
   } catch (err) {
     console.error('[Petak] Save failed:', err)
-    actionError.value = err?.message || 'Failed to save petak.'
+    actionError.value = err?.message || 'Gagal menyimpan petak.'
   } finally {
     submitting.value = false
   }
@@ -227,12 +227,12 @@ async function onDeleteConfirm() {
     await deletePetak(deleting.value.id)
     rows.value = rows.value.filter((r) => r.id !== deleting.value.id)
     deleting.value = null
-    showToast('Petak deleted successfully.')
+    showToast('Petak berhasil dihapus.')
   } catch (err) {
     console.error('[Petak] Delete failed:', err)
     actionError.value = /dirujuk|409/i.test(err?.message || '')
       ? 'Petak masih dipakai TPH atau data lain, jadi tidak bisa dihapus.'
-      : err?.message || 'Failed to delete petak.'
+      : err?.message || 'Gagal menghapus petak.'
   } finally {
     submitting.value = false
   }

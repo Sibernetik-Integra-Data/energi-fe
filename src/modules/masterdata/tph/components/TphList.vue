@@ -7,7 +7,7 @@
       </div>
       <button v-if="canWrite" type="button"
         class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl cursor-pointer hover:bg-green-700 shadow-sm"
-        @click="openCreate">+ Add TPH</button>
+        @click="openCreate">+ Tambah TPH</button>
     </div>
 
     <div class="flex flex-wrap gap-3 mb-2">
@@ -37,7 +37,7 @@
     </div>
     <p class="text-xs text-(--text-muted) mb-4">{{ filteredRows.length }} TPH · {{ fmt(totalTrees) }} pohon</p>
 
-    <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">Loading data&hellip;</div>
+    <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">Memuat data&hellip;</div>
     <div v-else-if="fetchError" class="flex justify-center items-center py-16 text-sm text-red-600">{{ fetchError }}</div>
 
     <template v-else>
@@ -46,12 +46,12 @@
           <thead>
             <tr class="border-b border-(--border) bg-(--surface-muted)">
               <th v-for="h in headers" :key="h" class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">{{ h }}</th>
-              <th v-if="canWrite" class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">Actions</th>
+              <th v-if="canWrite" class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-4 uppercase tracking-widest">Aksi</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="filteredRows.length === 0">
-              <td :colspan="headers.length + (canWrite ? 1 : 0)" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
+              <td :colspan="headers.length + (canWrite ? 1 : 0)" class="py-10 px-6 text-center text-sm text-(--text-muted)">Belum ada data.</td>
             </tr>
             <tr v-for="row in paginatedRows" :key="row.id" class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted)" :class="{ 'opacity-60': !row.is_active }">
               <td class="py-3 px-4 text-sm font-semibold text-(--text)">{{ row.code || row.name }}</td>
@@ -65,8 +65,8 @@
               <td class="py-3 px-4 text-sm text-(--text-muted)">{{ userName(row.updated_by || row.created_by) }}</td>
               <td v-if="canWrite" class="py-3 px-4">
                 <div class="flex gap-2 items-center">
-                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border-0 hover:bg-(--surface-muted) cursor-pointer" @click="openEdit(row)">Edit</button>
-                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 cursor-pointer" @click="confirmDelete(row)">Delete</button>
+                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border-0 hover:bg-(--surface-muted) cursor-pointer" @click="openEdit(row)">Ubah</button>
+                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 cursor-pointer" @click="confirmDelete(row)">Hapus</button>
                 </div>
               </td>
             </tr>
@@ -75,7 +75,7 @@
       </div>
 
       <div class="hidden gap-3 max-[920px]:flex max-[920px]:flex-col">
-        <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">No data.</div>
+        <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">Belum ada data.</div>
         <div v-for="row in paginatedRows" :key="row.id" class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2" :class="{ 'opacity-60': !row.is_active }">
           <div class="flex justify-between items-center gap-2">
             <span class="font-bold text-sm text-(--text)">{{ row.code || row.name }} · {{ row.block_name || 'Tanpa petak' }}</span>
@@ -85,11 +85,11 @@
             <span>{{ row.block_group ? `Blok ${row.block_group}` : '-' }}</span>
             <span>Pohon: {{ row.tree_count == null ? 'belum diisi' : fmt(row.tree_count) }}</span>
             <span>{{ row.is_active ? 'Aktif' : 'Nonaktif' }}</span>
-            <span>Updated by: {{ userName(row.updated_by || row.created_by) }}</span>
+            <span>Diubah oleh: {{ userName(row.updated_by || row.created_by) }}</span>
           </div>
           <div v-if="canWrite" class="flex justify-end gap-2 mt-1">
-            <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) cursor-pointer" @click="openEdit(row)">Edit</button>
-            <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold cursor-pointer" @click="confirmDelete(row)">Delete</button>
+            <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) cursor-pointer" @click="openEdit(row)">Ubah</button>
+            <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold cursor-pointer" @click="confirmDelete(row)">Hapus</button>
           </div>
         </div>
       </div>
@@ -100,14 +100,14 @@
     <Teleport to="body">
       <div v-if="deleting" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @mousedown.self="deleting = null">
         <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
-          <h3 class="text-base font-bold text-(--text) m-0">Delete TPH</h3>
+          <h3 class="text-base font-bold text-(--text) m-0">Hapus TPH</h3>
           <p class="text-sm text-(--text-muted) m-0">Hapus TPH <strong>{{ deleting.code || deleting.name }}</strong> di {{ deleting.block_name || 'tanpa petak' }}? Tidak bisa dibatalkan.</p>
-          <p class="text-xs text-(--text-muted) m-0">TPH yang sudah dipakai sensus atau penugasan tidak bisa dihapus; nonaktifkan lewat Edit.</p>
+          <p class="text-xs text-(--text-muted) m-0">TPH yang sudah dipakai sensus atau penugasan tidak bisa dihapus; nonaktifkan lewat Ubah.</p>
           <div v-if="actionError" class="text-xs text-red-500">{{ actionError }}</div>
           <div class="flex justify-end gap-3">
-            <button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer" :disabled="submitting" @click="deleting = null">Cancel</button>
+            <button type="button" class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer" :disabled="submitting" @click="deleting = null">Batal</button>
             <button type="button" class="border-0 bg-red-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer disabled:opacity-60" :disabled="submitting" @click="onDeleteConfirm">
-              <span v-if="submitting">Deleting&hellip;</span><span v-else>Yes, Delete</span>
+              <span v-if="submitting">Menghapus&hellip;</span><span v-else>Ya, Hapus</span>
             </button>
           </div>
         </div>
@@ -133,7 +133,7 @@ const { userName } = useUserNames()
 const canWrite = useCanManageMasterData()
 const { show: showToast } = useToast()
 
-const headers = ['Kode', 'Petak', 'Blok', 'Jenis', 'Sisi', 'Jalur', 'Pohon', 'Status', 'Updated By']
+const headers = ['Kode', 'Petak', 'Blok', 'Jenis', 'Sisi', 'Jalur', 'Pohon', 'Status', 'Diubah Oleh']
 const filterClass = 'border border-(--border) rounded-lg px-3.5 py-2 text-sm text-(--text) bg-(--surface) outline-none focus:border-green-500'
 
 const rows = ref([])
@@ -194,7 +194,7 @@ async function loadData() {
     rows.value = await listTph()
   } catch (err) {
     console.error('[TPH] Failed to load:', err)
-    fetchError.value = err?.message || 'Failed to load TPH.'
+    fetchError.value = err?.message || 'Gagal memuat TPH.'
   } finally {
     loading.value = false
   }
@@ -220,7 +220,7 @@ function closeForm() {
 const friendly = (err, fallback) => {
   const m = err?.message || ''
   if (/tph_block_type_side_line_uq|sudah ada/i.test(m)) return 'Petak ini sudah punya TPH dengan jenis, sisi dan nomor jalur yang sama.'
-  if (/dipakai|nonaktifkan/i.test(m)) return 'TPH sudah dipakai sensus atau penugasan. Nonaktifkan lewat Edit (hapus centang Aktif).'
+  if (/dipakai|nonaktifkan/i.test(m)) return 'TPH sudah dipakai sensus atau penugasan. Nonaktifkan lewat Ubah (hapus centang Aktif).'
   return m || fallback
 }
 
@@ -230,16 +230,16 @@ async function onFormSubmit(payload) {
   try {
     if (editing.value?.id) {
       await updateTph(editing.value.id, payload)
-      showToast('TPH updated successfully.')
+      showToast('TPH berhasil diubah.')
     } else {
       await createTph(payload)
-      showToast('TPH created successfully.')
+      showToast('TPH berhasil ditambahkan.')
     }
     closeForm()
     await loadData()
   } catch (err) {
     console.error('[TPH] Save failed:', err)
-    actionError.value = friendly(err, 'Failed to save TPH.')
+    actionError.value = friendly(err, 'Gagal menyimpan TPH.')
   } finally {
     submitting.value = false
   }
@@ -258,10 +258,10 @@ async function onDeleteConfirm() {
     await deleteTph(deleting.value.id)
     rows.value = rows.value.filter((r) => r.id !== deleting.value.id)
     deleting.value = null
-    showToast('TPH deleted successfully.')
+    showToast('TPH berhasil dihapus.')
   } catch (err) {
     console.error('[TPH] Delete failed:', err)
-    actionError.value = friendly(err, 'Failed to delete TPH.')
+    actionError.value = friendly(err, 'Gagal menghapus TPH.')
   } finally {
     submitting.value = false
   }

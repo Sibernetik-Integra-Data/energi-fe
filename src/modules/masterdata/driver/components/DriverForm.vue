@@ -7,11 +7,11 @@
             <div
                 class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? "Edit Driver" : "Add Driver" }}</h3>
+                    <h3 class="text-lg font-bold text-(--text) m-0">{{ isEdit ? "Ubah Pengemudi" : "Tambah Pengemudi" }}</h3>
                     <button
                         type="button"
                         class="border-0 bg-transparent cursor-pointer text-(--text-soft) hover:text-(--text) text-xl leading-none transition-colors"
-                        aria-label="Close"
+                        aria-label="Tutup"
                         @click="onCancel">
                         &times;
                     </button>
@@ -21,13 +21,13 @@
                     <!-- Name -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="driver-name">
-                            Name <span class="text-red-500">*</span>
+                            Nama <span class="text-red-500">*</span>
                         </label>
                         <input
                             id="driver-name"
                             v-model.trim="form.name"
                             type="text"
-                            placeholder="e.g. John Doe"
+                            placeholder="mis. John Doe"
                             class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
                             :class="
                                 errors.name
@@ -40,18 +40,18 @@
 
                     <!-- Address -->
                     <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="driver-address">Address</label>
+                        <label class="text-sm font-semibold text-(--text)" for="driver-address">Alamat</label>
                         <textarea
                             id="driver-address"
                             v-model.trim="form.address"
                             rows="2"
-                            placeholder="Street address"
+                            placeholder="Alamat jalan"
                             class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors resize-none" />
                     </div>
 
                     <!-- Location -->
                     <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="driver-location">Location</label>
+                        <label class="text-sm font-semibold text-(--text)" for="driver-location">Lokasi</label>
                         <select
                             id="driver-location"
                             v-model="form.location"
@@ -66,12 +66,12 @@
                             </option>
                         </select>
                         <span v-if="locationLoadError" class="text-xs text-red-500">{{ locationLoadError }}</span>
-                        <span v-else class="text-xs text-(--text-soft)">Source: Master Data → Destination</span>
+                        <span v-else class="text-xs text-(--text-soft)">Sumber: Data Master → Tujuan</span>
                     </div>
 
                     <!-- Vehicle Select -->
                     <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="driver-vehicle">Vehicle</label>
+                        <label class="text-sm font-semibold text-(--text)" for="driver-vehicle">Kendaraan</label>
                         <select
                             id="driver-vehicle"
                             v-model="form.vehicle_id"
@@ -83,19 +83,19 @@
                             </option>
                         </select>
                         <span v-if="vehicleLoadError" class="text-xs text-red-500">{{ vehicleLoadError }}</span>
-                        <span v-else class="text-xs text-(--text-soft)">Source: Master Data → Vehicle</span>
+                        <span v-else class="text-xs text-(--text-soft)">Sumber: Data Master → Kendaraan</span>
                     </div>
 
                     <!-- Plate Number -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="driver-vehicle-number"
-                            >Plate Number</label
+                            >Nomor Polisi</label
                         >
                         <input
                             id="driver-vehicle-number"
                             :value="form.vehicle_number"
                             type="text"
-                            placeholder="Select a vehicle first"
+                            placeholder="Pilih kendaraan dulu"
                             readonly
                             class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none transition-colors cursor-not-allowed"
                             autocomplete="off"
@@ -104,12 +104,12 @@
 
                     <!-- Notes -->
                     <div class="flex flex-col gap-1">
-                        <label class="text-sm font-semibold text-(--text)" for="driver-notes">Notes</label>
+                        <label class="text-sm font-semibold text-(--text)" for="driver-notes">Catatan</label>
                         <textarea
                             id="driver-notes"
                             v-model.trim="form.notes"
                             rows="2"
-                            placeholder="Additional notes"
+                            placeholder="Catatan tambahan"
                             class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors resize-none" />
                     </div>
 
@@ -120,14 +120,14 @@
                             class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
                             :disabled="submitting"
                             @click="onCancel">
-                            Cancel
+                            Batal
                         </button>
                         <button
                             type="submit"
                             class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-green-700 transition-colors disabled:opacity-60"
                             :disabled="submitting">
-                            <span v-if="submitting">Saving&hellip;</span>
-                            <span v-else>{{ isEdit ? "Save Changes" : "Add Driver" }}</span>
+                            <span v-if="submitting">Menyimpan&hellip;</span>
+                            <span v-else>{{ isEdit ? "Simpan Perubahan" : "Tambah Pengemudi" }}</span>
                         </button>
                     </div>
                 </form>
@@ -204,7 +204,7 @@ async function loadLocations() {
         locations.value = await listLocations();
     } catch (err) {
         console.error("[DriverForm] Failed to load locations:", err);
-        locationLoadError.value = err?.message || "Failed to load locations.";
+        locationLoadError.value = err?.message || "Gagal memuat lokasi.";
     } finally {
         locationsLoading.value = false;
     }
@@ -218,7 +218,7 @@ async function loadVehicles() {
         vehicles.value = await listVehicles();
     } catch (err) {
         console.error("[DriverForm] Failed to load vehicles:", err);
-        vehicleLoadError.value = err?.message || "Failed to load vehicles.";
+        vehicleLoadError.value = err?.message || "Gagal memuat kendaraan.";
     } finally {
         vehiclesLoading.value = false;
     }
@@ -258,7 +258,7 @@ watch(
 
 function validate() {
     const errs = {};
-    if (!form.value.name) errs.name = "Name is required.";
+    if (!form.value.name) errs.name = "Nama wajib diisi.";
     errors.value = errs;
     return Object.keys(errs).length === 0;
 }

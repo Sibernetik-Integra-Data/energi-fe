@@ -3,14 +3,14 @@
         <!-- Header row -->
         <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
             <div>
-                <h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Driver List</h2>
-                <p class="text-sm text-(--text-muted) m-0">Manage drivers</p>
+                <h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Daftar Pengemudi</h2>
+                <p class="text-sm text-(--text-muted) m-0">Kelola pengemudi</p>
             </div>
             <button
                 type="button"
                 class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl cursor-pointer hover:bg-green-700 transition-colors shadow-sm"
                 v-if="canWrite" @click="openCreate">
-                + Add Driver
+                + Tambah Pengemudi
             </button>
         </div>
 
@@ -19,13 +19,13 @@
             <input
                 v-model="searchName"
                 type="text"
-                placeholder="Search driver name…"
+                placeholder="Cari nama pengemudi…"
                 class="border border-(--border) rounded-lg px-3.5 py-2 text-sm text-(--text) bg-(--surface) outline-none focus:border-green-500 transition-colors w-56" />
         </div>
 
         <!-- Loading -->
         <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">
-            Loading data&hellip;
+            Memuat data&hellip;
         </div>
 
         <!-- Error -->
@@ -39,18 +39,18 @@
                 <table class="w-full border-collapse">
                     <thead>
                         <tr class="border-b border-(--border) bg-(--surface-muted)">
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Name</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Location</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Vehicle</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Plate Number</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Created By</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Updated By</th>
-                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Actions</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Nama</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Lokasi</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Kendaraan</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Nomor Polisi</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Dibuat Oleh</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Diubah Oleh</th>
+                            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="filteredRows.length === 0">
-                            <td colspan="7" class="py-10 px-6 text-center text-sm text-(--text-muted)">No data.</td>
+                            <td colspan="7" class="py-10 px-6 text-center text-sm text-(--text-muted)">Belum ada data.</td>
                         </tr>
                         <tr
                             v-for="row in paginatedRows"
@@ -68,13 +68,13 @@
                                         type="button"
                                         class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border-0 hover:bg-(--surface-muted) transition-colors cursor-pointer"
                                         v-if="canWrite" @click="openEdit(row)">
-                                        Edit
+                                        Ubah
                                     </button>
                                     <button
                                         type="button"
                                         class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
                                         v-if="canWrite" @click="confirmDelete(row)">
-                                        Delete
+                                        Hapus
                                     </button>
                                 </div>
                             </td>
@@ -85,31 +85,31 @@
 
             <!-- Mobile cards -->
             <div class="hidden gap-3 max-[920px]:flex max-[920px]:flex-col">
-                <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">No data.</div>
+                <div v-if="filteredRows.length === 0" class="text-center text-sm text-(--text-muted) py-10">Belum ada data.</div>
                 <div
                         v-for="row in paginatedRows"
                     :key="row.id"
                     class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2">
                     <div class="font-bold text-sm text-(--text)">{{ row.name }}</div>
                     <div class="text-xs text-(--text-muted) flex flex-wrap gap-x-4 gap-y-1">
-                        <span v-if="row.location">Location: {{ row.location }}</span>
-                        <span v-if="row.vehicle?.name">Vehicle: {{ row.vehicle.name }}</span>
-                        <span v-if="row.vehicle?.plate_number?.trim()">Plate: {{ row.vehicle.plate_number.trim() }}</span>
-                        <span>Created by: {{ userName(row.created_by) }}</span>
-                        <span>Updated by: {{ userName(row.updated_by) }}</span>
+                        <span v-if="row.location">Lokasi: {{ row.location }}</span>
+                        <span v-if="row.vehicle?.name">Kendaraan: {{ row.vehicle.name }}</span>
+                        <span v-if="row.vehicle?.plate_number?.trim()">Nomor polisi: {{ row.vehicle.plate_number.trim() }}</span>
+                        <span>Dibuat oleh: {{ userName(row.created_by) }}</span>
+                        <span>Diubah oleh: {{ userName(row.updated_by) }}</span>
                     </div>
                     <div class="flex justify-end gap-2 mt-1">
                         <button
                             type="button"
                             class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) hover:bg-(--surface-muted) transition-colors cursor-pointer"
                             v-if="canWrite" @click="openEdit(row)">
-                            Edit
+                            Ubah
                         </button>
                         <button
                             type="button"
                             class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
                             v-if="canWrite" @click="confirmDelete(row)">
-                            Delete
+                            Hapus
                         </button>
                     </div>
                 </div>
@@ -134,8 +134,8 @@
                 class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
                 @mousedown.self="showDeleteConfirm = false">
                 <div class="bg-(--surface) rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
-                    <h3 class="text-base font-bold text-(--text) m-0">Delete Driver</h3>
-                    <p class="text-sm text-(--text-muted) m-0">Delete driver <strong>{{ deletingDriver?.name }}</strong>? This action cannot be undone.</p>
+                    <h3 class="text-base font-bold text-(--text) m-0">Hapus Pengemudi</h3>
+                    <p class="text-sm text-(--text-muted) m-0">Hapus Pengemudi <strong>{{ deletingDriver?.name }}</strong>? Tindakan ini tidak bisa dibatalkan.</p>
                     <div v-if="actionError" class="text-xs text-red-500">{{ actionError }}</div>
                     <div class="flex justify-end gap-3">
                         <button
@@ -143,15 +143,15 @@
                             class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
                             :disabled="submitting"
                             @click="showDeleteConfirm = false">
-                            Cancel
+                            Batal
                         </button>
                         <button
                             type="button"
                             class="border-0 bg-red-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-red-700 transition-colors disabled:opacity-60"
                             :disabled="submitting"
                             @click="onDeleteConfirm">
-                            <span v-if="submitting">Deleting&hellip;</span>
-                            <span v-else>Yes, Delete</span>
+                            <span v-if="submitting">Menghapus&hellip;</span>
+                            <span v-else>Ya, Hapus</span>
                         </button>
                     </div>
                 </div>
@@ -216,7 +216,7 @@ async function loadData() {
         rows.value = await listDrivers()
     } catch (err) {
         console.error('[Drivers] Failed to load:', err)
-        fetchError.value = err?.message || 'Failed to load drivers.'
+        fetchError.value = err?.message || 'Gagal memuat pengemudi.'
     } finally {
         loading.value = false
     }
@@ -247,16 +247,16 @@ async function onFormSubmit(formData) {
             const updated = await updateDriver(editingDriver.value.id, formData)
             const idx = rows.value.findIndex(r => r.id === editingDriver.value.id)
             if (idx !== -1) rows.value[idx] = updated || { ...rows.value[idx], ...formData }
-            showToast('Driver updated successfully.')
+            showToast('Pengemudi berhasil diubah.')
         } else {
             const created = await createDriver(formData)
             if (created) rows.value.unshift(created)
-            showToast('Driver created successfully.')
+            showToast('Pengemudi berhasil ditambahkan.')
         }
         closeForm()
     } catch (err) {
         console.error('[Drivers] Save failed:', err)
-        actionError.value = err?.message || 'Failed to save data.'
+        actionError.value = err?.message || 'Gagal menyimpan data.'
     } finally {
         submitting.value = false
     }
@@ -277,10 +277,10 @@ async function onDeleteConfirm() {
         rows.value = rows.value.filter(r => r.id !== deletingDriver.value.id)
         showDeleteConfirm.value = false
         deletingDriver.value = null
-        showToast('Driver deleted successfully.')
+        showToast('Pengemudi berhasil dihapus.')
     } catch (err) {
         console.error('[Drivers] Delete failed:', err)
-        actionError.value = err?.message || 'Failed to delete driver.'
+        actionError.value = err?.message || 'Gagal menghapus pengemudi.'
     } finally {
         submitting.value = false
     }
