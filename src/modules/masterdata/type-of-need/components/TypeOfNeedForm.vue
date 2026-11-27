@@ -64,16 +64,19 @@
           </div>
 
           <div class="flex flex-col gap-1">
-            <label class="text-sm font-semibold text-(--text)" for="ton-status">Status</label>
-            <input
-              id="ton-status"
-              v-model.trim="form.status"
-              type="text"
-              placeholder="Optional status"
-              maxlength="100"
-              autocomplete="off"
-              class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors" />
-            <span v-if="errors.status" class="text-xs text-red-500" role="alert">{{ errors.status }}</span>
+            <label class="text-sm font-semibold text-(--text)" for="ton-unit">Unit <span class="text-red-500">*</span></label>
+            <select
+              id="ton-unit"
+              v-model="form.unit_id"
+              :disabled="unitsLoading"
+              class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors"
+              :class="errors.unit_id ? 'border-red-400 bg-red-50' : 'border-(--border) bg-(--surface-muted) focus:border-green-500'">
+              <option :value="null">{{ unitsLoading ? 'Loading…' : 'Select unit' }}</option>
+              <option v-for="u in units" :key="u.id" :value="u.id">{{ u.name }}{{ u.detail ? ` · ${u.detail}` : '' }}</option>
+            </select>
+            <span v-if="errors.unit_id" class="text-xs text-red-500" role="alert">{{ errors.unit_id }}</span>
+            <span v-else-if="unitsError" class="text-xs text-red-500" role="alert">{{ unitsError }}</span>
+            <span v-else class="text-xs text-(--text-soft)">Source: Master Data → Type of Unit</span>
           </div>
 
           <div class="flex justify-end gap-3 pt-1">
@@ -100,6 +103,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { listTypeOfUnits } from '../model'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -111,7 +115,25 @@ const emit = defineEmits(['submit', 'cancel'])
 
 const isEdit = computed(() => Boolean(props.typeOfNeed?.id))
 
-const emptyForm = () => ({ name: '', detail: '', notes: '', status: '' })
+// Tabel type_of_need tidak punya kolom status; satuan (unit_id) dari Type of Unit.
+const emptyForm = () => ({ name: '', detail: '', notes: '', unit_id: null })
+
+const units = ref([])
+const unitsLoading = ref(false)
+const unitsError = ref('')
+
+async function loadUnits() {
+  if (units.value.length) return
+  unitsLoading.value = true
+  unitsError.value = ''
+  try {
+    units.value = await listTypeOfUnits()
+  } catch (err) {
+    unitsError.value = err?.message || 'Failed to load units.'
+  } finally {
+    unitsLoading.value = false
+  }
+}
 
 const form = ref(emptyForm())
 const errors = ref({})
@@ -125,10 +147,11 @@ watch(
             name: props.typeOfNeed.name || '',
             detail: props.typeOfNeed.detail || '',
             notes: props.typeOfNeed.notes || '',
-            status: props.typeOfNeed.status || ''
+            unit_id: props.typeOfNeed.unit_id ?? null
           }
         : emptyForm()
       errors.value = {}
+      loadUnits()
     }
   }
 )
@@ -146,9 +169,7 @@ function validate() {
   if (form.value.notes && form.value.notes.length > 500) {
     errs.notes = 'Notes must be 500 characters or fewer.'
   }
-  if (form.value.status && form.value.status.length > 100) {
-    errs.status = 'Status must be 100 characters or fewer.'
-  }
+  if (!form.value.unit_id) errs.unit_id = 'Unit is required.'
   errors.value = errs
   return Object.keys(errs).length === 0
 }
@@ -162,7 +183,7 @@ function onSubmit() {
   const payload = { name: form.value.name }
   appendNullable(payload, 'detail')
   appendNullable(payload, 'notes')
-  appendNullable(payload, 'status')
+  payload.unit_id = form.value.unit_id
   emit('submit', payload)
 }
 

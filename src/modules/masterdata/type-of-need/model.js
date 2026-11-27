@@ -32,3 +32,9 @@ export async function deleteTypeOfNeed(id) {
   const resp = await signedApiFetch(`${BASE}/${id}`, { method: 'DELETE' })
   return resp
 }
+
+/** Satuan untuk dropdown Unit (Master Data → Type of Unit). */
+export async function listTypeOfUnits() {
+  const resp = await signedApiFetch('/type_of_unit', { method: 'GET' })
+  return resp.data || []
+}
