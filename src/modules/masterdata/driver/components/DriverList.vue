@@ -58,8 +58,8 @@
                             class="border-b border-(--border) last:border-b-0 hover:bg-(--surface-muted) transition-colors">
                             <td class="py-4 px-6 align-middle text-sm font-semibold text-(--text)">{{ row.name }}</td>
                             <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.location || '' }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.vehicle_name || '' }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.vehicle_number || '' }}</td>
+                            <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.vehicle?.name || '-' }}</td>
+                            <td class="py-4 px-6 align-middle text-sm text-(--text)">{{ row.vehicle?.plate_number?.trim() || '-' }}</td>
                             <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.created_by || '-' }}</td>
                             <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.updated_by || '-' }}</td>
                             <td class="py-4 px-6 align-middle">
@@ -93,8 +93,8 @@
                     <div class="font-bold text-sm text-(--text)">{{ row.name }}</div>
                     <div class="text-xs text-(--text-muted) flex flex-wrap gap-x-4 gap-y-1">
                         <span v-if="row.location">Location: {{ row.location }}</span>
-                        <span v-if="row.vehicle_name">Vehicle: {{ row.vehicle_name }}</span>
-                        <span v-if="row.vehicle_number">No: {{ row.vehicle_number }}</span>
+                        <span v-if="row.vehicle?.name">Vehicle: {{ row.vehicle.name }}</span>
+                        <span v-if="row.vehicle?.plate_number?.trim()">Plate: {{ row.vehicle.plate_number.trim() }}</span>
                         <span>Created by: {{ row.created_by || '-' }}</span>
                         <span>Updated by: {{ row.updated_by || '-' }}</span>
                     </div>
