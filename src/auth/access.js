@@ -30,3 +30,11 @@ export function canViewAuditLog(source) {
     .map(value => String(value || '').trim().toLowerCase())
   return values.some(value => value === 'owner' || value === 'admin')
 }
+
+// Roles allowed to add, edit or delete master data. Matches ROLE_MASTER_WRITE
+// on the server (Owner, Admin), which still checks every request.
+const MASTER_WRITER_ACCESS = ['owner', 'admin']
+
+export function canManageMasterData(source) {
+  return MASTER_WRITER_ACCESS.includes(normalizeAccess(source).toLowerCase())
+}

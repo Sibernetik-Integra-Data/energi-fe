@@ -9,7 +9,7 @@
             <button
                 type="button"
                 class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl cursor-pointer hover:bg-green-700 transition-colors shadow-sm"
-                @click="openCreate">
+                v-if="canWrite" @click="openCreate">
                 + Add Vehicle
             </button>
         </div>
@@ -69,13 +69,13 @@
                                     <button
                                         type="button"
                                         class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border-0 hover:bg-(--surface-muted) transition-colors cursor-pointer"
-                                        @click="openEdit(row)">
+                                        v-if="canWrite" @click="openEdit(row)">
                                         Edit
                                     </button>
                                     <button
                                         type="button"
                                         class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
-                                        @click="confirmDelete(row)">
+                                        v-if="canWrite" @click="confirmDelete(row)">
                                         Delete
                                     </button>
                                 </div>
@@ -105,13 +105,13 @@
                         <button
                             type="button"
                             class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) hover:bg-(--surface-muted) transition-colors cursor-pointer"
-                            @click="openEdit(row)">
+                            v-if="canWrite" @click="openEdit(row)">
                             Edit
                         </button>
                         <button
                             type="button"
                             class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer"
-                            @click="confirmDelete(row)">
+                            v-if="canWrite" @click="confirmDelete(row)">
                             Delete
                         </button>
                     </div>
@@ -165,6 +165,9 @@
 </template>
 
 <script setup>
+import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
+// Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
+const canWrite = useCanManageMasterData()
 import { ref, computed, onMounted } from 'vue'
 import VehicleForm from './VehicleForm.vue'
 import { listVehicles, createVehicle, updateVehicle, deleteVehicle } from '../model'

@@ -5,7 +5,7 @@
         <h2 class="text-[clamp(24px,2.5vw,36px)] font-semibold leading-tight tracking-[-0.04em] text-(--text) m-0 mb-1">Type of Component</h2>
         <p class="text-sm text-(--text-muted) m-0">Manage type of component entries</p>
       </div>
-      <button type="button" class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl cursor-pointer hover:bg-green-700 transition-colors shadow-sm" @click="openCreate">
+      <button type="button" class="border-0 bg-green-600 text-white font-semibold text-sm py-2.5 px-5 rounded-xl cursor-pointer hover:bg-green-700 transition-colors shadow-sm" v-if="canWrite" @click="openCreate">
         + Add Type
       </button>
     </div>
@@ -62,8 +62,8 @@
               </td>
               <td class="py-4 pl-3 pr-6 align-middle text-center whitespace-nowrap">
                 <div class="flex gap-2 items-center justify-start">
-                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border border-(--border) hover:bg-(--surface-muted) transition-colors cursor-pointer" @click="openEdit(row)">Edit</button>
-                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer" @click="confirmDelete(row)">Delete</button>
+                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border border-(--border) hover:bg-(--surface-muted) transition-colors cursor-pointer" v-if="canWrite" @click="openEdit(row)">Edit</button>
+                  <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer" v-if="canWrite" @click="confirmDelete(row)">Delete</button>
                 </div>
               </td>
             </tr>
@@ -90,8 +90,8 @@
             <span>Updated by: {{ displayUser(row.updated_by) }}</span>
           </div>
           <div class="flex justify-end gap-2 mt-1">
-            <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) hover:bg-(--surface-muted) transition-colors cursor-pointer" @click="openEdit(row)">Edit</button>
-            <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer" @click="confirmDelete(row)">Delete</button>
+            <button type="button" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-(--border) bg-(--surface) hover:bg-(--surface-muted) transition-colors cursor-pointer" v-if="canWrite" @click="openEdit(row)">Edit</button>
+            <button type="button" class="text-sm py-1.5 px-3 rounded-lg border-0 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors cursor-pointer" v-if="canWrite" @click="confirmDelete(row)">Delete</button>
           </div>
         </div>
       </div>
@@ -122,6 +122,9 @@
 </template>
 
 <script setup>
+import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
+// Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
+const canWrite = useCanManageMasterData()
 import { computed, onMounted, ref } from 'vue'
 import TypeOfComponentForm from './TypeOfComponentForm.vue'
 import { createTypeOfComponent, deleteTypeOfComponent, listTypeOfComponent, updateTypeOfComponent } from '../model'

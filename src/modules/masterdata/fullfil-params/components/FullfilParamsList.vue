@@ -1,11 +1,11 @@
 <template>
   <div>
-    <div class="flex flex-wrap justify-between items-center gap-4 mb-4"><div><h2 class="page-title">Fullfil Params</h2><p class="text-sm text-(--text-muted) m-0">Manage fullfil parameter entries</p></div><button type="button" class="add-button" @click="openCreate">+ Add Fullfil Params</button></div>
+    <div class="flex flex-wrap justify-between items-center gap-4 mb-4"><div><h2 class="page-title">Fullfil Params</h2><p class="text-sm text-(--text-muted) m-0">Manage fullfil parameter entries</p></div><button type="button" class="add-button" v-if="canWrite" @click="openCreate">+ Add Fullfil Params</button></div>
     <input v-model="search" type="search" placeholder="Search mapping, name, or notes..." class="search" />
     <div v-if="loading" class="state">Loading data&hellip;</div><div v-else-if="error" class="state error-text">{{ error }}</div>
     <template v-else>
-      <div class="table-wrap"><table><thead><tr><th v-for="header in headers" :key="header">{{ header }}</th></tr></thead><tbody><tr v-if="filteredRows.length === 0"><td colspan="8" class="empty">No data.</td></tr><tr v-for="row in paginatedRows" :key="row.id"><td>{{ row.id }}</td><td>{{ mappingName(row.fullfil_id) }}</td><td class="strong">{{ row.name }}</td><td>{{ row.value }}</td><td>{{ unitName(row.unit_id) }}</td><td>{{ row.notes || '-' }}</td><td>{{ formatDate(row.updated_at) }}</td><td><button class="action" @click="openEdit(row)">Edit</button><button class="delete-action" @click="confirmDelete(row)">Delete</button></td></tr></tbody></table></div>
-      <div class="cards"><div v-if="filteredRows.length === 0" class="empty">No data.</div><div v-for="row in paginatedRows" :key="row.id" class="card"><div class="flex justify-between"><strong>{{ row.name }}</strong><span>ID: {{ row.id }}</span></div><div class="card-copy">Fullfil Mapping: {{ mappingName(row.fullfil_id) }}<br />Value: {{ row.value }} {{ unitName(row.unit_id) }}<br />Notes: {{ row.notes || '-' }}</div><div class="flex justify-end gap-2"><button class="action" @click="openEdit(row)">Edit</button><button class="delete-action" @click="confirmDelete(row)">Delete</button></div></div></div>
+      <div class="table-wrap"><table><thead><tr><th v-for="header in headers" :key="header">{{ header }}</th></tr></thead><tbody><tr v-if="filteredRows.length === 0"><td colspan="8" class="empty">No data.</td></tr><tr v-for="row in paginatedRows" :key="row.id"><td>{{ row.id }}</td><td>{{ mappingName(row.fullfil_id) }}</td><td class="strong">{{ row.name }}</td><td>{{ row.value }}</td><td>{{ unitName(row.unit_id) }}</td><td>{{ row.notes || '-' }}</td><td>{{ formatDate(row.updated_at) }}</td><td><button class="action" v-if="canWrite" @click="openEdit(row)">Edit</button><button class="delete-action" v-if="canWrite" @click="confirmDelete(row)">Delete</button></td></tr></tbody></table></div>
+      <div class="cards"><div v-if="filteredRows.length === 0" class="empty">No data.</div><div v-for="row in paginatedRows" :key="row.id" class="card"><div class="flex justify-between"><strong>{{ row.name }}</strong><span>ID: {{ row.id }}</span></div><div class="card-copy">Fullfil Mapping: {{ mappingName(row.fullfil_id) }}<br />Value: {{ row.value }} {{ unitName(row.unit_id) }}<br />Notes: {{ row.notes || '-' }}</div><div class="flex justify-end gap-2"><button class="action" v-if="canWrite" @click="openEdit(row)">Edit</button><button class="delete-action" v-if="canWrite" @click="confirmDelete(row)">Delete</button></div></div></div>
       <MasterDataPagination id="fullfil-params" :total-items="totalItems" :current-page="currentPage" :page-size="pageSize" :total-pages="totalPages" :visible-pages="visiblePages" @update:current-page="currentPage = $event" @update:page-size="pageSize = $event" />
     </template>
     <div v-if="actionError && !deleteTarget" class="error-text action-error">{{ actionError }}</div>
@@ -15,6 +15,9 @@
 </template>
 
 <script setup>
+import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
+// Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
+const canWrite = useCanManageMasterData()
 import { computed, onMounted, ref } from 'vue'
 import FullfilParamsForm from './FullfilParamsForm.vue'
 import { createFullfilParams, deleteFullfilParams, listFullfilMappings, listFullfilParams, listTypeOfUnits, updateFullfilParams } from '../model'
