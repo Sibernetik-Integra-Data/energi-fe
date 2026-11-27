@@ -67,8 +67,8 @@
                             <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-center">{{ index + 1 }}</td>
                             <td class="py-4 px-4 align-middle text-sm font-semibold text-(--text) text-left">{{ row.name }}</td>
                             <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-left whitespace-normal wrap-break-word">{{ row.detail || '-' }}</td>
-                            <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-left">{{ row.created_by || '-' }}</td>
-                            <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-left">{{ row.updated_by || '-' }}</td>
+                            <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-left">{{ userName(row.created_by) }}</td>
+                            <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-left">{{ userName(row.updated_by) }}</td>
                             <td class="py-4 px-4 align-middle text-center">
                                 <div class="flex gap-3 items-center justify-center">
                                     <button
@@ -100,8 +100,8 @@
                     <div class="font-bold text-sm text-(--text)">{{ row.name }}</div>
                     <div class="text-xs text-(--text-muted) flex flex-wrap gap-x-4 gap-y-1">
                         <span v-if="row.detail">Detail: {{ row.detail }}</span>
-                        <span>Created by: {{ row.created_by || '-' }}</span>
-                        <span>Updated by: {{ row.updated_by || '-' }}</span>
+                        <span>Created by: {{ userName(row.created_by) }}</span>
+                        <span>Updated by: {{ userName(row.updated_by) }}</span>
                     </div>
                     <div class="flex justify-end gap-2 mt-1">
                         <button
@@ -169,6 +169,8 @@
 </template>
 
 <script setup>
+import { useUserNames } from '../../../../auth/useUserNames'
+const { userName } = useUserNames()
 import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
 const canWrite = useCanManageMasterData()

@@ -100,8 +100,8 @@
                     <div class="text-xs text-(--text-muted) flex flex-wrap gap-x-4 gap-y-1">
                         <span v-if="row.plants_count != null">Plants: {{ row.plants_count }}</span>
                         <span v-if="row.wide != null">Area: {{ row.wide }} ha</span>
-                        <span>Created by: {{ row.created_by || '-' }}</span>
-                        <span>Updated by: {{ row.updated_by || '-' }}</span>
+                        <span>Created by: {{ userName(row.created_by) }}</span>
+                        <span>Updated by: {{ userName(row.updated_by) }}</span>
                     </div>
                     <div class="flex justify-end gap-2 mt-1">
                         <button
@@ -164,6 +164,8 @@
 </template>
 
 <script setup>
+import { useUserNames } from '../../../../auth/useUserNames'
+const { userName } = useUserNames()
 import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
 const canWrite = useCanManageMasterData()

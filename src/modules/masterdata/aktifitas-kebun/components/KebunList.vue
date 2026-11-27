@@ -72,8 +72,8 @@
                                     {{ row.is_upload ? 'Yes' : 'No' }}
                                 </span>
                             </td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.created_by || '-' }}</td>
-                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ row.updated_by || '-' }}</td>
+                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ userName(row.created_by) }}</td>
+                            <td class="py-4 px-6 align-middle text-sm text-(--text-muted)">{{ userName(row.updated_by) }}</td>
                             <td class="py-4 px-6 align-middle">
                                 <div class="flex gap-2 items-center">
                                     <button
@@ -107,8 +107,8 @@
                         <span v-if="row.group_of_work_name">Group: {{ row.group_of_work_name }}</span>
                         <span v-if="row.detail">Detail: {{ row.detail }}</span>
                         <span>Upload: {{ row.is_upload ? 'Yes' : 'No' }}</span>
-                        <span>Created by: {{ row.created_by || '-' }}</span>
-                        <span>Updated by: {{ row.updated_by || '-' }}</span>
+                        <span>Created by: {{ userName(row.created_by) }}</span>
+                        <span>Updated by: {{ userName(row.updated_by) }}</span>
                     </div>
                     <div class="flex justify-end gap-2 mt-1">
                         <button
@@ -176,6 +176,8 @@
 </template>
 
 <script setup>
+import { useUserNames } from '../../../../auth/useUserNames'
+const { userName } = useUserNames()
 import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
 const canWrite = useCanManageMasterData()

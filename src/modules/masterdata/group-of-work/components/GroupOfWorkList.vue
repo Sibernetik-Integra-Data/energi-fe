@@ -70,10 +70,10 @@
                                 {{ row.name }}
                             </td>
                             <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-center">
-                                {{ row.created_by || '-' }}
+                                {{ userName(row.created_by) }}
                             </td>
                             <td class="py-4 px-4 align-middle text-sm text-(--text-muted) text-center">
-                                {{ row.updated_by || '-' }}
+                                {{ userName(row.updated_by) }}
                             </td>
                             <td class="py-4 px-4 align-middle text-center">
                                 <div class="flex gap-2 items-center justify-center">
@@ -106,8 +106,8 @@
                     :key="row.id"
                     class="bg-(--surface) border border-(--border) rounded-xl p-4 shadow-sm flex flex-col gap-2">
                     <div class="font-bold text-sm text-(--text)">{{ row.name }}</div>
-                    <div class="text-xs text-(--text-muted)">Created by: {{ row.created_by || '-' }}</div>
-                    <div class="text-xs text-(--text-muted)">Updated by: {{ row.updated_by || '-' }}</div>
+                    <div class="text-xs text-(--text-muted)">Created by: {{ userName(row.created_by) }}</div>
+                    <div class="text-xs text-(--text-muted)">Updated by: {{ userName(row.updated_by) }}</div>
                     <div class="flex justify-end gap-2 mt-1 whitespace-nowrap items-center">
                         <button
                             type="button"
@@ -181,6 +181,8 @@
 </template>
 
 <script setup>
+import { useUserNames } from '../../../../auth/useUserNames'
+const { userName } = useUserNames()
 import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
 const canWrite = useCanManageMasterData()
