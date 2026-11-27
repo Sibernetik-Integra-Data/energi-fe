@@ -52,66 +52,38 @@
                     <!-- Location -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="driver-location">Location</label>
-                        <input
+                        <select
                             id="driver-location"
-                            v-model.trim="form.location"
-                            type="text"
-                            placeholder="e.g. Depot A"
-                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors"
-                            autocomplete="off" />
+                            v-model="form.location"
+                            :disabled="locationsLoading"
+                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors">
+                            <option value="">{{ locationsLoading ? "Loading locations…" : "— None —" }}</option>
+                            <option v-if="legacyLocation" :value="legacyLocation">
+                                {{ legacyLocation }} (nilai lama, belum ada di Destination)
+                            </option>
+                            <option v-for="l in locationOptions" :key="l.id" :value="l.name">
+                                {{ l.label }}
+                            </option>
+                        </select>
+                        <span v-if="locationLoadError" class="text-xs text-red-500">{{ locationLoadError }}</span>
+                        <span v-else class="text-xs text-(--text-soft)">Source: Master Data → Destination</span>
                     </div>
 
                     <!-- Vehicle Select -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="driver-vehicle">Vehicle</label>
-                        <div class="relative">
-                            <input
-                                id="driver-vehicle-search"
-                                v-model="vehicleSearch"
-                                type="text"
-                                placeholder="Search vehicle…"
-                                class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors w-full"
-                                autocomplete="off"
-                                @focus="vehicleDropdownOpen = true"
-                                @blur="onVehicleBlur" />
-                            <div
-                                v-if="vehicleDropdownOpen && filteredVehicles.length > 0"
-                                class="absolute z-10 mt-1 w-full bg-(--surface) border border-(--border) rounded-lg shadow-lg max-h-44 overflow-y-auto">
-                                <button
-                                    v-for="v in filteredVehicles"
-                                    :key="v.id"
-                                    type="button"
-                                    class="w-full text-left px-3.5 py-2 text-sm text-(--text) hover:bg-(--surface-muted) transition-colors"
-                                    @mousedown.prevent="selectVehicle(v)">
-                                    <span class="font-medium">{{ v.name }}</span>
-                                    <span v-if="v.title" class="ml-2 text-xs text-slate-400">{{ v.title }}</span>
-                                    <span v-if="v.type" class="ml-2 text-xs text-slate-400">{{ v.type }}</span>
-                                </button>
-                            </div>
-                            <div
-                                v-if="vehicleDropdownOpen && vehiclesLoading"
-                                class="absolute z-10 mt-1 w-full bg-(--surface) border border-(--border) rounded-lg shadow-lg px-3.5 py-2 text-sm text-(--text-soft)">
-                                Loading vehicles&hellip;
-                            </div>
-                            <div
-                                v-if="vehicleDropdownOpen && !vehiclesLoading && vehicleLoadError"
-                                class="absolute z-10 mt-1 w-full bg-(--surface) border border-red-300 rounded-lg shadow-lg px-3.5 py-2 text-sm text-red-500">
-                                {{ vehicleLoadError }}
-                            </div>
-                            <div
-                                v-if="
-                                    vehicleDropdownOpen &&
-                                    !vehiclesLoading &&
-                                    !vehicleLoadError &&
-                                    filteredVehicles.length === 0
-                                "
-                                class="absolute z-10 mt-1 w-full bg-(--surface) border border-(--border) rounded-lg shadow-lg px-3.5 py-2 text-sm text-(--text-soft)">
-                                No vehicles found.
-                            </div>
-                        </div>
-                        <span v-if="form.vehicle_id" class="text-xs text-green-600">
-                            Selected: {{ selectedVehicleName }}
-                        </span>
+                        <select
+                            id="driver-vehicle"
+                            v-model="form.vehicle_id"
+                            :disabled="vehiclesLoading"
+                            class="border border-(--border) rounded-lg px-3.5 py-2.5 text-sm text-(--text) bg-(--surface-muted) outline-none focus:border-green-500 transition-colors">
+                            <option :value="null">{{ vehiclesLoading ? "Loading vehicles…" : "— None —" }}</option>
+                            <option v-for="v in vehicles" :key="v.id" :value="v.id">
+                                {{ vehicleLabel(v) }}
+                            </option>
+                        </select>
+                        <span v-if="vehicleLoadError" class="text-xs text-red-500">{{ vehicleLoadError }}</span>
+                        <span v-else class="text-xs text-(--text-soft)">Source: Master Data → Vehicle</span>
                     </div>
 
                     <!-- Plate Number -->
@@ -167,6 +139,7 @@
 <script setup>
 import { ref, watch, computed } from "vue";
 import { listVehicles } from "../model";
+import { listLocations } from "../../destination/model";
 
 const props = defineProps({
     visible: { type: Boolean, default: false },
@@ -194,22 +167,48 @@ const errors = ref({});
 const vehicles = ref([]);
 const vehiclesLoading = ref(false);
 const vehicleLoadError = ref(null);
-const vehicleSearch = ref("");
-const vehicleDropdownOpen = ref(false);
+// "Truck · Fuso · B 2222 BBB"
+const vehicleLabel = (v) => [v.name, v.type, v.plate_number?.trim()].filter(Boolean).join(" · ");
 
-const filteredVehicles = computed(() => {
-    const q = vehicleSearch.value.trim().toLowerCase();
-    if (!q) return vehicles.value;
-    return vehicles.value.filter((v) =>
-        [v.name, v.title, v.type, v.plate_number].some((value) => value?.toLowerCase().includes(q)),
-    );
+// Location select state (Master Data → Destination). Titik "GPS sensus"
+// dibuat otomatis oleh sensus mobile, bukan lokasi untuk pengemudi.
+const locations = ref([]);
+const locationsLoading = ref(false);
+const locationLoadError = ref(null);
+
+const locationOptions = computed(() => {
+    const seen = new Set();
+    return locations.value
+        .filter((l) => l.name && l.name !== "GPS sensus")
+        .filter((l) => (seen.has(l.name) ? false : seen.add(l.name)))
+        .map((l) => ({
+            id: l.id,
+            name: l.name,
+            label: [l.name, l.location, l.location_type?.name].filter(Boolean).join(" · "),
+        }));
 });
 
-const selectedVehicleName = computed(() => {
-    if (!form.value.vehicle_id) return "";
-    const v = vehicles.value.find((v) => v.id === form.value.vehicle_id);
-    return v?.name || String(form.value.vehicle_id);
+// Nilai lama (teks bebas) yang tidak ada di Destination tetap ditampilkan
+// agar tidak hilang diam-diam saat Edit.
+const legacyLocation = computed(() => {
+    const cur = form.value.location;
+    if (!cur || locationsLoading.value) return "";
+    return locationOptions.value.some((l) => l.name === cur) ? "" : cur;
 });
+
+async function loadLocations() {
+    if (locations.value.length > 0) return;
+    locationsLoading.value = true;
+    locationLoadError.value = null;
+    try {
+        locations.value = await listLocations();
+    } catch (err) {
+        console.error("[DriverForm] Failed to load locations:", err);
+        locationLoadError.value = err?.message || "Failed to load locations.";
+    } finally {
+        locationsLoading.value = false;
+    }
+}
 
 async function loadVehicles() {
     if (vehicles.value.length > 0) return;
@@ -223,19 +222,6 @@ async function loadVehicles() {
     } finally {
         vehiclesLoading.value = false;
     }
-}
-
-function selectVehicle(v) {
-    form.value.vehicle_id = v.id;
-    form.value.vehicle_number = v.plate_number?.trim() || "";
-    vehicleSearch.value = v.name;
-    vehicleDropdownOpen.value = false;
-}
-
-function onVehicleBlur() {
-    setTimeout(() => {
-        vehicleDropdownOpen.value = false;
-    }, 150);
 }
 
 watch(
@@ -253,14 +239,8 @@ watch(
                   }
                 : emptyForm();
             errors.value = {};
-            // Preset vehicle search label when editing
-            if (driver?.vehicle_id) {
-                const v = vehicles.value.find((v) => v.id === driver.vehicle_id);
-                vehicleSearch.value = v?.name || driver.vehicle_name || "";
-            } else {
-                vehicleSearch.value = "";
-            }
             loadVehicles();
+            loadLocations();
         }
     },
     { immediate: true },
@@ -272,7 +252,7 @@ watch(
     [vehicles, () => form.value.vehicle_id],
     ([vehicleList, vehicleId]) => {
         const vehicle = vehicleList.find((v) => v.id === vehicleId);
-        if (vehicle) form.value.vehicle_number = vehicle.plate_number?.trim() || "";
+        form.value.vehicle_number = vehicle?.plate_number?.trim() || "";
     },
 );
 
@@ -285,7 +265,9 @@ function validate() {
 
 function onSubmit() {
     if (!validate()) return;
-    emit("submit", { ...form.value });
+    // vehicle_number hanya tampilan (diambil dari Vehicle), bukan kolom driver.
+    const { vehicle_number: _plate, ...payload } = form.value;
+    emit("submit", { ...payload, location: payload.location || null, vehicle_id: payload.vehicle_id ?? null });
 }
 
 function onCancel() {

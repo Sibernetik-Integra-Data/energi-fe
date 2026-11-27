@@ -61,6 +61,27 @@
                             autocomplete="off" />
                     </div>
 
+                    <!-- Plate Number -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-sm font-semibold text-(--text)" for="vehicle-plate">
+                            Plate Number <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            id="vehicle-plate"
+                            v-model="form.plate_number"
+                            type="text"
+                            maxlength="30"
+                            placeholder="e.g. KT 1234 AB"
+                            class="border rounded-lg px-3.5 py-2.5 text-sm text-(--text) outline-none transition-colors uppercase"
+                            :class="
+                                errors.plate_number
+                                    ? 'border-red-400 bg-red-50 focus:border-red-500'
+                                    : 'border-(--border) bg-(--surface-muted) focus:border-green-500'
+                            "
+                            autocomplete="off" />
+                        <span v-if="errors.plate_number" class="text-xs text-red-500">{{ errors.plate_number }}</span>
+                    </div>
+
                     <!-- Notes -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-semibold text-(--text)" for="vehicle-notes">Notes</label>
@@ -112,8 +133,12 @@ const emptyForm = () => ({
     name: '',
     title: '',
     type: '',
+    plate_number: '',
     notes: ''
 })
+
+// "kt  1234ab " → "KT 1234AB". Kolom DB char(30) menambah spasi di belakang.
+const normalizePlate = (v) => String(v ?? '').trim().replace(/\s+/g, ' ').toUpperCase()
 
 const form = ref(emptyForm())
 const errors = ref({})
@@ -128,6 +153,7 @@ watch(
                     name: props.vehicle.name || '',
                     title: props.vehicle.title || '',
                     type: props.vehicle.type || '',
+                    plate_number: normalizePlate(props.vehicle.plate_number),
                     notes: props.vehicle.notes || ''
                 }
             } else {
@@ -140,6 +166,7 @@ watch(
 function validate() {
     const errs = {}
     if (!form.value.name) errs.name = 'Name is required.'
+    if (!normalizePlate(form.value.plate_number)) errs.plate_number = 'Plate number is required.'
     errors.value = errs
     return Object.keys(errs).length === 0
 }
@@ -151,6 +178,7 @@ function onSubmit() {
     }
     if (form.value.title) payload.title = form.value.title
     if (form.value.type) payload.type = form.value.type
+    payload.plate_number = normalizePlate(form.value.plate_number)
     if (form.value.notes) payload.notes = form.value.notes
     emit('submit', payload)
 }
