@@ -233,63 +233,63 @@ export function createDashboardModel() {
   }
 
   const pendingVerification = {
-    title: 'Pending Verifications',
-    subtitle: 'Worker reports awaiting your review',
-    badge: '3 Pending',
+    title: 'Menunggu Verifikasi',
+    subtitle: 'Laporan pekerja yang menunggu pemeriksaan Anda',
+    badge: '3 Menunggu',
     columns: [
-      { key: 'sensusId', label: 'SENSUS ID' },
-      { key: 'worker', label: 'WORKER' },
-      { key: 'block', label: 'BLOCK' },
-      { key: 'dateTime', label: 'DATE & TIME', type: 'datetime' },
-      { key: 'jobTypes', label: 'JOB TYPES', type: 'chips' },
+      { key: 'sensusId', label: 'ID SENSUS' },
+      { key: 'worker', label: 'PEKERJA' },
+      { key: 'block', label: 'BLOK' },
+      { key: 'dateTime', label: 'TANGGAL DAN WAKTU', type: 'datetime' },
+      { key: 'jobTypes', label: 'JENIS PEKERJAAN', type: 'chips' },
       { key: 'status', label: 'STATUS', type: 'status' }
     ],
     rows: [
       {
         sensusId: 'SEN-2024-005',
         worker: 'Eko Prasetyo',
-        block: 'Block D-22',
+        block: 'Blok D-22',
         date: '2026-02-18',
         time: '10:30',
         jobTypes: ['Rawat jalan', 'Pemupukan NPK TBM', 'Semprot lalang'],
-        status: 'Pending'
+        status: 'Menunggu'
       },
       {
         sensusId: 'SEN-2024-006',
         worker: 'Rina Wijaya',
-        block: 'Block E-14',
+        block: 'Blok E-14',
         date: '2026-02-18',
         time: '11:00',
         jobTypes: ['Panen', 'Pemupukan dolomit'],
-        status: 'Pending'
+        status: 'Menunggu'
       },
       {
         sensusId: 'SEN-2024-007',
         worker: 'Agus Setiawan',
-        block: 'Block F-09',
+        block: 'Blok F-09',
         date: '2026-02-18',
         time: '09:45',
         jobTypes: ['Semprot lalang', 'Rawat jalan'],
-        status: 'Pending'
+        status: 'Menunggu'
       }
     ]
   }
 
   const recentVerified = {
-    title: 'Recent Verified Sensus',
-    subtitle: 'Latest verified worker reports',
+    title: 'Sensus Terverifikasi Terbaru',
+    subtitle: 'Laporan pekerja terbaru yang sudah diverifikasi',
     columns: [
-      { key: 'sensusId', label: 'SENSUS ID' },
-      { key: 'worker', label: 'WORKER' },
-      { key: 'block', label: 'BLOCK' },
-      { key: 'dateTime', label: 'DATE & TIME', type: 'datetime' },
-      { key: 'jobTypes', label: 'JOB TYPES', type: 'chips' }
+      { key: 'sensusId', label: 'ID SENSUS' },
+      { key: 'worker', label: 'PEKERJA' },
+      { key: 'block', label: 'BLOK' },
+      { key: 'dateTime', label: 'TANGGAL DAN WAKTU', type: 'datetime' },
+      { key: 'jobTypes', label: 'JENIS PEKERJAAN', type: 'chips' }
     ],
     rows: [
       {
         sensusId: 'SEN-2024-001',
         worker: 'Ahmad Rifai',
-        block: 'Block A-12',
+        block: 'Blok A-12',
         date: '2026-02-18',
         time: '08:30',
         jobTypes: ['Rawat jalan', 'Pemupukan NPK TBM']
@@ -297,7 +297,7 @@ export function createDashboardModel() {
       {
         sensusId: 'SEN-2024-002',
         worker: 'Budi Santoso',
-        block: 'Block B-05',
+        block: 'Blok B-05',
         date: '2026-02-18',
         time: '09:15',
         jobTypes: ['Panen', 'Semprot lalang']
@@ -305,7 +305,7 @@ export function createDashboardModel() {
       {
         sensusId: 'SEN-2024-003',
         worker: 'Siti Nurhaliza',
-        block: 'Block C-18',
+        block: 'Blok C-18',
         date: '2026-02-18',
         time: '07:45',
         jobTypes: ['Pemupukan dolomit', 'Rawat jalan']
@@ -313,7 +313,7 @@ export function createDashboardModel() {
       {
         sensusId: 'SEN-2024-004',
         worker: 'Dewi Lestari',
-        block: 'Block A-08',
+        block: 'Blok A-08',
         date: '2026-02-17',
         time: '14:20',
         jobTypes: ['Panen']

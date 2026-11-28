@@ -10,7 +10,7 @@
 
     <div class="metric-card__value-row">
       <strong>{{ metric.value }}</strong>
-      <span>update</span>
+      <span>pembaruan</span>
     </div>
 
     <div class="metric-card__chart">
