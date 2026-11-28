@@ -220,7 +220,6 @@
             <h2 id="h-ship">Pengiriman 7 hari <span>kirim vs terima per tanggal kirim{{ unit.primary ? `, ${unit.primary.name}` : '' }}</span></h2>
             <div v-if="ships.loading" class="sk sk--block" aria-busy="true"></div>
             <PanelError v-else-if="ships.error" :text="ships.error" @retry="loadShips" />
-            <p v-else-if="!unit.primary" class="state">Belum ada pengiriman dalam {{ SHIPMENT_WINDOW_DAYS }} hari terakhir.</p>
             <template v-else>
               <p class="find">{{ shipFinding }}</p>
               <div class="legend" aria-hidden="true">
@@ -417,6 +416,9 @@ const sensusFinding = computed(() => {
     .sort((a, b) => b.total - a.total)
   if (!totals[0].total) return `Belum ada sensus tercatat dalam ${periodDays.value} hari terakhir.`
   const top = totals[0]
+  const tied = totals.filter((t) => t.total === top.total)
+  if (tied.length === totals.length) return `Semua kelompok sama: masing-masing ${formatNumber(top.total)} sensus dalam ${periodDays.value} hari.`
+  if (tied.length > 1) return `${tied.map((t) => t.label).join(' dan ')} paling banyak dicatat: masing-masing ${formatNumber(top.total)} sensus dalam ${periodDays.value} hari.`
   return `${top.label} paling banyak dicatat: ${formatNumber(top.total)} sensus dalam ${periodDays.value} hari.`
 })
 
@@ -446,7 +448,11 @@ function planChip(p) {
   if (p.lateDays) return { tone: 'kritis', icon: 'alert', label: `Terlambat ${p.lateDays} hari` }
   if (p.status === 'in_progress') return { tone: 'info', icon: 'clock', label: PLAN_STATUS.in_progress }
   if (p.status === 'planned') return { tone: 'netral', icon: 'calendar', label: PLAN_STATUS.planned }
-  return { tone: 'netral', icon: 'calendar', label: PLAN_STATUS[p.status] || p.status || 'Tanpa status' }
+  if (PLAN_STATUS[p.status]) return { tone: 'netral', icon: 'calendar', label: PLAN_STATUS[p.status] }
+  // Status kosong: turunkan dari tanggal (sudah mulai = berjalan, belum = direncanakan).
+  const today = new Date().toLocaleDateString('sv-SE')
+  if (p.actualStart || (p.start && p.start <= today)) return { tone: 'info', icon: 'clock', label: PLAN_STATUS.in_progress }
+  return { tone: 'netral', icon: 'calendar', label: PLAN_STATUS.planned }
 }
 
 const planRows = computed(() => {
@@ -482,6 +488,7 @@ const shipMax = computed(() => Math.max(1, ...shipDays7.value.flatMap((d) => [d.
 const barWidth = (v) => `${Math.max(0, (v / shipMax.value) * 100)}%`
 const shipFinding = computed(() => {
   const days = shipDays7.value
+  if (!unit.value.primary) return `Belum ada pengiriman dalam ${SHIPMENT_WINDOW_DAYS} hari terakhir.`
   if (!days.some((d) => d.trips)) return 'Tidak ada pengiriman dalam 7 hari terakhir.'
   const over = days.filter((d) => d.selisihPct !== null && d.selisihPct > SELISIH_LIMIT)
   return over.length
@@ -623,7 +630,7 @@ td.state { white-space: normal; }
 .ship { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 12px; }
 .ship li { display: grid; grid-template-columns: 52px minmax(80px, 1fr) minmax(90px, auto) minmax(140px, auto); gap: 10px; align-items: center; }
 .ship__day { color: var(--text-muted); font-variant-numeric: tabular-nums; }
-.ship__bars { display: grid; gap: 2px; }
+.ship__bars { display: grid; gap: 2px; padding: 2px 0; border-left: 2px solid var(--border-strong); } /* garis dasar tetap terlihat saat kosong */
 .ship__bar { display: block; height: 7px; border-radius: 2px; min-width: 0; }
 .ship__nums { text-align: right; font-variant-numeric: tabular-nums; }
 .ship__pct { color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; }
