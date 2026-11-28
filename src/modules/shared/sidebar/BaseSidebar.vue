@@ -51,7 +51,7 @@
 
               <span :class="['flex min-w-0 flex-1 items-center gap-2', isCollapsed ? 'justify-center' : '']">
                 <span class="sidebar-icon grid h-7 w-7 shrink-0 place-items-center text-current">
-                  <BaseIcon :name="item.icon" :size="22" />
+                  <SidebarEmojiIcon :item="item" :size="22" :active="isItemActive(item)" :just-on="isJustSelected(item)" />
                 </span>
                 <span v-show="!isCollapsed"
                   class="flex-1 truncate text-[15px] font-semibold leading-snug tracking-[-0.01em] text-current">{{
@@ -85,8 +85,8 @@
                 : 'bg-transparent text-(--text-muted) hover:bg-black/4 hover:text-(--text)',
               isChildActive(child) ? 'is-active' : '',
             ]" @click="onNavigate(child)">
-              <span v-if="child.icon" class="sidebar-icon grid h-6 w-6 shrink-0 place-items-center text-current">
-                <BaseIcon :name="child.icon" :size="18" />
+              <span v-if="child.icon || emojiForItem(child)" class="sidebar-icon grid h-6 w-6 shrink-0 place-items-center text-current">
+                <SidebarEmojiIcon :item="child" :size="18" :active="isChildActive(child)" :just-on="isJustSelected(child)" />
               </span>
               <span
                 :class="['truncate text-[14px] font-medium leading-snug tracking-[-0.01em]', isChildActive(child) ? 'text-(--brand)' : 'text-current']">{{
@@ -109,7 +109,7 @@
 
           <span :class="['flex flex-1 items-center gap-2', isCollapsed ? 'justify-center' : '']">
             <span class="sidebar-icon grid h-7 w-7 shrink-0 place-items-center text-current">
-              <BaseIcon :name="item.icon" :size="22" />
+              <SidebarEmojiIcon :item="item" :size="22" :active="isItemActive(item)" :just-on="isJustSelected(item)" />
             </span>
             <span v-show="!isCollapsed"
               :class="['flex-1 text-[15px] font-semibold leading-snug tracking-[-0.01em]', isItemActive(item) ? 'text-(--brand)' : 'text-current']">
@@ -164,6 +164,9 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import BaseIcon from "../icon";
+import SidebarEmojiIcon from "./SidebarEmojiIcon.vue";
+import { emojiForItem } from "./sidebarEmoji";
+import { justSelectedPath, markJustSelected } from "./justSelected";
 import { navLabel as navLabelFor } from "./navLabels";
 import { cloneNavigation, getCachedSidebarNavigation, loadStrapiSidebarNavigation } from "./strapiNavigation";
 import { currentLocaleCode, onLocaleChange } from "../../../i18n";
@@ -282,7 +285,12 @@ const visibleItems = computed(() => resolvedItems.value.filter((item) => (
   item?.to !== "/audit-log" || canViewAuditLog(props.user)
 )));
 
+function isJustSelected(item) {
+  return Boolean(item?.to) && justSelectedPath.value === item.to;
+}
+
 function onNavigate(item) {
+  if (item?.to) markJustSelected(item.to);
   if (item?.to) {
     router.push(item.to).catch(() => { });
   }
