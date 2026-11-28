@@ -25,7 +25,7 @@
       v-if="jabatanList.length > 1"
       title="Jumlah pekerja per jabatan"
       :subtitle="`${rows.length} pekerja di ${jabatanList.length} jabatan`"
-      :legend="[{ label: 'Pekerja', color: 'var(--success)' }]"
+      :legend="[{ label: 'Berjabatan', color: 'var(--success)' }, { label: 'Tanpa jabatan', color: 'var(--border-strong)' }]"
       :bars="bars"
       :selected="filterJabatan"
       @toggle="toggleJabatan" />
