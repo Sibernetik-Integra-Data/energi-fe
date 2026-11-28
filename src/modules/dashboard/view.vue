@@ -66,6 +66,11 @@
               <KpiDelta :value="receivedDelta" />
               <span class="kc__sub">vs {{ prevLabel }}: {{ formatNumber(shipPrev.received) }}<template v-if="shipCur.selisihPct !== null"> · selisih {{ formatNumber(shipCur.selisihPct, 1) }}%</template></span>
             </template>
+            <!-- Bilah porsi volume dikirim yang sudah diterima; selalu tampil, kosong = lintasan saja. -->
+            <span v-if="!ships.loading && !ships.error" class="kc__meter" role="img"
+              :aria-label="`Diterima ${formatNumber(receivedShare, 1)}% dari volume dikirim`">
+              <span class="kc__meter-fill" :style="{ width: `${receivedShare}%` }"></span>
+            </span>
           </div>
 
           <button type="button" class="kc" :aria-pressed="feedKind === 'telat'" @click="toggleKind('telat')">
@@ -461,6 +466,12 @@ const planFinding = computed(() => {
 const unit = computed(() => primaryUnit(ships.value.list))
 const shipCur = computed(() => shipmentSummary(ships.value.list, unit.value.primary, range.value.from, range.value.to))
 const shipPrev = computed(() => shipmentSummary(ships.value.list, unit.value.primary, range.value.prevFrom, range.value.prevTo))
+// Porsi volume dikirim yang sudah diterima (0–100); 0 bila belum ada pengiriman.
+const receivedShare = computed(() => {
+  const shipped = shipCur.value.shipped
+  return shipped > 0 ? Math.min(100, Math.max(0, (shipCur.value.received / shipped) * 100)) : 0
+})
+
 // Sensus per kelompok: periode ini vs periode sebelumnya yang sama panjang.
 const groupKpi = computed(() => {
   const list = sensus.value.list
@@ -596,6 +607,10 @@ button.kc[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--brand-strong)
 .kc--primary .kc__delta { color: var(--kc-on-primary-container); }
 .kc__sub { font-size: 13px; color: var(--kc-on-variant); }
 .kc__err { font-size: 13px; color: var(--danger); }
+.kc__meter { display: block; width: 100%; height: 8px; margin-top: auto; border-radius: 4px; overflow: hidden; background: color-mix(in srgb, var(--kc-on-primary-container) 18%, transparent); }
+.kc__meter-fill { display: block; height: 100%; border-radius: 4px; background: var(--kc-meter); transition: width .3s ease; }
+@media (prefers-reduced-motion: reduce) { .kc__meter-fill { transition: none; } }
+@media (forced-colors: active) { .kc__meter { border: 1px solid CanvasText; } .kc__meter-fill { background: Highlight; forced-color-adjust: none; } }
 @media (prefers-reduced-motion: reduce) { button.kc::after { transition: none; } }
 @media (prefers-contrast: more) { .kc { border: 2px solid var(--text); } }
 @media (forced-colors: active) { .kc { border: 1px solid CanvasText; } button.kc[aria-pressed="true"] { outline: 2px solid Highlight; } }
