@@ -39,64 +39,42 @@
           </nav>
         </section>
 
-        <!-- KPI -->
+        <!-- KPI gaya Material 3 (prototipe p10): kartu tonal, angka besar + satuan, perubahan, pembanding. -->
         <section class="dash__kpis" aria-label="Ringkasan">
-          <button type="button" class="p k" :aria-pressed="false" @click="clearFilters">
-            <h2>Sensus {{ periodDays }} hari</h2>
+          <button v-for="g in GROUPS" :key="g.key" type="button" class="kc" :aria-pressed="selectedGroup === g.key"
+            @click="toggleGroup(g.key)">
+            <span class="kc__label">Sensus {{ g.label }}</span>
             <template v-if="sensus.loading"><span class="sk sk--line"></span></template>
-            <template v-else-if="sensus.error"><span class="k__err">Gagal dimuat</span></template>
+            <span v-else-if="sensus.error" class="kc__err">Gagal dimuat</span>
             <template v-else>
-              <span class="k__v">{{ formatNumber(sensusCur) }}</span>
-              <span class="k__m"><DeltaText :value="sensusDelta" /> vs {{ periodDays }} hari sebelumnya</span>
+              <span class="kc__value">{{ formatNumber(groupKpi[g.key].cur) }}<small>laporan</small></span>
+              <KpiDelta :value="groupKpi[g.key].delta" />
+              <span class="kc__sub">vs {{ prevLabel }}: {{ formatNumber(groupKpi[g.key].prev) }}</span>
             </template>
           </button>
 
-          <button type="button" class="p k" :aria-pressed="feedKind === 'tunggu'" @click="toggleKind('tunggu')">
-            <h2>Menunggu verifikasi</h2>
-            <template v-if="sensus.loading"><span class="sk sk--line"></span></template>
-            <template v-else-if="sensus.error"><span class="k__err">Gagal dimuat</span></template>
-            <template v-else>
-              <span class="k__v">{{ formatNumber(pendingAll.length) }}</span>
-              <span class="k__m">{{ staleCount }} menunggu lebih dari 24 jam</span>
-            </template>
-          </button>
-
-          <button type="button" class="p k" :aria-pressed="feedKind === 'telat'" @click="toggleKind('telat')">
-            <h2>Rencana terlambat</h2>
-            <template v-if="plans.loading"><span class="sk sk--line"></span></template>
-            <template v-else-if="plans.error"><span class="k__err">Gagal dimuat</span></template>
-            <template v-else>
-              <span class="k__v">{{ formatNumber(latePlans.length) }}</span>
-              <span class="k__m">
-                <span v-if="latePlans.length" class="tg tg--kritis"><DashIcon name="alert" :size="11" /> dari {{ formatNumber(activePlans.length) }} rencana aktif</span>
-                <template v-else>Dari {{ formatNumber(activePlans.length) }} rencana aktif</template>
-              </span>
-            </template>
-          </button>
-
-          <div class="p k k--static">
-            <h2>Volume diterima {{ periodDays }} hari</h2>
+          <div class="kc kc--primary">
+            <span class="kc__label">Volume diterima {{ periodDays }} hari</span>
             <template v-if="ships.loading"><span class="sk sk--line"></span></template>
-            <template v-else-if="ships.error"><span class="k__err">Gagal dimuat</span></template>
-            <template v-else-if="!unit.primary"><span class="k__v">-</span><span class="k__m">Belum ada pengiriman</span></template>
+            <span v-else-if="ships.error" class="kc__err">Gagal dimuat</span>
+            <template v-else-if="!unit.primary">
+              <span class="kc__value">-</span>
+              <span class="kc__sub">Belum ada pengiriman</span>
+            </template>
             <template v-else>
-              <span class="k__v">{{ formatNumber(shipCur.received) }} <small>{{ unit.primary.name }}</small></span>
-              <span class="k__m"><DeltaText :value="receivedDelta" /> vs {{ periodDays }} hari sebelumnya<template v-if="unit.others.length"> · satuan lain tidak dijumlahkan</template></span>
+              <span class="kc__value">{{ formatNumber(shipCur.received) }}<small>{{ unit.primary.name }}</small></span>
+              <KpiDelta :value="receivedDelta" />
+              <span class="kc__sub">vs {{ prevLabel }}: {{ formatNumber(shipPrev.received) }}<template v-if="shipCur.selisihPct !== null"> · selisih {{ formatNumber(shipCur.selisihPct, 1) }}%</template></span>
             </template>
           </div>
 
-          <button type="button" class="p k" :aria-pressed="feedKind === 'timbang'" @click="toggleKind('timbang')">
-            <h2>Selisih timbang {{ periodDays }} hari</h2>
-            <template v-if="ships.loading"><span class="sk sk--line"></span></template>
-            <template v-else-if="ships.error"><span class="k__err">Gagal dimuat</span></template>
+          <button type="button" class="kc" :aria-pressed="feedKind === 'telat'" @click="toggleKind('telat')">
+            <span class="kc__label">Rencana terlambat</span>
+            <template v-if="plans.loading"><span class="sk sk--line"></span></template>
+            <span v-else-if="plans.error" class="kc__err">Gagal dimuat</span>
             <template v-else>
-              <span class="k__v">{{ shipCur.selisihPct === null ? '-' : `${formatNumber(shipCur.selisihPct, 1)}%` }}</span>
-              <span class="k__m">
-                <span v-if="overDays.length" class="tg tg--kritis"><DashIcon name="alert" :size="11" /> {{ overDays.length }} hari &gt; {{ SELISIH_LIMIT }}%</span>
-                <template v-else-if="shipCur.selisihPct !== null">Dalam batas {{ SELISIH_LIMIT }}%</template>
-                <template v-else>Belum ada penerimaan</template>
-                <template v-if="shipCur.pendingTrips"> · {{ shipCur.pendingTrips }} belum diterima</template>
-              </span>
+              <span class="kc__value">{{ formatNumber(latePlans.length) }}<small>dari {{ formatNumber(activePlans.length) }}</small></span>
+              <span class="kc__sub">Klik untuk lihat daftar rencana</span>
             </template>
           </button>
         </section>
@@ -265,7 +243,7 @@ import { useAppStore } from '../../stores'
 import { useDashboardSettings } from './dashboardSettings'
 import { GROUPS, PLAN_STATUS, SHIPMENT_WINDOW_DAYS, pendingSensus, withWorkerNames } from './model'
 import {
-  LEVELS, SELISIH_LIMIT, buildFeed, countSensus, formatDay, formatNumber, hoursSince, percentChange,
+  LEVELS, SELISIH_LIMIT, buildFeed, formatDay, formatNumber, hoursSince, percentChange,
   periodRange, primaryUnit, sensusDaily, shipmentDaily, shipmentSummary, waitLabel
 } from './dashboardData'
 
@@ -286,14 +264,20 @@ const PLAN_COLUMNS = [
 ]
 const GROUP_COLOR = { pembersihan: 'var(--dash-c-pembersihan)', pemupukan: 'var(--dash-c-pemupukan)', panen: 'var(--dash-c-panen)' }
 
-// Teks perubahan: panah dan kata, tidak hanya warna.
-const DeltaText = defineComponent({
+
+// Perubahan untuk kartu KPI: chevron naik/turun + persen (tidak hanya warna).
+const KpiDelta = defineComponent({
   props: { value: { type: Number, default: null } },
   setup(p) {
     return () => {
-      if (p.value === null || !Number.isFinite(p.value)) return h('span', 'tidak ada pembanding')
+      if (p.value === null || !Number.isFinite(p.value)) return h('span', { class: 'kc__delta kc__delta--none' }, 'Tidak ada pembanding')
       const up = p.value >= 0
-      return h('span', { class: up ? 'up' : 'down' }, `${up ? '▲ naik' : '▼ turun'} ${formatNumber(Math.abs(p.value), 1)}%`)
+      return h('span', { class: ['kc__delta', up ? 'is-up' : 'is-down'] }, [
+        h('svg', { viewBox: '0 0 24 24', width: 14, height: 14, 'aria-hidden': 'true', fill: 'none', stroke: 'currentColor', 'stroke-width': 2.4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' },
+          [h('path', { d: up ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6' })]),
+        h('span', { class: 'sr-only' }, up ? 'naik ' : 'turun '),
+        h('span', { class: 'kc__pct' }, `${up ? '+' : '−'}${formatNumber(Math.abs(p.value), 1)}%`)
+      ])
     }
   }
 })
@@ -406,8 +390,6 @@ const range = computed(() => periodRange(periodDays.value, now.value))
 // ── Sensus ─────────────────────────────────────────────────────────────────
 
 const sensusRows = computed(() => sensusDaily(sensus.value.list, periodDays.value, now.value))
-const sensusCur = computed(() => countSensus(sensus.value.list, range.value.from, range.value.to))
-const sensusDelta = computed(() => percentChange(sensusCur.value, countSensus(sensus.value.list, range.value.prevFrom, range.value.prevTo)))
 const chartSeries = computed(() => GROUPS.map((g) => ({
   ...g, color: GROUP_COLOR[g.key], visible: !selectedGroup.value || selectedGroup.value === g.key
 })))
@@ -424,7 +406,6 @@ const sensusFinding = computed(() => {
 
 const pendingAll = computed(() => pendingSensus(sensus.value.list))
 const pendingFiltered = computed(() => pendingAll.value.filter((r) => !selectedGroup.value || r.groups.includes(selectedGroup.value)))
-const staleCount = computed(() => pendingAll.value.filter((r) => (hoursSince(r.createdAt, now.value) ?? 0) > 24).length)
 const pendingShown = computed(() => {
   const named = new Map(pendingNamed.value.map((r) => [r.code, r.worker]))
   return pendingFiltered.value.slice(0, 6).map((r) => ({ ...r, worker: named.get(r.code) || '' }))
@@ -480,6 +461,18 @@ const planFinding = computed(() => {
 const unit = computed(() => primaryUnit(ships.value.list))
 const shipCur = computed(() => shipmentSummary(ships.value.list, unit.value.primary, range.value.from, range.value.to))
 const shipPrev = computed(() => shipmentSummary(ships.value.list, unit.value.primary, range.value.prevFrom, range.value.prevTo))
+// Sensus per kelompok: periode ini vs periode sebelumnya yang sama panjang.
+const groupKpi = computed(() => {
+  const list = sensus.value.list
+  const { from, to, prevFrom, prevTo } = range.value
+  const count = (key, a, b) => list.filter((s) => s.date >= a && s.date <= b && s.groups.includes(key)).length
+  return Object.fromEntries(GROUPS.map((g) => {
+    const cur = count(g.key, from, to)
+    const prev = count(g.key, prevFrom, prevTo)
+    return [g.key, { cur, prev, delta: percentChange(cur, prev) }]
+  }))
+})
+const prevLabel = computed(() => `${formatDay(range.value.prevFrom)}–${formatDay(range.value.prevTo)}`)
 const receivedDelta = computed(() => percentChange(shipCur.value.received, shipPrev.value.received))
 const shipDaysPeriod = computed(() => shipmentDaily(ships.value.list, unit.value.primary, periodDays.value, now.value))
 const overDays = computed(() => shipDaysPeriod.value.filter((d) => d.selisihPct !== null && d.selisihPct > SELISIH_LIMIT))
@@ -524,15 +517,25 @@ const feed = computed(() => feedAll.value.filter((i) => (!feedKind.value || i.ki
   --dash-c-pemupukan: #6d28d9;
   --dash-c-panen: #c2410c;
   --dash-c-ship: #0e7490;
+  /* Kartu KPI tonal (Material 3, p10): permukaan krem dan wadah utama oranye muda. */
+  --kc-surface: #f2e4d8;
+  --kc-on-variant: #52443c;
+  --kc-primary-container: #ffdcbf;
+  --kc-on-primary-container: #2d1600;
+  --kc-meter: var(--brand-strong);
   flex: 1; min-width: 0; overflow: auto;
   padding: 16px 24px 32px;
   display: grid; gap: 12px; align-content: start;
 }
-:global(.theme-dark) .dash {
+:global(.theme-dark .dash) {
   --dash-c-pembersihan: #22d3ee;
   --dash-c-pemupukan: #a78bfa;
   --dash-c-panen: #fb923c;
   --dash-c-ship: #22d3ee;
+  --kc-surface: #2f2824;
+  --kc-on-variant: #d8c3b6;
+  --kc-primary-container: #6b3b00;
+  --kc-on-primary-container: #ffdcbf;
 }
 
 .dash__intro { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 16px; }
@@ -563,6 +566,39 @@ const feed = computed(() => feedAll.value.filter((i) => (!feedKind.value || i.ki
 .dash :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
 .dash__kpis { display: grid; gap: 12px; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+/* ── Kartu KPI gaya Material 3 ─────────────────────────────────────────── */
+.kc {
+  position: relative;
+  display: flex; flex-direction: column; gap: 6px; align-items: flex-start;
+  min-height: 132px; padding: 16px 18px;
+  border: 0; border-radius: 16px;
+  background: var(--kc-surface); color: var(--text);
+  font: inherit; text-align: left;
+}
+button.kc { cursor: pointer; }
+/* Lapisan keadaan (state layer) M3 saat diarahkan/ditekan. */
+button.kc::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: currentColor; opacity: 0; transition: opacity .15s ease; pointer-events: none; }
+button.kc:hover::after { opacity: .06; }
+button.kc:active::after { opacity: .1; }
+button.kc:focus-visible { outline: 2px solid var(--brand-strong); outline-offset: 2px; }
+button.kc[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--brand-strong); }
+.kc--primary { background: var(--kc-primary-container); color: var(--kc-on-primary-container); }
+.kc__label { font-size: 13px; font-weight: 500; color: var(--kc-on-variant); letter-spacing: .01em; }
+.kc--primary .kc__label, .kc--primary .kc__sub, .kc--primary .kc__value small { color: var(--kc-on-primary-container); }
+.kc__value { display: inline-flex; align-items: baseline; gap: 6px; font-size: 34px; font-weight: 400; line-height: 1.1; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.kc__value small { font-size: 14px; font-weight: 400; color: var(--kc-on-variant); letter-spacing: 0; }
+.kc__delta { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: var(--text); }
+.kc__delta svg { flex: 0 0 auto; }
+.kc__delta.is-up svg { color: var(--success); }
+.kc__delta.is-down svg { color: var(--danger); }
+.kc__delta--none { font-weight: 500; color: var(--kc-on-variant); }
+.kc--primary .kc__delta { color: var(--kc-on-primary-container); }
+.kc__sub { font-size: 13px; color: var(--kc-on-variant); }
+.kc__err { font-size: 13px; color: var(--danger); }
+@media (prefers-reduced-motion: reduce) { button.kc::after { transition: none; } }
+@media (prefers-contrast: more) { .kc { border: 2px solid var(--text); } }
+@media (forced-colors: active) { .kc { border: 1px solid CanvasText; } button.kc[aria-pressed="true"] { outline: 2px solid Highlight; } }
 .dash__grid { display: grid; gap: 12px; grid-template-columns: repeat(12, minmax(0, 1fr)); }
 .s4 { grid-column: span 4; } .s8 { grid-column: span 8; } .s12 { grid-column: span 12; }
 
@@ -575,14 +611,6 @@ const feed = computed(() => feedAll.value.filter((i) => (!feedKind.value || i.ki
 .find { font-size: 13px; margin: 0 0 8px; color: var(--text); }
 .note { font-size: 11px; color: var(--text-muted); margin: 8px 0 0; }
 
-.k { font: inherit; color: inherit; text-align: left; width: 100%; display: grid; gap: 2px; align-content: start; }
-button.k { cursor: pointer; }
-button.k:hover { border-color: var(--border-strong); }
-button.k[aria-pressed='true'] { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
-.k__v { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
-.k__v small { font-size: 13px; font-weight: 600; color: var(--text-muted); }
-.k__m { font-size: 12px; color: var(--text-muted); }
-.k__err { font-size: 13px; color: var(--danger); }
 :deep(.up) { color: var(--success); }
 :deep(.down) { color: var(--danger); }
 
@@ -649,7 +677,6 @@ p.state--err { display: flex; gap: 6px; justify-content: center; align-items: ce
 
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-@media (forced-colors: active) { button.k[aria-pressed='true'] { outline: 2px solid Highlight; } }
 
 @media (max-width: 1180px) {
   .dash__kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
