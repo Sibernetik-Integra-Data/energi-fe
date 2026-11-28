@@ -1,15 +1,15 @@
 <template>
   <div class="flex flex-wrap gap-4">
     <label class="performance-select">
-      <span class="sr-only">Bulan</span>
-      <select :value="month" aria-label="Bulan" @change="$emit('update:month', Number($event.target.value))">
+      <span class="sr-only">{{ t('performance.filters.month') }}</span>
+      <select :value="month" :aria-label="t('performance.filters.month')" @change="$emit('update:month', Number($event.target.value))">
         <option v-for="(name, index) in months" :key="name" :value="index + 1">{{ name }}</option>
       </select>
       <BaseIcon name="chevron-down" :size="16" />
     </label>
     <label class="performance-select">
-      <span class="sr-only">Tahun</span>
-      <select :value="year" aria-label="Tahun" @change="$emit('update:year', Number($event.target.value))">
+      <span class="sr-only">{{ t('performance.filters.year') }}</span>
+      <select :value="year" :aria-label="t('performance.filters.year')" @change="$emit('update:year', Number($event.target.value))">
         <option v-for="item in years" :key="item" :value="item">{{ item }}</option>
       </select>
       <BaseIcon name="chevron-down" :size="16" />
@@ -19,7 +19,15 @@
 
 <script setup>
 import BaseIcon from '../../shared/icon'
-import { PERFORMANCE_MONTHS as months } from '../model'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { getPerformanceMonths } from '../model'
+
+const { t, locale } = useI18n()
+const months = computed(() => {
+  void locale.value
+  return getPerformanceMonths()
+})
 
 defineProps({
   month: { type: Number, required: true },

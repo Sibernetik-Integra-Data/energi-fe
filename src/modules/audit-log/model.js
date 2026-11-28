@@ -1,4 +1,5 @@
 import { signedApiFetch } from '../../api/fetch'
+import { currentIntlLocale } from '../../i18n'
 
 export const AUDIT_PAGE_SIZES = [5, 10, 20]
 
@@ -38,7 +39,7 @@ export function formatAuditDate(value) {
   if (!value) return '—'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return String(value)
-  return new Intl.DateTimeFormat('id-ID', {
+  return new Intl.DateTimeFormat(currentIntlLocale(), {
     dateStyle: 'medium', timeStyle: 'medium', timeZone: 'Asia/Jakarta'
   }).format(date)
 }

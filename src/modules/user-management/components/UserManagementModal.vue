@@ -13,10 +13,10 @@
       >
         <header class="sticky top-0 z-1 flex items-center justify-between border-b border-(--border) bg-(--surface) px-6 py-4">
           <div>
-            <h2 :id="titleId" class="m-0 text-lg font-bold">{{ mode === 'add' ? 'Tambah User' : 'Edit User' }}</h2>
-            <p class="m-0 mt-1 text-xs text-(--text-muted)">{{ mode === 'add' ? 'Buat akun Keycloak dan atur profil user.' : 'Perbarui profil dan akses akun Keycloak.' }}</p>
+            <h2 :id="titleId" class="m-0 text-lg font-bold">{{ mode === 'add' ? t('userManagement.addUser') : t('userManagement.modal.editTitle') }}</h2>
+            <p class="m-0 mt-1 text-xs text-(--text-muted)">{{ mode === 'add' ? t('userManagement.modal.addSubtitle') : t('userManagement.modal.editSubtitle') }}</p>
           </div>
-          <button type="button" class="icon-button" aria-label="Tutup" :disabled="saving" @click="requestClose">
+          <button type="button" class="icon-button" :aria-label="t('common.close')" :disabled="saving" @click="requestClose">
             <BaseIcon name="x" :size="18" />
           </button>
         </header>
@@ -25,48 +25,48 @@
           <p v-if="visibleError" class="m-0 rounded-xl bg-(--danger-soft) px-4 py-3 text-sm text-(--danger)" role="alert">{{ visibleError }}</p>
 
           <section class="form-section">
-            <h3>Informasi akun</h3>
+            <h3>{{ t('userManagement.modal.account') }}</h3>
             <div class="form-grid">
-              <label class="field"><span>Username *</span><input v-model.trim="form.username" required :readonly="mode === 'edit'" autocomplete="username" /></label>
-              <label class="field"><span>Email *</span><input v-model.trim="form.email" required type="email" autocomplete="email" /></label>
-              <label class="field"><span>Nama Depan *</span><input v-model.trim="form.firstName" required /></label>
-              <label class="field"><span>Nama Belakang{{ isRequired('lastName') ? ' *' : '' }}</span><input v-model.trim="form.lastName" :required="isRequired('lastName')" /></label>
+              <label class="field"><span>{{ t('userManagement.columns.username') }} *</span><input v-model.trim="form.username" required :readonly="mode === 'edit'" autocomplete="username" /></label>
+              <label class="field"><span>{{ t('userManagement.columns.email') }} *</span><input v-model.trim="form.email" required type="email" autocomplete="email" /></label>
+              <label class="field"><span>{{ t('userManagement.modal.firstName') }} *</span><input v-model.trim="form.firstName" required /></label>
+              <label class="field"><span>{{ t('userManagement.modal.lastName') }}{{ isRequired('lastName') ? ' *' : '' }}</span><input v-model.trim="form.lastName" :required="isRequired('lastName')" /></label>
             </div>
           </section>
 
           <section class="form-section">
-            <h3>Profil Energi</h3>
+            <h3>{{ t('userManagement.modal.profile') }}</h3>
             <div class="form-grid">
-              <label class="field"><span>Tanggal Lahir{{ isRequired('birthDate') ? ' *' : '' }}</span><input v-model="form.birthDate" type="date" :required="isRequired('birthDate')" /></label>
-              <label class="field"><span>Marital Status{{ isRequired('maritalStatus') ? ' *' : '' }}</span>
-                <select v-model="form.maritalStatus" :required="isRequired('maritalStatus')"><option value="">Pilih status</option><option v-for="option in optionsFor('maritalStatus', ['Single', 'Married', 'Divorced', 'Widowed'])" :key="option" :value="option">{{ optionLabel(option) }}</option></select>
+              <label class="field"><span>{{ t('userManagement.modal.birthDate') }}{{ isRequired('birthDate') ? ' *' : '' }}</span><input v-model="form.birthDate" type="date" :required="isRequired('birthDate')" /></label>
+              <label class="field"><span>{{ t('userManagement.modal.maritalStatus') }}{{ isRequired('maritalStatus') ? ' *' : '' }}</span>
+                <select v-model="form.maritalStatus" :required="isRequired('maritalStatus')"><option value="">{{ t('userManagement.modal.chooseStatus') }}</option><option v-for="option in optionsFor('maritalStatus', ['Single', 'Married', 'Divorced', 'Widowed'])" :key="option" :value="option">{{ optionLabel(option) }}</option></select>
               </label>
-              <label class="field"><span>Gender{{ isRequired('gender') ? ' *' : '' }}</span>
-                <select v-model="form.gender" :required="isRequired('gender')"><option value="">Pilih gender</option><option v-for="option in optionsFor('gender', ['Laki-Laki', 'Perempuan'])" :key="option" :value="option">{{ optionLabel(option) }}</option></select>
+              <label class="field"><span>{{ t('userManagement.modal.gender') }}{{ isRequired('gender') ? ' *' : '' }}</span>
+                <select v-model="form.gender" :required="isRequired('gender')"><option value="">{{ t('userManagement.modal.chooseGender') }}</option><option v-for="option in optionsFor('gender', ['Laki-Laki', 'Perempuan'])" :key="option" :value="option">{{ optionLabel(option) }}</option></select>
               </label>
-              <label class="field"><span>User Access *</span>
+              <label class="field"><span>{{ t('userManagement.columns.userAccess') }} *</span>
                 <select v-model="form.access" required :disabled="isProtectedSelf">
-                  <option value="" disabled>Pilih akses</option>
+                  <option value="" disabled>{{ t('userManagement.modal.chooseAccess') }}</option>
                   <option v-for="option in configuration.accessOptions || []" :key="option" :value="option">{{ option }}</option>
                 </select>
               </label>
-              <label class="field col-span-2 max-[640px]:col-span-1"><span>Address 1{{ isRequired('address1') ? ' *' : '' }}</span><textarea v-model.trim="form.address1" rows="2" :required="isRequired('address1')"></textarea></label>
-              <label class="field col-span-2 max-[640px]:col-span-1"><span>Address 2{{ isRequired('address2') ? ' *' : '' }}</span><textarea v-model.trim="form.address2" rows="2" :required="isRequired('address2')"></textarea></label>
+              <label class="field col-span-2 max-[640px]:col-span-1"><span>{{ t('userManagement.modal.address1') }}{{ isRequired('address1') ? ' *' : '' }}</span><textarea v-model.trim="form.address1" rows="2" :required="isRequired('address1')"></textarea></label>
+              <label class="field col-span-2 max-[640px]:col-span-1"><span>{{ t('userManagement.modal.address2') }}{{ isRequired('address2') ? ' *' : '' }}</span><textarea v-model.trim="form.address2" rows="2" :required="isRequired('address2')"></textarea></label>
             </div>
-            <p v-if="isProtectedSelf" class="m-0 text-xs text-(--text-soft)">User Access akun Owner yang sedang digunakan tidak dapat diturunkan.</p>
+            <p v-if="isProtectedSelf" class="m-0 text-xs text-(--text-soft)">{{ t('userManagement.modal.protectedSelf') }}</p>
           </section>
 
           <section class="form-section">
-            <h3>{{ mode === 'add' ? 'Password awal' : 'Reset password (opsional)' }}</h3>
+            <h3>{{ mode === 'add' ? t('userManagement.modal.initialPassword') : t('userManagement.modal.resetPassword') }}</h3>
             <div class="form-grid">
-              <label class="field"><span>Password{{ mode === 'add' ? ' *' : '' }}</span><input v-model="form.password" :required="mode === 'add'" minlength="8" type="password" autocomplete="new-password" :placeholder="mode === 'edit' ? 'Kosongkan jika tidak diubah' : ''" /></label>
-              <label class="field"><span>Konfirmasi Password{{ mode === 'add' || form.password ? ' *' : '' }}</span><input v-model="form.confirmPassword" :required="mode === 'add' || Boolean(form.password)" type="password" autocomplete="new-password" /></label>
+              <label class="field"><span>{{ t('userManagement.modal.password') }}{{ mode === 'add' ? ' *' : '' }}</span><input v-model="form.password" :required="mode === 'add'" minlength="8" type="password" autocomplete="new-password" :placeholder="mode === 'edit' ? t('userManagement.modal.keepEmpty') : ''" /></label>
+              <label class="field"><span>{{ t('userManagement.modal.confirmPassword') }}{{ mode === 'add' || form.password ? ' *' : '' }}</span><input v-model="form.confirmPassword" :required="mode === 'add' || Boolean(form.password)" type="password" autocomplete="new-password" /></label>
             </div>
           </section>
 
           <footer class="flex justify-end gap-3 border-t border-(--border) pt-5">
-            <button type="button" class="secondary-button" :disabled="saving" @click="requestClose">Batal</button>
-            <button type="submit" class="primary-button" :disabled="saving">{{ saving ? 'Menyimpan…' : 'Simpan' }}</button>
+            <button type="button" class="secondary-button" :disabled="saving" @click="requestClose">{{ t('userManagement.cancel') }}</button>
+            <button type="submit" class="primary-button" :disabled="saving">{{ saving ? t('userManagement.modal.saving') : t('userManagement.modal.save') }}</button>
           </footer>
         </div>
       </form>
@@ -76,7 +76,12 @@
 
 <script setup>
 import { computed, nextTick, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseIcon from '../../shared/icon'
+
+const { t, te } = useI18n()
+// Display labels for known option values; the value sent to the API is unchanged.
+const OPTION_LABEL_KEYS = { single: 'single', married: 'married', divorced: 'divorced', widowed: 'widowed', 'laki-laki': 'male', perempuan: 'female' }
 
 const props = defineProps({
   user: { type: Object, default: null },
@@ -100,6 +105,8 @@ function optionsFor(name, fallback) {
 }
 function optionLabel(option) {
   const value = String(option || '')
+  const key = OPTION_LABEL_KEYS[value.toLowerCase()]
+  if (key && te(`userManagement.options.${key}`)) return t(`userManagement.options.${key}`)
   return value ? value[0].toUpperCase() + value.slice(1) : value
 }
 function selectedOption(name, value, fallback) {
@@ -124,8 +131,8 @@ function trapFocus(event) {
 }
 function submit() {
   localError.value = ''
-  if (form.password && form.password.length < 8) { localError.value = 'Password minimal 8 karakter.'; return }
-  if (form.password !== form.confirmPassword) { localError.value = 'Konfirmasi password tidak sama.'; return }
+  if (form.password && form.password.length < 8) { localError.value = t('userManagement.modal.passwordMin'); return }
+  if (form.password !== form.confirmPassword) { localError.value = t('userManagement.modal.passwordMismatch'); return }
   emit('save', { ...form, directClientRoles: [...form.directClientRoles] })
 }
 onMounted(() => nextTick(() => dialogRef.value?.querySelector('input:not([readonly])')?.focus()))

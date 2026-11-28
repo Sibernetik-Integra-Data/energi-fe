@@ -2,18 +2,18 @@
   <div class="h-screen flex bg-transparent max-[920px]:flex-col">
     <BaseSidebar :items="navigation" :user="user" />
     <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
-      <BaseHeader eyebrow="Sensus" title="Sensus" :notifications="0" :user="user" :on-logout="logoutFromKeycloak" />
+      <BaseHeader :eyebrow="t('nav.sensus')" :title="t('sensus.title')" :notifications="0" :user="user" :on-logout="logoutFromKeycloak" />
 
       <main class="flex-1 min-w-0 p-5 max-[920px]:p-4 overflow-y-auto">
         <div class="mb-4">
-          <h1 class="text-2xl font-semibold leading-8 tracking-tight text-(--text) m-0">Detail Penugasan</h1>
+          <h1 class="text-2xl font-semibold leading-8 tracking-tight text-(--text) m-0">{{ t('sensus.task.title') }}</h1>
           <RouterLink :to="`/sensus/${id}/record`" class="inline-flex items-center gap-2 mt-1 text-sm text-(--brand) hover:text-[color-mix(in_srgb,var(--brand)_80%,black)] transition-colors">
             <span aria-hidden="true">←</span>
-            Kembali ke halaman sebelumnya
+            {{ t('sensus.task.back') }}
           </RouterLink>
         </div>
 
-        <div v-if="loading" class="flex justify-center items-center py-20 text-sm text-(--text-muted)">Memuat detail&hellip;</div>
+        <div v-if="loading" class="flex justify-center items-center py-20 text-sm text-(--text-muted)">{{ t('sensus.task.loading') }}</div>
         <div v-else-if="error" class="flex justify-center items-center py-20 text-sm text-red-500">{{ error }}</div>
 
         <template v-else-if="plan">
@@ -21,36 +21,36 @@
             <div class="flex items-start justify-between gap-4 mb-4">
               <div class="flex items-center justify-between gap-3 min-w-0 w-full">
                 <div class="min-w-0">
-                  <h2 class="text-xl font-bold text-(--text) leading-6 m-0 truncate">{{ plan.jobType || 'Pekerjaan' }}</h2>
-                  <p class="text-sm text-(--text-muted) m-0">Sensus {{ plan.sensusId || '—' }}</p>
+                  <h2 class="text-xl font-bold text-(--text) leading-6 m-0 truncate">{{ plan.jobType || t('sensus.task.jobFallback') }}</h2>
+                  <p class="text-sm text-(--text-muted) m-0">{{ t('sensus.sensusRef', { id: plan.sensusId || '—' }) }}</p>
                 </div>
-                <img :src="workIcon" :alt="`Ikon ${plan.groupOfWork || plan.jobType}`" class="w-46px h-46px shrink-0" />
+                <img :src="workIcon" :alt="t('sensus.task.iconAlt', { name: plan.groupOfWork || plan.jobType })" class="w-46px h-46px shrink-0" />
               </div>
             </div>
 
             <div class="flex flex-wrap gap-x-8 gap-y-2 mb-4 font-inter">
               <div class="flex items-center gap-3">
-                <span class="text-sm font-semibold text-(--text-muted)">Tanggal Sensus</span>
+                <span class="text-sm font-semibold text-(--text-muted)">{{ t('sensus.task.sensusDate') }}</span>
                 <strong class="text-sm font-semibold text-(--text)">{{ plan.sensusDate || '—' }}</strong>
               </div>
             </div>
             <div v-if="plan.blocks?.length" class="flex items-start gap-3">
-              <p class="text-xs text-(--text-muted) m-0 pt-1 shrink-0">Nomor Petak</p>
+              <p class="text-xs text-(--text-muted) m-0 pt-1 shrink-0">{{ t('sensus.task.plot') }}</p>
               <div class="flex flex-wrap gap-1.5">
                 <span v-for="(block, index) in plan.blocks" :key="index" class="bg-(--surface-muted) border border-(--border) text-(--text) py-1 px-2.5 rounded-full text-xs">{{ block }}</span>
               </div>
             </div>
             <div class="mt-4 flex items-center gap-3 px-4 py-3 rounded-lg bg-[#cce9ff] border border-[#18a0fb] text-[#123b5d]">
               <img :src="infoIcon" alt="" aria-hidden="true" class="w-6 h-6 shrink-0" />
-              <p v-if="plan.planningStartDate || plan.planningEndDate" class="text-sm font-semibold text-sky-800 m-0">Rencana Pengerjaan : <strong class="font-bold">{{ plan.planningStartDate || '—' }} s.d. {{ plan.planningEndDate || '—' }}</strong></p>
-              <p v-else class="text-sm font-semibold text-sky-800 m-0">Rencana Pengerjaan : <strong class="font-bold">Belum Ada Rencana</strong></p>
+              <p v-if="plan.planningStartDate || plan.planningEndDate" class="text-sm font-semibold text-sky-800 m-0">{{ t('sensus.task.workPlan') }} : <strong class="font-bold">{{ t('sensus.task.dateRange', { start: plan.planningStartDate || '—', end: plan.planningEndDate || '—' }) }}</strong></p>
+              <p v-else class="text-sm font-semibold text-sky-800 m-0">{{ t('sensus.task.workPlan') }} : <strong class="font-bold">{{ t('sensus.task.noPlan') }}</strong></p>
             </div>
           </section>
 
           <section>
             <div class="mb-3">
-              <h2 class="text-lg font-bold text-(--text) m-0">Realisasi</h2>
-              <p class="text-sm text-(--text-muted) m-0 mt-1">Absensi dan laporan dari pekerja untuk setiap kerja.</p>
+              <h2 class="text-lg font-bold text-(--text) m-0">{{ t('sensus.task.realisation') }}</h2>
+              <p class="text-sm text-(--text-muted) m-0 mt-1">{{ t('sensus.task.realisationHint') }}</p>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
@@ -66,17 +66,17 @@
             </div>
 
             <div v-if="laborGroups.length === 0" class="flex flex-col items-center justify-center py-16 gap-3 text-(--text-muted) border border-(--border) rounded-xl bg-(--surface)">
-              <p class="text-sm font-semibold m-0">Belum ada pekerja ditugaskan.</p>
+              <p class="text-sm font-semibold m-0">{{ t('sensus.task.noWorkers') }}</p>
             </div>
             <div v-else class="flex flex-col gap-3">
               <section v-for="group in laborGroups" :key="group.key" class="bg-(--surface) rounded-xl overflow-hidden">
                 <button type="button" class="w-full px-4 py-3 flex items-center gap-3 text-left bg-transparent border-0 cursor-pointer hover:bg-(--surface-muted) transition-colors" @click="toggleGroup(group.key)">
                   <div class="min-w-0">
                     <p class="text-base font-bold text-(--text) m-0">{{ group.label }}</p>
-                    <p class="text-xs text-(--text-muted) m-0">Sensus {{ plan.sensusId || '—' }}</p>
+                    <p class="text-xs text-(--text-muted) m-0">{{ t('sensus.sensusRef', { id: plan.sensusId || '—' }) }}</p>
                   </div>
                   <div class="ml-auto flex items-center gap-2 shrink-0">
-                    <span class="inline-flex items-center text-xs px-2 py-1 rounded-full bg-(--status-done-bg) text-(--status-done-text)">{{ group.labors.length }} Labors</span>
+                    <span class="inline-flex items-center text-xs px-2 py-1 rounded-full bg-(--status-done-bg) text-(--status-done-text)">{{ t('sensus.task.laborCount', { n: group.labors.length }) }}</span>
                     <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-(--border) text-(--text-muted)" :class="{ 'rotate-180': expandedGroupKeys.has(group.key) }">⌃</span>
                   </div>
                 </button>
@@ -102,6 +102,7 @@ import BaseSidebar from '../shared/sidebar'
 import LaborCard from '../panen/components/LaborCard.vue'
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
 import { useAppStore } from '../../stores'
+import { useI18n } from 'vue-i18n'
 import cleaningIcon from '@/assets/icons/pembersihan.svg'
 import fertilizeIcon from '@/assets/icons/pemupukan.svg'
 import harvestIcon from '@/assets/icons/panen.svg'
@@ -118,6 +119,7 @@ const props = defineProps({
 })
 
 const appStore = useAppStore()
+const { t } = useI18n()
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 const navigation = computed(() => props.controller.getNavigation())
 const plan = ref(null)
@@ -143,9 +145,9 @@ const workIcon = computed(() => {
 })
 
 const metrics = computed(() => [
-  { label: 'Total Pekerja Terdaftar', value: effectiveLabors.value.length, icon: metricUsersIcon },
-  { label: 'Total Hari Pengerjaan', value: workDays.value, icon: metricCalendarIcon },
-  { label: 'Total Mandays', value: mandays.value, icon: metricMandaysIcon }
+  { label: t('sensus.task.metricWorkers'), value: effectiveLabors.value.length, icon: metricUsersIcon },
+  { label: t('sensus.task.metricDays'), value: workDays.value, icon: metricCalendarIcon },
+  { label: t('sensus.task.metricMandays'), value: mandays.value, icon: metricMandaysIcon }
 ])
 
 const laborGroups = computed(() => {
@@ -186,14 +188,14 @@ function toggleGroup(key) {
 
 onMounted(async () => {
   if (!props.id || !props.detailId) {
-    error.value = 'Detail penugasan tidak ditemukan.'
+    error.value = t('sensus.task.notFound')
     return
   }
   loading.value = true
   try {
     plan.value = await props.controller.loadSensusTaskDetail(props.id, props.detailId)
   } catch (err) {
-    error.value = err?.message || 'Gagal memuat detail penugasan.'
+    error.value = err?.message || t('sensus.task.loadFailed')
   } finally {
     loading.value = false
   }

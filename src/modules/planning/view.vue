@@ -4,7 +4,7 @@
 
     <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
       <BaseHeader
-        eyebrow="Perencanaan"
+        :eyebrow="t('nav.planning')"
         :title="header.title"
         :notifications="header.notifications"
         :user="user"
@@ -69,6 +69,9 @@ import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../a
 import { useAppStore } from '../../stores'
 import { canManagePlanning } from '../../auth/access'
 import { useToast } from '../../utils/toast'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   controller: { type: Object, required: true }
@@ -93,7 +96,7 @@ const filterSensusId = ref('')
 // Drawer state
 const drawerOpen = ref(false)
 const drawerItem = ref(null)
-const drawerTitle = computed(() => drawerItem.value ? 'Edit Rencana' : 'Rencana Baru')
+const drawerTitle = computed(() => drawerItem.value ? t('planning.editPlan') : t('planning.newPlan'))
 const prefillSensusId = ref('')
 const prefillSensusDetailId = ref(null)
 const prefillStartDate = ref('')
@@ -106,7 +109,7 @@ async function refreshPlannings() {
     )
   } catch (err) {
     console.error('[Planning] Failed to load plannings:', err)
-    fetchError.value = err?.message || 'Gagal memuat data perencanaan.'
+    fetchError.value = err?.message || t('planning.loadFailed')
   }
 }
 
@@ -123,7 +126,7 @@ onMounted(async () => {
     sensusOptions.value = sensus
   } catch (err) {
     console.error('[Planning] Failed to initialise:', err)
-    fetchError.value = err?.message || 'Gagal memuat data.'
+    fetchError.value = err?.message || t('planning.loadDataFailed')
   }
 
   // Auto-open drawer if navigated from Sensus Detail or from Pembersihan/Pemupukan
@@ -161,10 +164,10 @@ async function handleFetchSensusDetails(idSensus) {
 async function handleSave(id, payload) {
   if (id) {
     await props.controller.editPlanning(id, payload)
-    showToast('Rencana berhasil diperbarui.')
+    showToast(t('planning.updated'))
   } else {
     await props.controller.savePlanning(payload)
-    showToast('Rencana berhasil dibuat.')
+    showToast(t('planning.created'))
   }
   // errors propagate up — drawer will display inline and we add a toast too
 }
@@ -173,10 +176,10 @@ async function handleRemove(id) {
   try {
     await props.controller.removePlanning(id)
     await refreshPlannings()
-    showToast('Rencana berhasil dihapus.')
+    showToast(t('planning.deleted'))
   } catch (err) {
     console.error('[Planning] Failed to remove planning:', err)
-    showToast(err?.message || 'Gagal menghapus rencana.', 'error')
+    showToast(err?.message || t('planning.deleteFailed'), 'error')
   }
 }
 </script>

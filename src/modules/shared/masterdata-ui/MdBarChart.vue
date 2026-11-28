@@ -7,7 +7,7 @@
         <span v-for="l in legend" :key="l.label"><i :style="{ background: l.color }" />{{ l.label }}</span>
       </div>
     </div>
-    <div class="md-bars" role="group" :aria-label="`Filter ${title}`">
+    <div class="md-bars" role="group" :aria-label="t('mdui.filterOf', { title })">
       <button
         v-for="b in bars"
         :key="b.key"
@@ -32,6 +32,9 @@
 <script setup>
 // Grafik batang bertumpuk sederhana; batang bisa diklik sebagai filter (emit `toggle`).
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   title: { type: String, required: true },

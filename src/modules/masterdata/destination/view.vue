@@ -3,8 +3,8 @@
         <BaseSidebar :items="navigation" :user="user" />
         <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
             <BaseHeader
-                eyebrow="Data Master"
-                title="Tujuan"
+                :eyebrow="t('nav.masterData')"
+                :title="t('nav.destination')"
                 :notifications="0"
                 :user="user"
                 :on-logout="logoutFromKeycloak" />
@@ -17,6 +17,8 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 import BaseHeader from '../../shared/header'
 import BaseSidebar from '../../shared/sidebar'
 import LocationList from './components/LocationList.vue'

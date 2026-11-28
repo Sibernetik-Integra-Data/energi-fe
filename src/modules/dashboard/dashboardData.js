@@ -1,4 +1,7 @@
 import { GROUPS, addDays, dateKey, dayDiff } from './model'
+import i18n, { currentIntlLocale } from '../../i18n'
+
+const t = (...args) => i18n.global.t(...args)
 
 // Perhitungan murni untuk panel dasbor; masukannya hasil pemuat di model.js.
 
@@ -8,17 +11,17 @@ const LATE_CRITICAL_DAYS = 7
 const STALE_HOURS = 24
 const STALE_SERIOUS_HOURS = 72
 
-const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 
 export function formatNumber(value, digits = 0) {
-  return Number(value || 0).toLocaleString('id-ID', { minimumFractionDigits: digits, maximumFractionDigits: digits })
+  return Number(value || 0).toLocaleString(currentIntlLocale(), { minimumFractionDigits: digits, maximumFractionDigits: digits })
 }
 
 /** "28 Nov" atau "28 Nov 2026" dari kunci YYYY-MM-DD. */
 export function formatDay(key, withYear = false) {
   if (!key) return '-'
   const [y, m, d] = key.split('-').map(Number)
-  return `${d} ${BULAN[m - 1]}${withYear ? ` ${y}` : ''}`
+  const opts = withYear ? { day: 'numeric', month: 'short', year: 'numeric' } : { day: 'numeric', month: 'short' }
+  return new Date(y, m - 1, d).toLocaleDateString(currentIntlLocale(), opts)
 }
 
 export function periodRange(days, today = new Date()) {
@@ -68,7 +71,7 @@ export function primaryUnit(shipments) {
   const counts = new Map()
   for (const s of shipments) {
     const k = unitKey(s.shippedUnitId, s.shippedUnit)
-    const c = counts.get(k) || { key: k, name: s.shippedUnit || 'tanpa satuan', count: 0 }
+    const c = counts.get(k) || { key: k, name: s.shippedUnit || t('dashboard.ship.noUnit'), count: 0 }
     c.count += 1
     counts.set(k, c)
   }
@@ -108,9 +111,9 @@ export function shipmentDaily(shipments, unit, days, today = new Date()) {
 // ── Tindak lanjut ──────────────────────────────────────────────────────────
 
 export const LEVELS = [
-  { key: 'kritis', label: 'Kritis' },
-  { key: 'serius', label: 'Serius' },
-  { key: 'peringatan', label: 'Peringatan' }
+  { key: 'kritis', get label() { return t('dashboard.level.kritis') } },
+  { key: 'serius', get label() { return t('dashboard.level.serius') } },
+  { key: 'peringatan', get label() { return t('dashboard.level.peringatan') } }
 ]
 
 export function hoursSince(value, now = new Date()) {
@@ -121,9 +124,9 @@ export function hoursSince(value, now = new Date()) {
 
 export function waitLabel(hours) {
   if (hours === null) return ''
-  if (hours < 1) return 'kurang dari 1 jam'
-  if (hours < 48) return `${Math.floor(hours)} jam`
-  return `${Math.floor(hours / 24)} hari`
+  if (hours < 1) return t('dashboard.wait.lessThanHour')
+  if (hours < 48) return t('dashboard.wait.hours', { n: Math.floor(hours) })
+  return t('dashboard.wait.days', { n: Math.floor(hours / 24) })
 }
 
 /**
@@ -139,7 +142,7 @@ export function buildFeed({ plans, pending, shipDays, unitName, now = new Date()
       kind: 'telat',
       level: p.lateDays >= LATE_CRITICAL_DAYS ? 'kritis' : 'serius',
       sortValue: p.lateDays * 24,
-      text: `Rencana ${p.job} di ${p.block} terlambat ${p.lateDays} hari (tenggat ${formatDay(p.end, true)}).`,
+      text: t('dashboard.feed.planLate', { job: p.job, block: p.block, days: p.lateDays, due: formatDay(p.end, true) }),
       group: p.group
     })
   }
@@ -151,7 +154,7 @@ export function buildFeed({ plans, pending, shipDays, unitName, now = new Date()
       kind: 'tunggu',
       level: h > STALE_SERIOUS_HOURS ? 'serius' : 'peringatan',
       sortValue: h,
-      text: `Sensus ${s.code} (${s.block}) menunggu verifikasi ${waitLabel(h)}.`,
+      text: t('dashboard.feed.sensusWaiting', { code: s.code, block: s.block, wait: waitLabel(h) }),
       to: s.id !== null && s.id !== undefined ? `/sensus/${s.id}` : null,
       group: s.groups?.[0] || null
     })
@@ -163,7 +166,7 @@ export function buildFeed({ plans, pending, shipDays, unitName, now = new Date()
       kind: 'timbang',
       level: d.selisihPct > SELISIH_CRITICAL ? 'kritis' : 'serius',
       sortValue: d.selisihPct * 100,
-      text: `Selisih timbang ${formatNumber(d.selisihPct, 1)}% pada pengiriman ${formatDay(d.date, true)} (kirim ${formatNumber(d.shippedMatched)} ${unitName}, terima ${formatNumber(d.received)} ${unitName}).`,
+      text: t('dashboard.feed.weighDiff', { pct: formatNumber(d.selisihPct, 1), date: formatDay(d.date, true), shipped: formatNumber(d.shippedMatched), received: formatNumber(d.received), unit: unitName }),
       group: null
     })
   }

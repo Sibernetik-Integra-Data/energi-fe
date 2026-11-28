@@ -6,7 +6,7 @@
             <select
                 v-model="selectedMonth"
                 class="h-9 pl-3 pr-8 border border-(--border) rounded-lg bg-(--surface) text-(--text) text-sm outline-none transition-colors focus:border-(--brand) cursor-pointer"
-                aria-label="Filter bulan"
+                :aria-label="t('sensus.planning.filterMonth')"
                 @change="applyMonthFilter"
             >
                 <option v-for="month in monthOptions" :key="month.value" :value="month.value">{{ month.label }}</option>
@@ -20,8 +20,7 @@
                 <!-- Left: Job Types list (220px) -->
                 <div class="shrink-0 border-r border-(--border)" style="width: 220px">
                     <div class="flex items-center justify-between px-4 border-b border-(--border)" style="height: 68px">
-                        <span class="text-xs font-extrabold text-(--text-muted) uppercase tracking-widest">Job
-                            Types</span>
+                        <span class="text-xs font-extrabold text-(--text-muted) uppercase tracking-widest">{{ t('sensus.planning.jobTypes') }}</span>
                     </div>
 
                     <div class="px-4 py-3 border-b border-(--border) flex items-center" style="height: 70px">
@@ -31,7 +30,7 @@
                                 stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                             </svg>
-                            Tambah Rencana
+                            {{ t('sensus.planning.addPlan') }}
                         </button>
                     </div>
 
@@ -43,8 +42,8 @@
                                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                         <p class="text-xs text-center font-medium">
-                            <template v-if="items.length > 0">Tidak ada rencana pada rentang tanggal ini.</template>
-                            <template v-else>Belum ada rencana.<br>Tekan "+ Tambah Rencana"</template>
+                            <template v-if="items.length > 0">{{ t('sensus.planning.noPlansInRange') }}</template>
+                            <template v-else>{{ t('sensus.planning.noPlans') }}<br>{{ t('sensus.planning.pressAdd') }}</template>
                         </p>
                     </div>
 
@@ -67,13 +66,13 @@
                                             b }}</span>
                                         <span v-if="plan.blocks.length > 3"
                                             class="inline-block text-xs rounded px-1.5 py-0.5 font-medium text-(--text-muted) bg-(--surface-muted)">+{{
-                                            plan.blocks.length - 3 }} more</span>
+                                            plan.blocks.length - 3 }} {{ t('sensus.planning.more') }}</span>
                                     </template>
                                 </div>
                             </div>
                             <button v-if="canWrite" @click.stop="openDeleteConfirm(plan)"
                                 class="shrink-0 opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center rounded text-(--text-muted) hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer border-0 bg-transparent"
-                                aria-label="Hapus rencana">
+                                :aria-label="t('sensus.planning.deletePlan')">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -132,7 +131,7 @@
                             <div v-if="filteredItems.length === 0"
                                 class="relative flex items-center justify-center z-20" style="height: 200px">
                                 <p class="text-xs text-(--text-muted)">
-                                    {{ items.length > 0 ? 'Tidak ada rencana pada rentang tanggal ini.' : 'Belum ada rencana.' }}
+                                    {{ items.length > 0 ? t('sensus.planning.noPlansInRange') : t('sensus.planning.noPlans') }}
                                 </p>
                             </div>
 
@@ -144,8 +143,7 @@
                                         class="absolute top-1/2 -translate-y-1/2 rounded-lg flex items-center px-3 text-xs font-semibold truncate shadow-sm"
                                         style="height:38px"
                                         :style="[barStyle(item), { backgroundColor: jobColor(item.groupOfWork).bar, color: '#fff' }]">
-                                        {{ item.jobType }} · {{ item.blocks.length }} block{{ item.blocks.length !== 1 ?
-                                        's' : '' }}
+                                        {{ item.jobType }} · {{ t('sensus.planning.blockCount', item.blocks.length) }}
                                     </div>
                                 </div>
                             </template>
@@ -162,22 +160,22 @@
                 class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @mousedown.self="cancelDelete">
                 <div
                     class="bg-(--surface) border border-(--border) rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
-                    <h3 id="delete-plan-title" class="text-base font-bold text-(--text) m-0">Hapus Rencana</h3>
+                    <h3 id="delete-plan-title" class="text-base font-bold text-(--text) m-0">{{ t('sensus.planning.deleteTitle') }}</h3>
                     <p class="text-sm text-(--text-muted) m-0">
-                        Apakah Anda yakin ingin menghapus rencana
-                        <strong class="text-(--text)">{{ deletingPlan?.jobType || 'ini' }}</strong>?
-                        Tindakan ini tidak dapat dibatalkan.
+                        {{ t('sensus.planning.deleteConfirmBefore') }}
+                        <strong class="text-(--text)">{{ deletingPlan?.jobType || t('sensus.planning.deleteThis') }}</strong>?
+                        {{ t('sensus.planning.deleteIrreversible') }}
                     </p>
                     <div class="flex justify-end gap-3">
                         <button type="button"
                             class="border border-(--border) bg-(--surface) text-(--text) font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-(--surface-muted) transition-colors"
                             @click="cancelDelete">
-                            Batal
+                            {{ t('sensus.planning.cancel') }}
                         </button>
                         <button type="button"
                             class="border-0 bg-red-600 text-white font-semibold text-sm py-2.5 px-5 rounded-lg cursor-pointer hover:bg-red-700 transition-colors"
                             @click="confirmDelete">
-                            Ya, Hapus
+                            {{ t('sensus.planning.confirmDelete') }}
                         </button>
                     </div>
                 </div>
@@ -189,18 +187,14 @@
                 <div v-if="hoverInfoVisible && hoverInfoPlan" class="fixed z-40 pointer-events-none"
                     :style="hoverInfoStyle">
                     <div class="w-80 max-w-[85vw] border border-(--border) rounded-xl bg-(--surface) shadow-xl p-4">
-                        <div class="text-[11px] font-semibold uppercase tracking-wide text-(--text-muted)">Job Type
-                        </div>
+                        <div class="text-[11px] font-semibold uppercase tracking-wide text-(--text-muted)">{{ t('sensus.planning.jobType') }}</div>
                         <div class="text-sm font-semibold text-(--text) mt-1" style="overflow-wrap:anywhere">{{
                             hoverInfoPlan.jobType || '-' }}</div>
 
-                        <div class="text-[11px] font-semibold uppercase tracking-wide text-(--text-muted) mt-3">ID
-                            Sensus</div>
+                        <div class="text-[11px] font-semibold uppercase tracking-wide text-(--text-muted) mt-3">{{ t('sensus.planning.sensusId') }}</div>
                         <div class="text-sm text-(--text) mt-1 break-all">{{ hoverInfoPlan.sensusId || '-' }}</div>
 
-                        <div class="text-[11px] font-semibold uppercase tracking-wide text-(--text-muted) mt-3">Type
-                            Blocks
-                        </div>
+                        <div class="text-[11px] font-semibold uppercase tracking-wide text-(--text-muted) mt-3">{{ t('sensus.planning.blocks') }}</div>
                         <div class="text-sm text-(--text) mt-1" style="overflow-wrap:anywhere">{{ hoverInfoBlocks }}
                         </div>
                     </div>
@@ -212,6 +206,8 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { useI18n } from 'vue-i18n';
+import { currentIntlLocale } from '../../../i18n';
 import PlanningDateRangePicker from '../../planning/components/PlanningDateRangePicker.vue';
 import {
     addDays,
@@ -232,15 +228,17 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["add-plan", "remove-plan", "view-plan"]);
+const { t, locale } = useI18n();
 
 // ─── Date range filter ─────────────────────────────────────────────────────
 const dateRange = ref(createDefaultPlanningDateRange());
 const selectedMonth = ref(getCurrentPlanningMonth());
 const monthOptions = computed(() => {
+    void locale.value;
     const year = Number(getTodayInJakarta().slice(0, 4));
     return Array.from({ length: 12 }, (_, index) => ({
         value: `${year}-${String(index + 1).padStart(2, '0')}`,
-        label: new Date(year, index, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+        label: new Date(year, index, 1).toLocaleDateString(currentIntlLocale(), { month: 'long', year: 'numeric' })
     }));
 });
 
@@ -290,16 +288,17 @@ const rangeStart = computed(() => {
 });
 
 // ─── Days array ────────────────────────────────────────────────────────────
-const DAY_ABBR = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const days = computed(() => {
     const today = getTodayInJakarta();
+    void locale.value;
+    const dayFmt = new Intl.DateTimeFormat(currentIntlLocale(), { weekday: 'short' });
     return Array.from({ length: effectiveDaysCount.value }, (_, i) => {
         const d = addDays(rangeStart.value, i);
         return {
             iso: isoDate(d),
             num: d.getDate(),
-            abbr: DAY_ABBR[d.getDay()],
+            abbr: dayFmt.format(d),
             isToday: isoDate(d) === today,
             isWeekend: d.getDay() === 0 || d.getDay() === 6,
         };

@@ -18,13 +18,13 @@
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-5 border-b border-(--border)">
             <div>
-              <h3 id="plan-detail-title" class="text-base font-bold text-(--text) m-0">Detail Rencana</h3>
+              <h3 id="plan-detail-title" class="text-base font-bold text-(--text) m-0">{{ t('sensus.planning.detailTitle') }}</h3>
               <p class="text-xs text-(--text-muted) mt-0.5 font-mono">{{ planDisplayId }}</p>
             </div>
             <button
               @click="close"
               class="w-8 h-8 flex items-center justify-center rounded-lg text-(--text-muted) hover:text-(--text) hover:bg-(--surface-muted) transition-colors cursor-pointer border-0 bg-transparent"
-              aria-label="Tutup"
+              :aria-label="t('common.close')"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -37,7 +37,7 @@
 
             <!-- Job Type -->
             <div class="flex flex-col gap-2">
-              <span class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Job Type</span>
+              <span class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">{{ t('sensus.planning.jobType') }}</span>
               <div class="flex items-center gap-3 py-1">
                 <div class="w-1 h-6 rounded-full shrink-0" :style="{ backgroundColor: planColor.bar }"></div>
                 <span class="text-base font-semibold text-(--text)">{{ plan.jobType }}</span>
@@ -46,16 +46,16 @@
 
             <!-- Date Range -->
             <div class="flex flex-col gap-2">
-              <span class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Date Range</span>
+              <span class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">{{ t('sensus.planning.dateRange') }}</span>
               <div class="grid grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1">
-                  <span class="text-xs text-(--text-muted)">Start Date</span>
+                  <span class="text-xs text-(--text-muted)">{{ t('sensus.planning.startDate') }}</span>
                   <div class="bg-(--surface-muted) border border-(--border) rounded-lg px-3 py-2.5 text-sm text-(--text) font-medium">
                     {{ formatDate(plan.startDate) }}
                   </div>
                 </div>
                 <div class="flex flex-col gap-1">
-                  <span class="text-xs text-(--text-muted)">End Date</span>
+                  <span class="text-xs text-(--text-muted)">{{ t('sensus.planning.endDate') }}</span>
                   <div class="bg-(--surface-muted) border border-(--border) rounded-lg px-3 py-2.5 text-sm text-(--text) font-medium">
                     {{ formatDate(plan.endDate) }}
                   </div>
@@ -65,7 +65,7 @@
 
             <!-- Assigned Blocks -->
             <div class="flex flex-col gap-2">
-              <span class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Assigned Blocks ({{ plan.blocks?.length || 0 }})</span>
+              <span class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">{{ t('sensus.planning.assignedBlocks', { n: plan.blocks?.length || 0 }) }}</span>
               <div class="flex flex-wrap gap-2">
                 <div
                   v-for="b in plan.blocks"
@@ -92,7 +92,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
-              Edit
+              {{ t('sensus.planning.edit') }}
             </button>
           </div>
         </div>
@@ -103,6 +103,10 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { currentIntlLocale } from '../../../i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -132,13 +136,13 @@ const planColor = computed(() => getJobColor(props.plan?.jobType))
 
 const planDisplayId = computed(() => {
   const n = String(props.planIndex).padStart(3, '0')
-  return `Plan-${n}`
+  return t('sensus.planning.planId', { n })
 })
 
 function formatDate(iso) {
   if (!iso) return '—'
   const d = new Date(iso + 'T00:00:00')
-  return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return d.toLocaleDateString(currentIntlLocale(), { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 function close() {

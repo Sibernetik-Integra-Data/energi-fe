@@ -16,15 +16,15 @@
       class="fixed top-0 right-0 bottom-0 w-90 bg-(--surface) border-l border-(--border) z-50 flex flex-col overflow-hidden shadow-[-8px_0_32px_rgba(2,6,23,0.12)]"
       role="dialog"
       aria-modal="true"
-      :aria-label="title"
+      :aria-label="title || t('planning.newPlan')"
     >
       <!-- Header -->
       <div class="flex items-center justify-between px-5 pt-4.5 pb-4 border-b border-(--border) shrink-0">
-        <h2 class="m-0 text-base font-bold text-(--text)">{{ title }}</h2>
+        <h2 class="m-0 text-base font-bold text-(--text)">{{ title || t('planning.newPlan') }}</h2>
         <button
           type="button"
           class="grid place-items-center w-8 h-8 rounded-lg border border-(--border) bg-(--surface-muted) text-(--text-muted) cursor-pointer transition-colors duration-150 hover:text-(--text) hover:bg-(--surface)"
-          aria-label="Tutup"
+          :aria-label="t('common.close')"
           @click="close"
         >
           <BaseIcon name="x" :size="18" />
@@ -37,7 +37,7 @@
         <!-- ID Sensus -->
         <div class="flex flex-col gap-1.5">
           <label class="text-[12px] font-semibold text-(--text-muted) tracking-wide uppercase" for="planning-sensus-id">
-            ID Sensus
+            {{ t('planning.drawer.sensusId') }}
           </label>
           <select
             id="planning-sensus-id"
@@ -46,7 +46,7 @@
             class="h-9.5 px-3 border border-(--border) rounded-lg bg-(--surface) text-(--text) text-sm outline-none transition-colors duration-150 focus:border-(--brand) w-full disabled:opacity-50 disabled:cursor-not-allowed"
             @change="onSensusChange"
           >
-            <option value="" disabled>Pilih Sensus...</option>
+            <option value="" disabled>{{ t('planning.drawer.selectSensus') }}</option>
             <option v-for="opt in sensusOptions" :key="opt.value" :value="opt.value">
               {{ opt.label }}
             </option>
@@ -56,9 +56,9 @@
         <!-- Sensus Detail (two-step: shown after sensus is selected, only for create) -->
         <div v-if="!editItem" class="flex flex-col gap-1.5">
           <label class="text-[12px] font-semibold text-(--text-muted) tracking-wide uppercase" for="planning-sensus-detail">
-            Detail Sensus
+            {{ t('planning.drawer.sensusDetail') }}
           </label>
-          <div v-if="detailsLoading" class="text-xs text-(--text-muted) py-2">Memuat detail...</div>
+          <div v-if="detailsLoading" class="text-xs text-(--text-muted) py-2">{{ t('planning.drawer.loadingDetails') }}</div>
           <select
             v-else
             id="planning-sensus-detail"
@@ -66,13 +66,13 @@
             :disabled="!form.sensusId || sensusDetailOptions.length === 0"
             class="h-9.5 px-3 border border-(--border) rounded-lg bg-(--surface) text-(--text) text-sm outline-none transition-colors duration-150 focus:border-(--brand) w-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <option :value="null" disabled>{{ form.sensusId ? 'Pilih Detail...' : 'Pilih Sensus terlebih dahulu' }}</option>
+            <option :value="null" disabled>{{ form.sensusId ? t('planning.drawer.selectDetail') : t('planning.drawer.selectSensusFirst') }}</option>
             <option v-for="opt in sensusDetailOptions" :key="opt.value" :value="opt.value" :disabled="opt.hasPlanning">
               {{ opt.label }}
             </option>
           </select>
           <p v-if="form.sensusId && !detailsLoading && sensusDetailOptions.length === 0" class="text-xs text-red-500">
-            Tidak ada detail sensus untuk ID ini.
+            {{ t('planning.drawer.noDetails') }}
           </p>
         </div>
 
@@ -80,7 +80,7 @@
         <div class="flex gap-3">
           <div class="flex flex-col gap-1.5 flex-1">
             <label class="text-[12px] font-semibold text-(--text-muted) tracking-wide uppercase" for="planning-tgl-mulai">
-              Tanggal Mulai
+              {{ t('planning.drawer.startDate') }}
             </label>
             <input
               id="planning-tgl-mulai"
@@ -91,7 +91,7 @@
           </div>
           <div class="flex flex-col gap-1.5 flex-1">
             <label class="text-[12px] font-semibold text-(--text-muted) tracking-wide uppercase" for="planning-tgl-akhir">
-              Tanggal Akhir
+              {{ t('planning.drawer.endDate') }}
             </label>
             <input
               id="planning-tgl-akhir"
@@ -123,20 +123,20 @@
         <!-- Catatan -->
         <div class="flex flex-col gap-1.5">
           <label class="text-[12px] font-semibold text-(--text-muted) tracking-wide uppercase" for="planning-notes">
-            Catatan
+            {{ t('planning.drawer.notes') }}
           </label>
           <textarea
             id="planning-notes"
             v-model="form.notes"
             rows="3"
             class="px-3 py-2 border border-(--border) rounded-lg bg-(--surface) text-(--text) text-sm outline-none transition-colors duration-150 focus:border-(--brand) w-full resize-none"
-            placeholder="Opsional..."
+            :placeholder="t('planning.drawer.optional')"
           ></textarea>
         </div>
 
         <div class="flex flex-col gap-1.5">
           <label class="text-[12px] font-semibold text-(--text-muted) tracking-wide uppercase">
-            Block Terkait
+            {{ t('planning.drawer.relatedBlocks') }}
           </label>
           <div
             v-if="selectedDetailLocations.length"
@@ -148,11 +148,11 @@
               class="flex flex-col gap-1 px-2.5 py-2"
             >
               <div class="text-xs text-(--text)">
-                <span v-if="loc.blok" class="text-(--text-muted)">Blok {{ loc.blok }} · </span>
-                <span class="font-semibold">Petak {{ loc.petak }}</span>
+                <span v-if="loc.blok" class="text-(--text-muted)">{{ t('planning.drawer.blockLabel', { name: loc.blok }) }} · </span>
+                <span class="font-semibold">{{ t('planning.drawer.plotLabel', { name: loc.petak }) }}</span>
               </div>
               <div class="flex flex-wrap items-center gap-1">
-                <span class="text-[11px] text-(--text-muted)">TPH:</span>
+                <span class="text-[11px] text-(--text-muted)">{{ t('planning.drawer.tph') }}</span>
                 <template v-if="loc.tph.length">
                   <span
                     v-for="code in loc.tph"
@@ -160,12 +160,12 @@
                     class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-(--surface) text-(--text) border border-(--border)"
                   >{{ code }}</span>
                 </template>
-                <span v-else class="text-[11px] text-(--text-muted)">tidak dipilih di sensus</span>
+                <span v-else class="text-[11px] text-(--text-muted)">{{ t('planning.drawer.tphNotSelected') }}</span>
               </div>
             </div>
           </div>
           <p v-else class="text-xs text-(--text-muted)">
-            Pilih detail sensus untuk melihat daftar block.
+            {{ t('planning.drawer.selectDetailHint') }}
           </p>
         </div>
 
@@ -179,7 +179,7 @@
             :disabled="!isFormValid || saving"
             class="w-full h-10.5 bg-(--text) text-(--surface) border-none rounded-xl text-sm font-bold cursor-pointer transition-opacity duration-150 hover:enabled:opacity-85 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {{ saving ? 'Menyimpan...' : 'Simpan' }}
+            {{ saving ? t('planning.drawer.saving') : t('planning.drawer.save') }}
           </button>
         </div>
       </form>
@@ -191,10 +191,13 @@
 import { ref, watch, computed } from 'vue'
 import BaseIcon from '../../shared/icon'
 import { useToast } from '../../../utils/toast'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
-  title: { type: String, default: 'Rencana Baru' },
+  title: { type: String, default: '' },
   sensusOptions: { type: Array, default: () => [] },
   editItem: { type: Object, default: null },
   prefillSensusId: { type: String, default: '' },
@@ -325,7 +328,7 @@ async function handleSave() {
     emit('saved')
     close()
   } catch (err) {
-    saveError.value = err?.message || 'Gagal menyimpan rencana.'
+    saveError.value = err?.message || t('planning.drawer.saveFailed')
     showToast(saveError.value, 'error')
   } finally {
     saving.value = false

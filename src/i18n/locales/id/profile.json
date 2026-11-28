@@ -1,0 +1,39 @@
+{
+  "profile": {
+    "navLabel": "Navigasi profil",
+    "detailsLabel": "Detail profil",
+    "profileTab": "Profil",
+    "changePassword": "Ubah Kata Sandi",
+    "photo": "Foto Profil",
+    "photoHint": "Foto profil dikelola terpisah dan tidak diubah dari halaman ini.",
+    "firstName": "Nama Depan",
+    "lastName": "Nama Belakang",
+    "birthDate": "Tanggal Lahir",
+    "maritalStatus": "Status Pernikahan",
+    "marital": { "single": "Lajang", "married": "Menikah", "divorced": "Cerai", "widowed": "Cerai mati" },
+    "email": "Email",
+    "userAccess": "Akses Pengguna",
+    "gender": "Jenis Kelamin",
+    "genderMale": "Laki-laki",
+    "genderFemale": "Perempuan",
+    "address1": "Alamat 1",
+    "address2": "Alamat 2",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "saving": "Menyimpan…",
+    "edit": "Ubah Profil",
+    "newPassword": "Kata Sandi Baru",
+    "newPasswordPlaceholder": "Minimal 8 karakter",
+    "confirmPassword": "Konfirmasi Kata Sandi Baru",
+    "confirmPasswordPlaceholder": "Ulangi kata sandi baru",
+    "savePassword": "Simpan Kata Sandi",
+    "messages": {
+      "profileUpdated": "Profil berhasil diperbarui.",
+      "profileFailed": "Gagal memperbarui profil.",
+      "passwordMin": "Kata sandi minimal 8 karakter.",
+      "passwordMismatch": "Konfirmasi kata sandi tidak sama.",
+      "passwordUpdated": "Kata sandi berhasil diperbarui.",
+      "passwordFailed": "Gagal memperbarui kata sandi."
+    }
+  }
+}

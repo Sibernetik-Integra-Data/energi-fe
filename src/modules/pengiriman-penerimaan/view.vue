@@ -3,7 +3,7 @@
         <BaseSidebar :items="navigation" :user="user" />
 
         <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
-            <BaseHeader eyebrow="Pengiriman dan Penerimaan" :title="header.title" :notifications="header.notifications"
+            <BaseHeader :eyebrow="t('nav.pengirimanPenerimaan')" :title="header.title" :notifications="header.notifications"
                 :user="user" :on-logout="logoutFromKeycloak" />
 
             <main class="flex-1 min-w-0 p-6 max-[920px]:p-4.5 overflow-y-auto flex flex-col gap-5">
@@ -38,6 +38,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseHeader from '../shared/header'
 import BaseSidebar from '../shared/sidebar'
 import PengirimanPenerimaanOverview from './components/PengirimanPenerimaanOverview.vue'
@@ -51,14 +52,15 @@ const props = defineProps({
     controller: { type: Object, required: true }
 })
 
+const { t, locale } = useI18n()
 const appStore = useAppStore()
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 const canReceive = computed(() => canReceiveHarvest(user.value))
 const navigation = computed(() => props.controller.getNavigation())
 const header = computed(() => props.controller.getHeader())
 const intro = computed(() => props.controller.getIntro())
-const statusFilters = props.controller.getStatusFilters()
-const harvestTypes = props.controller.getHarvestTypes()
+const statusFilters = computed(() => props.controller.getStatusFilters())
+const harvestTypes = computed(() => props.controller.getHarvestTypes())
 
 const items = ref([])
 const loading = ref(false)
@@ -100,7 +102,7 @@ async function loadList() {
         summary.value = result.summary
     } catch (err) {
         if (request !== listRequest) return
-        fetchError.value = err?.message || 'Gagal memuat data pengiriman dan penerimaan.'
+        fetchError.value = err?.message || t('shipping.errors.loadList')
         items.value = []
         totalItems.value = 0
     } finally {
@@ -119,6 +121,11 @@ function reloadFromFirstPage() {
 watch(pageSize, reloadFromFirstPage)
 watch(statusFilter, reloadFromFirstPage)
 watch(currentPage, loadList)
+// Labels and dates in the loaded rows are formatted for the active language.
+watch(locale, () => {
+    loadList()
+    if (selectedDetail.value) loadDetail(selectedDetail.value.id).catch(() => {})
+})
 
 async function loadUnitsOnce() {
     if (units.value.length) return
@@ -133,7 +140,7 @@ async function loadUnitsOnce() {
 async function loadDetail(tripId) {
     const detail = await props.controller.fetchDetail(tripId)
     if (!detail) {
-        fetchError.value = 'Detail pengiriman tidak ditemukan.'
+        fetchError.value = t('shipping.errors.detailNotFound')
         return false
     }
     selectedDetail.value = detail
@@ -147,7 +154,7 @@ async function onView(item) {
     try {
         if (await loadDetail(item.id)) loadUnitsOnce()
     } catch (err) {
-        fetchError.value = err?.message || 'Gagal memuat detail pengiriman.'
+        fetchError.value = err?.message || t('shipping.errors.loadDetail')
     }
 }
 
@@ -167,7 +174,7 @@ async function runAction(action, successText) {
         const receipt = await action()
         successMessage.value = successText(receipt)
     } catch (err) {
-        actionError.value = err?.message || 'Permintaan gagal diproses.'
+        actionError.value = err?.message || t('shipping.errors.requestFailed')
     }
     // Reload in both cases: after a refusal the screen may be out of date
     // (for example, someone else has just received the same trip).
@@ -175,7 +182,7 @@ async function runAction(action, successText) {
         await loadDetail(tripId)
         await loadList()
     } catch (err) {
-        fetchError.value = err?.message || 'Gagal memuat ulang data.'
+        fetchError.value = err?.message || t('shipping.errors.reload')
     } finally {
         saving.value = false
     }
@@ -187,14 +194,14 @@ function onReceive(payload) {
     if (detail.replacesReceiptId) body.replaces_receipt_id = detail.replacesReceiptId
     return runAction(
         () => props.controller.receive(body),
-        (receipt) => `Penerimaan ${receipt?.receiptNo || ''} tersimpan.`
+        (receipt) => t('shipping.messages.saved', { no: receipt?.receiptNo || '' })
     )
 }
 
 function onCancelReceipt({ receiptId, reason }) {
     return runAction(
         () => props.controller.cancel(receiptId, reason),
-        (receipt) => `Penerimaan ${receipt?.receiptNo || ''} dibatalkan.`
+        (receipt) => t('shipping.messages.cancelled', { no: receipt?.receiptNo || '' })
     )
 }
 </script>

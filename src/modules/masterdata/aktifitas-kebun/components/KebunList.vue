@@ -1,21 +1,21 @@
 <template>
-  <MdPage title="Aktivitas Kebun" description="Jenis pekerjaan kebun per kelompok pekerjaan dan kebutuhan bukti fotonya. Klik kartu atau batang grafik untuk menyaring tabel.">
+  <MdPage :title="t('aktifitasKebun.title')" :description="t('aktifitasKebun.description')">
     <template #actions>
-      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah Aktivitas</button>
+      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />{{ t('aktifitasKebun.add') }}</button>
     </template>
 
     <div class="md-kpis">
-      <MdKpi icon="leaf" tone="info" label="Total aktivitas" :value="rows.length" :sub="`${usedGroups} kelompok terpakai`" action hint="Tampilkan semua" :pressed="false" @select="clearAll" />
-      <MdKpi icon="upload" tone="success" label="Perlu foto" :value="countFoto('yes')" :sub="`${pct(countFoto('yes'))}% dari aktivitas`" action :pressed="onlyFoto('yes')" @select="quickFoto('yes')" />
-      <MdKpi icon="eye" tone="warning" label="Tanpa foto" :value="countFoto('no')" sub="Tidak perlu bukti foto" action :pressed="onlyFoto('no')" @select="quickFoto('no')" />
-      <MdKpi icon="layers" tone="brand" label="Kelompok pekerjaan" :value="groups.length" :sub="emptyGroups ? `${emptyGroups} belum punya aktivitas` : 'Semua sudah terisi'" />
+      <MdKpi icon="leaf" tone="info" :label="t('aktifitasKebun.kpi.total')" :value="rows.length" :sub="t('aktifitasKebun.kpi.totalSub', { n: usedGroups })" action :hint="t('aktifitasKebun.ui.showAll')" :pressed="false" @select="clearAll" />
+      <MdKpi icon="upload" tone="success" :label="t('aktifitasKebun.needFoto')" :value="countFoto('yes')" :sub="t('aktifitasKebun.kpi.pctSub', { n: pct(countFoto('yes')) })" action :pressed="onlyFoto('yes')" @select="quickFoto('yes')" />
+      <MdKpi icon="eye" tone="warning" :label="t('aktifitasKebun.noFoto')" :value="countFoto('no')" :sub="t('aktifitasKebun.kpi.noFotoSub')" action :pressed="onlyFoto('no')" @select="quickFoto('no')" />
+      <MdKpi icon="layers" tone="brand" :label="t('aktifitasKebun.kpi.groups')" :value="groups.length" :sub="emptyGroups ? t('aktifitasKebun.kpi.emptyGroups', { n: emptyGroups }) : t('aktifitasKebun.kpi.allFilled')" />
     </div>
 
     <MdBarChart
       v-if="groupKeys.length"
-      title="Jumlah aktivitas per kelompok"
-      :subtitle="`${rows.length} aktivitas di ${groupKeys.length} kelompok`"
-      :legend="[{ label: 'Perlu foto', color: 'var(--success)' }, { label: 'Tanpa foto', color: 'var(--border-strong)' }]"
+      :title="t('aktifitasKebun.chart.title')"
+      :subtitle="t('aktifitasKebun.chart.subtitle', { n: rows.length, g: groupKeys.length })"
+      :legend="[{ label: t('aktifitasKebun.needFoto'), color: 'var(--success)' }, { label: t('aktifitasKebun.noFoto'), color: 'var(--border-strong)' }]"
       :bars="bars"
       :selected="filterGroup"
       @toggle="toggleGroup" />
@@ -26,28 +26,28 @@
       :total-rows="rows.length"
       :loading="loading"
       :error="fetchError || ''"
-      entity-label="Aktivitas"
+      :entity-label="t('aktifitasKebun.entity')"
       empty-icon="leaf"
-      empty-text="Tambahkan aktivitas pertama agar bisa dipakai di perencanaan kerja."
-      add-label="Tambah Aktivitas"
+      :empty-text="t('aktifitasKebun.empty')"
+      :add-label="t('aktifitasKebun.add')"
       :can-add="canWrite"
       initial-sort="name"
-      aria-label="Daftar aktivitas kebun"
+      :aria-label="t('aktifitasKebun.aria')"
       @retry="loadData"
       @add="openCreate"
       @clear-filters="clearAll">
       <template #toolbar>
         <label class="md-search">
           <MdIcon name="search" />
-          <input v-model.trim="search" type="search" placeholder="Cari nama atau keterangan aktivitas…" aria-label="Cari aktivitas" />
+          <input v-model.trim="search" type="search" :placeholder="t('aktifitasKebun.searchPlaceholder')" :aria-label="t('aktifitasKebun.searchAria')" />
         </label>
-        <MdDropdown v-model="filterGroup" label="Kelompok" :options="groupFilterOptions" multiple />
-        <MdDropdown v-model="filterFoto" label="Foto" :options="fotoFilterOptions" multiple />
+        <MdDropdown v-model="filterGroup" :label="t('aktifitasKebun.group')" :options="groupFilterOptions" multiple />
+        <MdDropdown v-model="filterFoto" :label="t('aktifitasKebun.foto')" :options="fotoFilterOptions" multiple />
         <div class="md-chips">
-          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="t('aktifitasKebun.ui.removeFilter', { label: c.label })" @click="c.remove()">
             {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
           </button>
-          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">{{ t('aktifitasKebun.ui.clearAll') }}</button>
         </div>
       </template>
 
@@ -64,7 +64,7 @@
         <span :class="{ 'md-muted': !row.detail }">{{ row.detail || '—' }}</span>
       </template>
       <template #cell-is_upload="{ row }">
-        <MdBadge :tone="isFoto(row) ? 'success' : 'neutral'">{{ isFoto(row) ? 'Ya' : 'Tidak' }}</MdBadge>
+        <MdBadge :tone="isFoto(row) ? 'success' : 'neutral'">{{ isFoto(row) ? t('aktifitasKebun.ui.yes') : t('aktifitasKebun.ui.no') }}</MdBadge>
       </template>
       <template #cell-created_by="{ row }">
         <span class="md-muted">{{ userName(row.created_by) }}</span>
@@ -74,34 +74,39 @@
       </template>
 
       <template v-if="canWrite" #actions="{ row }">
-        <button type="button" class="md-icon-btn" :aria-label="`Ubah aktivitas ${row.name}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
-        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus aktivitas ${row.name}`" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+        <button type="button" class="md-icon-btn" :aria-label="t('aktifitasKebun.editAria', { name: row.name })" @click="openEdit(row)"><MdIcon name="edit" /></button>
+        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="t('aktifitasKebun.deleteAria', { name: row.name })" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
       </template>
 
       <template #card="{ row }">
         <div class="md-card__top">
           <span class="md-avatar">{{ initial(row.name) }}</span>
           <div style="flex: 1"><b class="md-strong">{{ row.name }}</b><div class="md-muted" style="font-size: 12px">{{ groupLabel(groupKey(row)) }}</div></div>
-          <MdBadge :tone="isFoto(row) ? 'success' : 'neutral'">{{ isFoto(row) ? 'Perlu foto' : 'Tanpa foto' }}</MdBadge>
+          <MdBadge :tone="isFoto(row) ? 'success' : 'neutral'">{{ isFoto(row) ? t('aktifitasKebun.needFoto') : t('aktifitasKebun.noFoto') }}</MdBadge>
         </div>
         <div class="md-card__grid">
-          <div style="grid-column: 1 / -1">Keterangan<b>{{ row.detail || '—' }}</b></div>
-          <div>Dibuat oleh<b>{{ userName(row.created_by) }}</b></div>
-          <div>Diubah oleh<b>{{ userName(row.updated_by) }}</b></div>
+          <div style="grid-column: 1 / -1">{{ t('aktifitasKebun.detail') }}<b>{{ row.detail || '—' }}</b></div>
+          <div>{{ t('aktifitasKebun.ui.createdBy') }}<b>{{ userName(row.created_by) }}</b></div>
+          <div>{{ t('aktifitasKebun.ui.updatedBy') }}<b>{{ userName(row.updated_by) }}</b></div>
         </div>
       </template>
     </MdDataTable>
 
     <KebunForm :visible="showForm" :activity="editingActivity" :submitting="submitting" :error="actionError || ''" @submit="onFormSubmit" @cancel="closeForm" />
 
-    <MdConfirm :open="!!deletingActivity" title="Hapus aktivitas?" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
-      <template v-if="deletingActivity">Aktivitas <b>{{ deletingActivity.name }}</b> akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.</template>
+    <MdConfirm :open="!!deletingActivity" :title="t('aktifitasKebun.confirm.title')" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
+      <template v-if="deletingActivity">
+        <i18n-t keypath="aktifitasKebun.confirm.body" scope="global">
+          <template #name><b>{{ deletingActivity.name }}</b></template>
+        </i18n-t>
+      </template>
     </MdConfirm>
   </MdPage>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import KebunForm from './KebunForm.vue'
 import { listTypeOfWork, createTypeOfWork, updateTypeOfWork, deleteTypeOfWork, listGroupOfWork } from '../model'
 import { useToast } from '../../../../utils/toast'
@@ -109,6 +114,7 @@ import { useUserNames } from '../../../../auth/useUserNames'
 import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
 import { MdPage, MdKpi, MdBarChart, MdDataTable, MdDropdown, MdBadge, MdConfirm, MdIcon } from '../../../shared/masterdata-ui'
 
+const { t } = useI18n()
 const { userName } = useUserNames()
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
 const canWrite = useCanManageMasterData()
@@ -134,20 +140,20 @@ const isFoto = (r) => Boolean(Number(r.is_upload))
 const fotoKey = (r) => (isFoto(r) ? 'yes' : 'no')
 const groupKey = (r) => (r.group_of_work != null && r.group_of_work !== '' ? String(r.group_of_work) : '-')
 function groupLabel(key) {
-  if (key === '-') return 'Tanpa kelompok'
+  if (key === '-') return t('aktifitasKebun.noGroup')
   const g = groups.value.find((x) => String(x.id) === key)
   if (g) return g.name
-  return rows.value.find((r) => groupKey(r) === key)?.group_of_work_name || `Kelompok ${key}`
+  return rows.value.find((r) => groupKey(r) === key)?.group_of_work_name || t('aktifitasKebun.groupN', { key })
 }
 
-const columns = [
-  { key: 'name', label: 'Nama' },
-  { key: 'group_of_work_name', label: 'Kelompok', sortValue: (r) => (groupKey(r) === '-' ? '' : groupLabel(groupKey(r))) },
-  { key: 'detail', label: 'Keterangan' },
-  { key: 'is_upload', label: 'Foto', sortValue: (r) => (isFoto(r) ? 1 : 0) },
-  { key: 'created_by', label: 'Dibuat oleh', sortable: false },
-  { key: 'updated_by', label: 'Diubah oleh', sortable: false }
-]
+const columns = computed(() => [
+  { key: 'name', label: t('aktifitasKebun.ui.name') },
+  { key: 'group_of_work_name', label: t('aktifitasKebun.group'), sortValue: (r) => (groupKey(r) === '-' ? '' : groupLabel(groupKey(r))) },
+  { key: 'detail', label: t('aktifitasKebun.detail') },
+  { key: 'is_upload', label: t('aktifitasKebun.foto'), sortValue: (r) => (isFoto(r) ? 1 : 0) },
+  { key: 'created_by', label: t('aktifitasKebun.ui.createdBy'), sortable: false },
+  { key: 'updated_by', label: t('aktifitasKebun.ui.updatedBy'), sortable: false }
+])
 
 const countFoto = (k) => rows.value.filter((r) => fotoKey(r) === k).length
 const pct = (n) => (rows.value.length ? Math.round((n / rows.value.length) * 100) : 0)
@@ -162,8 +168,8 @@ const groupFilterOptions = computed(() => {
     .sort((a, b) => byName(a.label, b.label))
 })
 const fotoFilterOptions = computed(() => [
-  { value: 'yes', label: 'Perlu foto', count: countFoto('yes') },
-  { value: 'no', label: 'Tanpa foto', count: countFoto('no') }
+  { value: 'yes', label: t('aktifitasKebun.needFoto'), count: countFoto('yes') },
+  { value: 'no', label: t('aktifitasKebun.noFoto'), count: countFoto('no') }
 ])
 
 const bars = computed(() =>
@@ -173,7 +179,7 @@ const bars = computed(() =>
     return {
       key: k,
       label: groupLabel(k),
-      ariaLabel: `${groupLabel(k)}: ${rs.length} aktivitas, ${yes} perlu foto`,
+      ariaLabel: t('aktifitasKebun.chart.barAria', { label: groupLabel(k), n: rs.length, f: yes }),
       segments: [
         { value: yes, color: 'var(--success)' },
         { value: rs.length - yes, color: 'var(--border-strong)' }
@@ -195,7 +201,7 @@ const chips = computed(() => {
   const c = []
   if (search.value) c.push({ key: 'q', label: `“${search.value}”`, remove: () => (search.value = '') })
   filterGroup.value.forEach((k) => c.push({ key: `g-${k}`, label: groupLabel(k), remove: () => (filterGroup.value = filterGroup.value.filter((x) => x !== k)) }))
-  filterFoto.value.forEach((k) => c.push({ key: `f-${k}`, label: k === 'yes' ? 'Perlu foto' : 'Tanpa foto', remove: () => (filterFoto.value = filterFoto.value.filter((x) => x !== k)) }))
+  filterFoto.value.forEach((k) => c.push({ key: `f-${k}`, label: k === 'yes' ? t('aktifitasKebun.needFoto') : t('aktifitasKebun.noFoto'), remove: () => (filterFoto.value = filterFoto.value.filter((x) => x !== k)) }))
   return c
 })
 
@@ -221,7 +227,7 @@ async function loadData() {
     groups.value = groupList
   } catch (err) {
     console.error('[AktifitasKebun] Failed to load:', err)
-    fetchError.value = err?.message || 'Gagal memuat data.'
+    fetchError.value = err?.message || t('aktifitasKebun.error.load')
   } finally {
     loading.value = false
   }
@@ -259,16 +265,16 @@ async function onFormSubmit(formData) {
       const updated = await updateTypeOfWork(editingActivity.value.id, formData)
       const idx = rows.value.findIndex((r) => r.id === editingActivity.value.id)
       if (idx !== -1) rows.value[idx] = enrichWithGroupName(updated || { ...rows.value[idx], ...formData })
-      showToast('Aktivitas berhasil diubah.')
+      showToast(t('aktifitasKebun.toast.updated'))
     } else {
       const created = await createTypeOfWork(formData)
       if (created) rows.value.unshift(enrichWithGroupName(created))
-      showToast('Aktivitas berhasil ditambahkan.')
+      showToast(t('aktifitasKebun.toast.created'))
     }
     closeForm()
   } catch (err) {
     console.error('[AktifitasKebun] Save failed:', err)
-    actionError.value = err?.message || 'Gagal menyimpan data.'
+    actionError.value = err?.message || t('aktifitasKebun.ui.saveFailed')
   } finally {
     submitting.value = false
   }
@@ -290,12 +296,12 @@ async function onDeleteConfirm() {
     await deleteTypeOfWork(deletingActivity.value.id)
     rows.value = rows.value.filter((r) => r.id !== deletingActivity.value.id)
     deletingActivity.value = null
-    showToast('Aktivitas berhasil dihapus.')
+    showToast(t('aktifitasKebun.toast.deleted'))
   } catch (err) {
     console.error('[AktifitasKebun] Delete failed:', err)
     deleteError.value = /dirujuk|409/i.test(err?.message || '')
-      ? 'Aktivitas masih dipakai rencana kerja atau data lain, jadi tidak bisa dihapus.'
-      : err?.message || 'Gagal menghapus aktivitas.'
+      ? t('aktifitasKebun.error.inUse')
+      : err?.message || t('aktifitasKebun.error.delete')
   } finally {
     submitting.value = false
   }

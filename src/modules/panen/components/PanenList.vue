@@ -7,29 +7,29 @@
                 <input
                     v-model="searchQuery"
                     type="text"
-                    placeholder="Cari blok, jenis pekerjaan, atau sensus ID..."
+                    :placeholder="t('activity.searchPlaceholder')"
                     class="md:col-span-1 w-full border border-(--border) bg-(--surface) rounded-lg px-3 py-2 text-sm text-(--text) outline-none focus:ring-2 focus:ring-teal-200" />
                 <select
                     v-model="statusFilter"
                     class="w-full border border-(--border) bg-(--surface) rounded-lg px-3 py-2 text-sm text-(--text) outline-none focus:ring-2 focus:ring-teal-200 cursor-pointer">
-                    <option value="all">Semua Status</option>
-                    <option value="draft">Draft</option>
-                    <option value="wip">WIP</option>
-                    <option value="done">Done</option>
-                    <option value="submitted">Submitted</option>
+                    <option value="all">{{ t('activity.allStatuses') }}</option>
+                    <option value="draft">{{ t('activity.status.draft') }}</option>
+                    <option value="wip">{{ t('activity.status.wip') }}</option>
+                    <option value="done">{{ t('activity.status.done') }}</option>
+                    <option value="submitted">{{ t('activity.status.submitted') }}</option>
                 </select>
                 <select
                     v-model="sortOrder"
                     class="w-full border border-(--border) bg-(--surface) rounded-lg px-3 py-2 text-sm text-(--text) outline-none focus:ring-2 focus:ring-teal-200 cursor-pointer">
-                    <option value="newest">Terbaru</option>
-                    <option value="oldest">Terlama</option>
+                    <option value="newest">{{ t('activity.sortNewest') }}</option>
+                    <option value="oldest">{{ t('activity.sortOldest') }}</option>
                 </select>
             </div>
         </div>
 
         <!-- Loading state -->
         <div v-if="loading" class="flex justify-center items-center py-20 text-sm text-(--text-muted)">
-            <span class="animate-pulse">Memuat data panen&hellip;</span>
+            <span class="animate-pulse">{{ t('panen.loading') }}</span>
         </div>
 
         <!-- Empty state -->
@@ -37,19 +37,19 @@
             v-else-if="!loading && items.length === 0"
             class="flex flex-col items-center justify-center py-20 gap-3 text-(--text-muted) border border-(--border) rounded-2xl bg-(--surface)">
             <img :src="emptyJobIcon" alt="" class="h-16 w-auto" aria-hidden="true" />
-            <p class="text-sm font-semibold m-0">Tidak ada penugasan panen ditemukan.</p>
-            <p class="text-xs text-(--text-muted) m-0">Pastikan data perencanaan panen sudah diisi.</p>
+            <p class="text-sm font-semibold m-0">{{ t('panen.empty') }}</p>
+            <p class="text-xs text-(--text-muted) m-0">{{ t('panen.emptyHint') }}</p>
         </div>
 
         <!-- Card grid (main page) -->
         <div v-else class="flex flex-1 flex-col">
-            <AssignmentTable :items="items" task-type="Panen" @view-detail="$emit('view-detail', $event)" />
+            <AssignmentTable :items="items" :task-type="t('nav.panen')" @view-detail="$emit('view-detail', $event)" />
             <div v-if="false" class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr))">
                 <div
                     v-for="item in items"
                     :key="`${item.id}-${item.detailId || 'none'}`"
                     class="contents">
-                    <AssignmentCard :job-type="item.jobType" :group-of-work="item.groupOfWork" :date="item.dateRangeFormatted || item.startDateFormatted" :sensus-ref="`Sensus ${item.sensusId || '—'}`" :blocks="item.blocks" :photo="item.photo" :show-add-to-plan="canPlan" @view-detail="$emit('view-detail', item)" @add-to-plan="$emit('add-to-plan', item)" />
+                    <AssignmentCard :job-type="item.jobType" :group-of-work="item.groupOfWork" :date="item.dateRangeFormatted || item.startDateFormatted" :sensus-ref="t('activity.sensusRef', { id: item.sensusId || '—' })" :blocks="item.blocks" :photo="item.photo" :show-add-to-plan="canPlan" @view-detail="$emit('view-detail', item)" @add-to-plan="$emit('add-to-plan', item)" />
                     <div v-if="false">
                     <div class="p-5 pb-3 flex justify-between items-start gap-3">
                         <div class="min-w-0 flex flex-col gap-1">
@@ -63,7 +63,7 @@
                                     <h3 class="text-sm font-bold text-(--text) leading-snug truncate">
                                         {{ item.jobType }}
                                     </h3>
-                                    <p class="text-xs text-(--text-muted) truncate">Sensus {{ item.sensusId || "—" }}</p>
+                                    <p class="text-xs text-(--text-muted) truncate">{{ t('activity.sensusRef', { id: item.sensusId || '—' }) }}</p>
                                 </div>
                             </div>
                         </div>
@@ -78,22 +78,22 @@
 
                     <div class="px-5 pt-3 pb-2 flex gap-4 text-xs text-(--text-muted)">
                         <div class="flex flex-col gap-0.5">
-                            <span class="font-semibold uppercase tracking-wide text-[10px]">Mulai</span>
+                            <span class="font-semibold uppercase tracking-wide text-[10px]">{{ t('activity.start') }}</span>
                             <span class="text-(--text) font-medium">{{ item.startDateFormatted || "—" }}</span>
                         </div>
                         <div class="flex flex-col gap-0.5">
-                            <span class="font-semibold uppercase tracking-wide text-[10px]">Selesai</span>
+                            <span class="font-semibold uppercase tracking-wide text-[10px]">{{ t('activity.end') }}</span>
                             <span class="text-(--text) font-medium">{{ item.endDateFormatted || "—" }}</span>
                         </div>
                         <div class="flex flex-col gap-0.5 ml-auto">
-                            <span class="font-semibold uppercase tracking-wide text-[10px]">Pekerja</span>
-                            <span class="text-(--text) font-medium">{{ item.labors.length }} orang</span>
+                            <span class="font-semibold uppercase tracking-wide text-[10px]">{{ t('activity.workers') }}</span>
+                            <span class="text-(--text) font-medium">{{ t('activity.peopleCount', { n: item.labors.length }) }}</span>
                         </div>
                     </div>
 
                     <div v-if="item.blocks.length > 0" class="px-5 pb-3">
                         <p class="text-[10px] font-semibold text-(--text-muted) mb-1.5 tracking-wide uppercase">
-                            Nomor Petak
+                            {{ t('activity.plotNumber') }}
                         </p>
                         <div class="flex flex-wrap gap-1.5">
                             <span
@@ -105,7 +105,7 @@
                             <span
                                 v-if="item.blocks.length > 5"
                                 class="inline-block bg-(--surface-muted) border border-(--border) text-(--text-muted) py-0.5 px-2.5 rounded-full text-xs"
-                                >+ {{ item.blocks.length - 5 }} more</span
+                                >{{ t('activity.moreCount', { n: item.blocks.length - 5 }) }}</span
                             >
                         </div>
                     </div>
@@ -114,14 +114,14 @@
                         <button
                             class="h-8 text-xs font-semibold py-0 px-3 rounded-full border border-(--border) bg-transparent text-(--text) hover:bg-(--surface-muted) transition-colors cursor-pointer whitespace-nowrap"
                             @click="$emit('view-detail', item)">
-                            Lihat Detail
+                            {{ t('activity.viewDetail') }}
                         </button>
                         <button
                             v-if="canPlan"
                             type="button"
                             class="h-8 text-xs font-semibold py-0 px-3 rounded-full border-0 bg-(--text) text-(--surface) hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap"
                             @click="$emit('add-to-plan', item)">
-                            + Tambahkan ke Perencanaan
+                            {{ t('activity.addToPlanning') }}
                         </button>
                     </div>
                     </div>
@@ -143,6 +143,7 @@
 
 <script setup>
 import { ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { ListPagination } from "../../shared/pagination";
 import AssignmentCard from "../../shared/AssignmentCard.vue";
 import AssignmentTable from "../../shared/AssignmentTable.vue";
@@ -158,6 +159,8 @@ defineProps({
     visiblePages: { type: Array, default: () => [] },
     canPlan: { type: Boolean, default: false },
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(["view-detail", "add-to-plan", "update:currentPage", "update:pageSize", "filters-change"]);
 
@@ -186,8 +189,9 @@ watch(searchQuery, () => {
 });
 
 function statusLabel(status) {
-    const map = { draft: "Draft", wip: "WIP", done: "Done", submitted: "Submitted", in_progress: "In Progress" };
-    return map[status] || status || "—";
+    const known = ["draft", "wip", "done", "submitted", "in_progress"];
+    if (known.includes(status)) return t(`activity.status.${status}`);
+    return status || "—";
 }
 
 function statusChipClass(status) {

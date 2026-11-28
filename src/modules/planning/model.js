@@ -1,5 +1,8 @@
 import { signedApiFetch } from '../../api/fetch'
 import { navigation as sharedNavigation } from '../shared/navigation'
+import i18n, { currentIntlLocale } from '../../i18n'
+
+const t = (...args) => i18n.global.t(...args)
 
 function cloneNavigation(items) {
   return items.map((item) => ({
@@ -34,11 +37,11 @@ function normalizeBlockNames(rawBlocks) {
   const names = rawBlocks
     .map((block) => {
       if (typeof block === 'string') return block
-      if (typeof block === 'number' && Number.isFinite(block)) return `Blok ${block}`
+      if (typeof block === 'number' && Number.isFinite(block)) return t('planning.blockFallback', { id: block })
       if (!block || typeof block !== 'object') return ''
       if (block.name) return String(block.name)
       if (block.block_name) return String(block.block_name)
-      if (Number.isFinite(block.id)) return `Blok ${block.id}`
+      if (Number.isFinite(block.id)) return t('planning.blockFallback', { id: block.id })
       return ''
     })
     .filter(Boolean)
@@ -59,7 +62,7 @@ export function buildLocations(rawBlocks, rawTph = []) {
       return {
         id: b.id,
         blok: b.block_group || '',
-        petak: String(b.name || `Petak ${b.id}`),
+        petak: String(b.name || t('planning.plotFallback', { id: b.id })),
         tph: own.map((t) => String(t.code || t.name || t.id)).filter(Boolean)
       }
     })
@@ -117,13 +120,12 @@ export async function deletePlanning(id) {
   return signedApiFetch(`/planning/${id}`, { method: 'DELETE' })
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
-
 function shortDate(value) {
   const d = toDateOnlyString(value)
   if (!d) return ''
   const [y, m, day] = d.split('-')
-  return `${Number(day)} ${MONTHS[Number(m) - 1]} ${y}`
+  return new Date(Number(y), Number(m) - 1, Number(day))
+    .toLocaleDateString(currentIntlLocale(), { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 export async function loadSensusOptions() {
@@ -162,9 +164,9 @@ export async function loadSensusDetails(idSensus) {
       const locations = buildLocations(d.blocks, d.tph)
       const label = activity && desc
         ? `${activity} — ${desc}`
-        : activity || desc || `Detail #${d.id}`
+        : activity || desc || t('planning.detailFallback', { id: d.id })
       const hasPlanning = planned.has(d.id)
-      options.push({ value: d.id, label: hasPlanning ? `${label} (sudah planning)` : label, blocks, locations, hasPlanning })
+      options.push({ value: d.id, label: hasPlanning ? t('planning.alreadyPlanned', { label }) : label, blocks, locations, hasPlanning })
     }
   }
   return options
@@ -180,14 +182,7 @@ export function createPlanningModel() {
   const navigation = cloneNavigation(sharedNavigation)
 
   const header = {
-    title: 'Perencanaan',
-    eyebrow: 'Perencanaan',
     notifications: 3
-  }
-
-  const intro = {
-    title: 'Perencanaan',
-    description: 'Rencanakan dan pantau jadwal aktivitas kebun secara visual menggunakan tampilan Gantt.'
   }
 
   return {
@@ -195,10 +190,10 @@ export function createPlanningModel() {
       return cloneNavigation(navigation)
     },
     getHeader() {
-      return { ...header }
+      return { ...header, title: t('nav.planning'), eyebrow: t('nav.planning') }
     },
     getIntro() {
-      return { ...intro }
+      return { title: t('nav.planning'), description: t('planning.intro') }
     }
   }
 }

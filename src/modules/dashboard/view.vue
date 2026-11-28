@@ -4,7 +4,7 @@
 
     <div class="dashboard-main">
       <BaseHeader
-        eyebrow="Dasbor"
+        :eyebrow="t('dashboard.title')"
         :title="header.title"
         :notifications="header.notifications"
         :user="user"
@@ -17,21 +17,21 @@
             <h1 id="dash-title">{{ intro.title }}</h1>
             <p class="dash__desc">{{ intro.description }}</p>
           </div>
-          <div class="dash__toolbar" role="group" aria-label="Kendali dasbor">
+          <div class="dash__toolbar" role="group" :aria-label="t('dashboard.toolbar')">
             <span class="dash__live" aria-live="polite">
               <DashIcon name="clock" :size="14" />
-              <template v-if="anyLoading">Memuat data…</template>
-              <template v-else-if="lastUpdated">Pembaruan terakhir {{ lastUpdatedLabel }}</template>
+              <template v-if="anyLoading">{{ t('dashboard.loadingData') }}</template>
+              <template v-else-if="lastUpdated">{{ t('dashboard.lastUpdated', { time: lastUpdatedLabel }) }}</template>
             </span>
             <button type="button" class="dash__btn" :disabled="anyLoading" :aria-busy="anyLoading" @click="loadAll">
-              <DashIcon name="refresh" :size="14" /> Muat ulang
+              <DashIcon name="refresh" :size="14" /> {{ t('dashboard.reload') }}
             </button>
-            <label class="sr-only" for="dash-period">Periode</label>
+            <label class="sr-only" for="dash-period">{{ t('dashboard.period') }}</label>
             <select id="dash-period" v-model.number="periodDays" class="dash__btn">
-              <option v-for="d in PERIODS" :key="d" :value="d">{{ d }} hari</option>
+              <option v-for="d in PERIODS" :key="d" :value="d">{{ t('dashboard.days', { n: d }) }}</option>
             </select>
           </div>
-          <nav v-if="quickLinks.length" class="dash__links" aria-label="Tautan cepat">
+          <nav v-if="quickLinks.length" class="dash__links" :aria-label="t('dashboard.quickLinks')">
             <template v-for="link in quickLinks" :key="`${link.label}-${link.url}`">
               <RouterLink v-if="link.isInternal" :to="link.url" class="dash__link" :title="link.description || undefined">{{ link.label }}</RouterLink>
               <a v-else :href="link.url" target="_blank" rel="noopener noreferrer" class="dash__link" :title="link.description || undefined">{{ link.label }} ↗</a>
@@ -40,46 +40,46 @@
         </section>
 
         <!-- KPI gaya Material 3 (prototipe p10): kartu tonal, angka besar + satuan, perubahan, pembanding. -->
-        <section class="dash__kpis" aria-label="Ringkasan">
+        <section class="dash__kpis" :aria-label="t('dashboard.summary')">
           <button v-for="g in GROUPS" :key="g.key" type="button" class="kc" :aria-pressed="selectedGroup === g.key"
             @click="toggleGroup(g.key)">
-            <span class="kc__label">Sensus {{ g.label }}</span>
+            <span class="kc__label">{{ t('dashboard.kpi.sensusGroup', { group: g.label }) }}</span>
             <template v-if="sensus.loading"><span class="sk sk--line"></span></template>
-            <span v-else-if="sensus.error" class="kc__err">Gagal dimuat</span>
+            <span v-else-if="sensus.error" class="kc__err">{{ t('dashboard.kpi.failed') }}</span>
             <template v-else>
-              <span class="kc__value">{{ formatNumber(groupKpi[g.key].cur) }}<small>laporan</small></span>
+              <span class="kc__value">{{ formatNumber(groupKpi[g.key].cur) }}<small>{{ t('dashboard.kpi.reports') }}</small></span>
               <KpiDelta :value="groupKpi[g.key].delta" />
-              <span class="kc__sub">vs {{ prevLabel }}: {{ formatNumber(groupKpi[g.key].prev) }}</span>
+              <span class="kc__sub">{{ t('dashboard.kpi.vs', { label: prevLabel, value: formatNumber(groupKpi[g.key].prev) }) }}</span>
             </template>
           </button>
 
           <div class="kc kc--primary">
-            <span class="kc__label">Volume diterima {{ periodDays }} hari</span>
+            <span class="kc__label">{{ t('dashboard.kpi.receivedVolume', { n: periodDays }) }}</span>
             <template v-if="ships.loading"><span class="sk sk--line"></span></template>
-            <span v-else-if="ships.error" class="kc__err">Gagal dimuat</span>
+            <span v-else-if="ships.error" class="kc__err">{{ t('dashboard.kpi.failed') }}</span>
             <template v-else-if="!unit.primary">
               <span class="kc__value">-</span>
-              <span class="kc__sub">Belum ada pengiriman</span>
+              <span class="kc__sub">{{ t('dashboard.kpi.noShipments') }}</span>
             </template>
             <template v-else>
               <span class="kc__value">{{ formatNumber(shipCur.received) }}<small>{{ unit.primary.name }}</small></span>
               <KpiDelta :value="receivedDelta" />
-              <span class="kc__sub">vs {{ prevLabel }}: {{ formatNumber(shipPrev.received) }}<template v-if="shipCur.selisihPct !== null"> · selisih {{ formatNumber(shipCur.selisihPct, 1) }}%</template></span>
+              <span class="kc__sub">{{ t('dashboard.kpi.vs', { label: prevLabel, value: formatNumber(shipPrev.received) }) }}<template v-if="shipCur.selisihPct !== null">{{ t('dashboard.kpi.diff', { pct: formatNumber(shipCur.selisihPct, 1) }) }}</template></span>
             </template>
             <!-- Bilah porsi volume dikirim yang sudah diterima; selalu tampil, kosong = lintasan saja. -->
             <span v-if="!ships.loading && !ships.error" class="kc__meter" role="img"
-              :aria-label="`Diterima ${formatNumber(receivedShare, 1)}% dari volume dikirim`">
+              :aria-label="t('dashboard.kpi.receivedShare', { pct: formatNumber(receivedShare, 1) })">
               <span class="kc__meter-fill" :style="{ width: `${receivedShare}%` }"></span>
             </span>
           </div>
 
           <button type="button" class="kc" :aria-pressed="feedKind === 'telat'" @click="toggleKind('telat')">
-            <span class="kc__label">Rencana terlambat</span>
+            <span class="kc__label">{{ t('dashboard.kpi.latePlans') }}</span>
             <template v-if="plans.loading"><span class="sk sk--line"></span></template>
-            <span v-else-if="plans.error" class="kc__err">Gagal dimuat</span>
+            <span v-else-if="plans.error" class="kc__err">{{ t('dashboard.kpi.failed') }}</span>
             <template v-else>
-              <span class="kc__value">{{ formatNumber(latePlans.length) }}<small>dari {{ formatNumber(activePlans.length) }}</small></span>
-              <span class="kc__sub">Klik untuk lihat daftar rencana</span>
+              <span class="kc__value">{{ formatNumber(latePlans.length) }}<small>{{ t('dashboard.kpi.ofTotal', { n: formatNumber(activePlans.length) }) }}</small></span>
+              <span class="kc__sub">{{ t('dashboard.kpi.clickLatePlans') }}</span>
             </template>
           </button>
         </section>
@@ -87,12 +87,12 @@
         <div class="dash__grid">
           <!-- Sensus harian -->
           <section class="p s8" aria-labelledby="h-sensus">
-            <h2 id="h-sensus">Sensus harian per kelompok <span>jumlah sensus per hari</span></h2>
+            <h2 id="h-sensus">{{ t('dashboard.sensus.title') }} <span>{{ t('dashboard.sensus.subtitle') }}</span></h2>
             <div v-if="sensus.loading" class="sk sk--block" aria-busy="true"></div>
-            <PanelError v-else-if="sensus.error" :text="sensus.error" @retry="loadSensus" />
+            <PanelError v-else-if="sensus.error" :text="t(sensus.error)" @retry="loadSensus" />
             <template v-else>
               <p class="find">{{ sensusFinding }}</p>
-              <div class="legend" role="group" aria-label="Saring kelompok">
+              <div class="legend" role="group" :aria-label="t('dashboard.sensus.filterGroup')">
                 <button v-for="s in chartSeries" :key="s.key" type="button" :style="{ '--c': s.color }"
                   :aria-pressed="s.visible" @click="toggleGroup(s.key)">{{ s.label }}</button>
               </div>
@@ -102,42 +102,42 @@
 
           <!-- Perlu tindak lanjut -->
           <section class="p s4" aria-labelledby="h-feed">
-            <h2 id="h-feed">Perlu tindak lanjut <span>{{ feedLoading ? '…' : `${feed.length} butir` }}</span></h2>
-            <div class="legend" role="group" aria-label="Saring tingkat">
+            <h2 id="h-feed">{{ t('dashboard.feed.title') }} <span>{{ feedLoading ? '…' : t('dashboard.feed.count', { n: feed.length }) }}</span></h2>
+            <div class="legend" role="group" :aria-label="t('dashboard.feed.filterLevel')">
               <button v-for="l in LEVELS" :key="l.key" type="button" style="--c: var(--border-strong)"
                 :aria-pressed="!feedLevel || feedLevel === l.key" @click="feedLevel = feedLevel === l.key ? null : l.key">{{ l.label }}</button>
               <button v-if="feedKind" type="button" class="legend__clear" @click="feedKind = null">
-                <DashIcon name="x" :size="11" /> {{ KIND_LABEL[feedKind] }}
+                <DashIcon name="x" :size="11" /> {{ t(`dashboard.kind.${feedKind}`) }}
               </button>
             </div>
             <div v-if="feedLoading" class="sk sk--block" aria-busy="true"></div>
             <template v-else>
               <p v-if="feedErrors.length" class="state state--err" role="alert">
-                <DashIcon name="alert" :size="14" /> Sebagian sumber gagal dimuat: {{ feedErrors.join(', ') }}.
+                <DashIcon name="alert" :size="14" /> {{ t('dashboard.feed.partialError', { sources: feedErrors.join(', ') }) }}
               </p>
               <ul v-if="feed.length" class="feed">
                 <li v-for="item in feed" :key="item.id">
-                  <span class="tg" :class="`tg--${item.level}`"><DashIcon :name="item.level === 'peringatan' ? 'info' : 'alert'" :size="11" /> {{ LEVEL_LABEL[item.level] }}</span>
+                  <span class="tg" :class="`tg--${item.level}`"><DashIcon :name="item.level === 'peringatan' ? 'info' : 'alert'" :size="11" /> {{ t(`dashboard.level.${item.level}Tag`) }}</span>
                   <RouterLink v-if="item.to" :to="item.to" class="feed__link">{{ item.text }}</RouterLink>
                   <span v-else>{{ item.text }}</span>
                 </li>
               </ul>
-              <p v-else class="state">Tidak ada butir tindak lanjut{{ feedKind || feedLevel ? ' untuk saringan ini' : '' }}.</p>
+              <p v-else class="state">{{ feedKind || feedLevel ? t('dashboard.feed.emptyFiltered') : t('dashboard.feed.empty') }}</p>
             </template>
           </section>
 
           <!-- Pengiriman 7 hari -->
           <section class="p s8" aria-labelledby="h-ship">
-            <h2 id="h-ship">Pengiriman 7 hari <span>kirim vs terima per tanggal kirim{{ unit.primary ? `, ${unit.primary.name}` : '' }}</span></h2>
+            <h2 id="h-ship">{{ t('dashboard.ship.title') }} <span>{{ t('dashboard.ship.subtitle') }}{{ unit.primary ? `, ${unit.primary.name}` : '' }}</span></h2>
             <div v-if="ships.loading" class="sk sk--block" aria-busy="true"></div>
-            <PanelError v-else-if="ships.error" :text="ships.error" @retry="loadShips" />
+            <PanelError v-else-if="ships.error" :text="t(ships.error)" @retry="loadShips" />
             <template v-else>
               <p class="find">{{ shipFinding }}</p>
               <div class="legend" aria-hidden="true">
-                <span class="legend__key" style="--c: var(--dash-c-ship)">Kirim</span>
-                <span class="legend__key" style="--c: var(--text-muted)">Terima</span>
+                <span class="legend__key" style="--c: var(--dash-c-ship)">{{ t('dashboard.ship.shipped') }}</span>
+                <span class="legend__key" style="--c: var(--text-muted)">{{ t('dashboard.ship.received') }}</span>
               </div>
-              <ul class="ship" aria-label="Kirim dan terima per hari">
+              <ul class="ship" :aria-label="t('dashboard.ship.perDay')">
                 <li v-for="d in shipDays7" :key="d.date">
                   <span class="ship__day">{{ formatDay(d.date) }}</span>
                   <span class="ship__bars" aria-hidden="true">
@@ -145,68 +145,68 @@
                     <i class="ship__bar" :style="{ width: barWidth(d.received), background: 'var(--text-muted)' }"></i>
                   </span>
                   <span class="ship__nums">
-                    <span class="sr-only">Kirim</span> {{ formatNumber(d.shipped) }} / <span class="sr-only">terima</span> {{ formatNumber(d.received) }}
+                    <span class="sr-only">{{ t('dashboard.ship.shipped') }}</span> {{ formatNumber(d.shipped) }} / <span class="sr-only">{{ t('dashboard.ship.receivedLower') }}</span> {{ formatNumber(d.received) }}
                   </span>
                   <span class="ship__pct" :class="{ 'is-over': d.selisihPct !== null && d.selisihPct > SELISIH_LIMIT }">
-                    <template v-if="!d.trips">tidak ada</template>
-                    <template v-else-if="d.selisihPct === null">belum diterima</template>
-                    <template v-else-if="d.selisihPct > SELISIH_LIMIT"><DashIcon name="alert" :size="12" /> {{ formatNumber(d.selisihPct, 1) }}% lewat batas</template>
-                    <template v-else>selisih {{ formatNumber(d.selisihPct, 1) }}%</template>
-                    <template v-if="d.trips && d.pendingTrips && d.selisihPct !== null"> · {{ d.pendingTrips }} belum diterima</template>
+                    <template v-if="!d.trips">{{ t('dashboard.ship.none') }}</template>
+                    <template v-else-if="d.selisihPct === null">{{ t('dashboard.ship.notReceived') }}</template>
+                    <template v-else-if="d.selisihPct > SELISIH_LIMIT"><DashIcon name="alert" :size="12" /> {{ t('dashboard.ship.overLimit', { pct: formatNumber(d.selisihPct, 1) }) }}</template>
+                    <template v-else>{{ t('dashboard.ship.diff', { pct: formatNumber(d.selisihPct, 1) }) }}</template>
+                    <template v-if="d.trips && d.pendingTrips && d.selisihPct !== null">{{ t('dashboard.ship.pending', { n: d.pendingTrips }) }}</template>
                   </span>
                 </li>
               </ul>
-              <p class="note">Selisih dihitung hanya dari pengiriman yang sudah diterima dengan satuan yang sama. Batas {{ SELISIH_LIMIT }}%.</p>
+              <p class="note">{{ t('dashboard.ship.note', { limit: SELISIH_LIMIT }) }}</p>
             </template>
           </section>
 
           <!-- Menunggu verifikasi -->
           <section v-if="showPending" class="p s4" aria-labelledby="h-pending">
-            <h2 id="h-pending">{{ pendingTitle }} <span>{{ sensus.loading ? '…' : `${pendingFiltered.length} menunggu` }}</span></h2>
+            <h2 id="h-pending">{{ pendingTitle }} <span>{{ sensus.loading ? '…' : t('dashboard.pending.count', { n: pendingFiltered.length }) }}</span></h2>
             <div v-if="sensus.loading" class="sk sk--block" aria-busy="true"></div>
-            <PanelError v-else-if="sensus.error" :text="sensus.error" @retry="loadSensus" />
+            <PanelError v-else-if="sensus.error" :text="t(sensus.error)" @retry="loadSensus" />
             <template v-else>
               <p v-if="pendingSubtitle" class="find">{{ pendingSubtitle }}</p>
               <ul v-if="pendingShown.length" class="pending">
                 <li v-for="row in pendingShown" :key="row.code">
                   <div class="pending__main">
                     <strong>{{ row.code }}</strong>
-                    <span class="pending__meta">{{ row.worker || '…' }} · {{ row.block }} · menunggu {{ waitLabel(hoursSince(row.createdAt)) || formatDay(row.sensusDate, true) }}</span>
+                    <span class="pending__meta">{{ row.worker || '…' }} · {{ row.block }} · {{ t('dashboard.pending.waiting', { wait: waitLabel(hoursSince(row.createdAt)) || formatDay(row.sensusDate, true) }) }}</span>
                     <span v-if="row.jobTypes.length" class="pending__jobs">{{ row.jobTypes.join(', ') }}</span>
                   </div>
                   <RouterLink v-if="row.id != null" :to="`/sensus/${row.id}`" class="dash__btn dash__btn--icon"
-                    :aria-label="`Periksa sensus ${row.code}`" :title="`Periksa sensus ${row.code}`">
+                    :aria-label="t('dashboard.pending.check', { code: row.code })" :title="t('dashboard.pending.check', { code: row.code })">
                     <DashIcon name="arrowRight" :size="14" />
                   </RouterLink>
                 </li>
               </ul>
-              <p v-else class="state">Tidak ada sensus yang menunggu verifikasi{{ selectedGroup ? ' untuk kelompok ini' : '' }}.</p>
+              <p v-else class="state">{{ selectedGroup ? t('dashboard.pending.emptyGroup') : t('dashboard.pending.empty') }}</p>
               <RouterLink v-if="pendingFiltered.length > pendingShown.length" to="/sensus" class="pending__more">
-                Lihat semua di Sensus <DashIcon name="arrowRight" :size="12" />
+                {{ t('dashboard.pending.seeAll') }} <DashIcon name="arrowRight" :size="12" />
               </RouterLink>
             </template>
           </section>
 
           <!-- Rencana kerja aktif -->
           <section class="p s12" aria-labelledby="h-plan">
-            <h2 id="h-plan">Rencana kerja aktif
+            <h2 id="h-plan">{{ t('dashboard.plan.title') }}
               <span v-if="selectedGroup || feedKind === 'telat'">
-                {{ [selectedGroup && groupLabel(selectedGroup), feedKind === 'telat' && 'hanya terlambat'].filter(Boolean).join(' · ') }}
-                <button type="button" class="dash__btn dash__btn--xs" @click="clearFilters">hapus saringan</button>
+                {{ [selectedGroup && groupLabel(selectedGroup), feedKind === 'telat' && t('dashboard.plan.onlyLate')].filter(Boolean).join(' · ') }}
+                <button type="button" class="dash__btn dash__btn--xs" @click="clearFilters">{{ t('dashboard.plan.clearFilters') }}</button>
               </span>
-              <span v-else>klik seri grafik untuk saring</span>
+              <span v-else>{{ t('dashboard.plan.hint') }}</span>
             </h2>
             <div v-if="plans.loading" class="sk sk--block" aria-busy="true"></div>
-            <PanelError v-else-if="plans.error" :text="plans.error" @retry="loadPlans" />
+            <PanelError v-else-if="plans.error" :text="t(plans.error)" @retry="loadPlans" />
             <template v-else>
               <p class="find">{{ planFinding }}</p>
               <div class="sc">
                 <table>
-                  <caption class="sr-only">Rencana kerja aktif</caption>
+                  <caption class="sr-only">{{ t('dashboard.plan.title') }}</caption>
                   <thead>
                     <tr>
                       <th v-for="c in PLAN_COLUMNS" :key="c.key" :aria-sort="sortKey === c.key ? (sortDir > 0 ? 'ascending' : 'descending') : 'none'">
-                        <button type="button" @click="sortBy(c.key)">{{ c.label }}
+                        <button type="button" @click="sortBy(c.key)">{{ t(`dashboard.plan.col.${c.key}`) }}
                           <DashIcon :name="sortKey === c.key ? (sortDir > 0 ? 'chevronUp' : 'chevronDown') : 'sort'" :size="12" />
                         </button>
                       </th>
@@ -224,7 +224,7 @@
                       </td>
                     </tr>
                     <tr v-if="!planRows.length">
-                      <td colspan="6" class="state">{{ activePlans.length ? 'Tidak ada rencana untuk saringan ini.' : 'Belum ada rencana kerja aktif.' }}</td>
+                      <td colspan="6" class="state">{{ activePlans.length ? t('dashboard.plan.emptyFiltered') : t('dashboard.plan.empty') }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -239,6 +239,8 @@
 
 <script setup>
 import { computed, defineComponent, h, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { currentIntlLocale } from '../../i18n'
 import BaseHeader from '../shared/header'
 import BaseSidebar from '../shared/sidebar'
 import DashIcon from './components/DashIcon.vue'
@@ -256,17 +258,10 @@ const props = defineProps({
   controller: { type: Object, required: true }
 })
 
+const { t, locale } = useI18n()
+
 const PERIODS = [7, 14, 28]
-const LEVEL_LABEL = { kritis: 'KRITIS', serius: 'SERIUS', peringatan: 'PERINGATAN' }
-const KIND_LABEL = { telat: 'Rencana terlambat', tunggu: 'Menunggu > 24 jam', timbang: 'Selisih timbang' }
-const PLAN_COLUMNS = [
-  { key: 'group', label: 'Kelompok' },
-  { key: 'job', label: 'Pekerjaan' },
-  { key: 'block', label: 'Blok' },
-  { key: 'start', label: 'Mulai' },
-  { key: 'end', label: 'Selesai' },
-  { key: 'status', label: 'Status' }
-]
+const PLAN_COLUMNS = [{ key: 'group' }, { key: 'job' }, { key: 'block' }, { key: 'start' }, { key: 'end' }, { key: 'status' }]
 const GROUP_COLOR = { pembersihan: 'var(--dash-c-pembersihan)', pemupukan: 'var(--dash-c-pemupukan)', panen: 'var(--dash-c-panen)' }
 
 
@@ -275,12 +270,12 @@ const KpiDelta = defineComponent({
   props: { value: { type: Number, default: null } },
   setup(p) {
     return () => {
-      if (p.value === null || !Number.isFinite(p.value)) return h('span', { class: 'kc__delta kc__delta--none' }, 'Tidak ada pembanding')
+      if (p.value === null || !Number.isFinite(p.value)) return h('span', { class: 'kc__delta kc__delta--none' }, t('dashboard.kpi.noComparison'))
       const up = p.value >= 0
       return h('span', { class: ['kc__delta', up ? 'is-up' : 'is-down'] }, [
         h('svg', { viewBox: '0 0 24 24', width: 14, height: 14, 'aria-hidden': 'true', fill: 'none', stroke: 'currentColor', 'stroke-width': 2.4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' },
           [h('path', { d: up ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6' })]),
-        h('span', { class: 'sr-only' }, up ? 'naik ' : 'turun '),
+        h('span', { class: 'sr-only' }, up ? t('dashboard.kpi.up') : t('dashboard.kpi.down')),
         h('span', { class: 'kc__pct' }, `${up ? '+' : '−'}${formatNumber(Math.abs(p.value), 1)}%`)
       ])
     }
@@ -293,7 +288,7 @@ const PanelError = defineComponent({
   setup(p, { emit }) {
     return () => h('div', { class: 'state state--err', role: 'alert' }, [
       h('p', p.text),
-      h('button', { type: 'button', class: 'dash__btn', onClick: () => emit('retry') }, 'Coba lagi')
+      h('button', { type: 'button', class: 'dash__btn', onClick: () => emit('retry') }, t('common.retry'))
     ])
   }
 })
@@ -312,7 +307,7 @@ const intro = computed(() => {
 })
 const quickLinks = computed(() => cms.value?.quickLinks || [])
 const showPending = computed(() => cms.value?.pending?.isVisible !== false)
-const pendingTitle = computed(() => cms.value?.pending?.title || 'Menunggu verifikasi')
+const pendingTitle = computed(() => cms.value?.pending?.title || t('dashboard.pending.title'))
 const pendingSubtitle = computed(() => cms.value?.pending?.subtitle || '')
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 
@@ -332,7 +327,7 @@ async function loadSensus() {
     sensus.value = { loading: false, error: '', list }
   } catch (error) {
     console.error('[Dashboard] Gagal memuat sensus:', error)
-    sensus.value = { loading: false, error: 'Data sensus gagal dimuat.', list: [] }
+    sensus.value = { loading: false, error: 'dashboard.error.sensus', list: [] }
   }
 }
 
@@ -342,7 +337,7 @@ async function loadPlans() {
     plans.value = { loading: false, error: '', list: await props.controller.loadPlannings() }
   } catch (error) {
     console.error('[Dashboard] Gagal memuat rencana kerja:', error)
-    plans.value = { loading: false, error: 'Data rencana kerja gagal dimuat.', list: [] }
+    plans.value = { loading: false, error: 'dashboard.error.plans', list: [] }
   }
 }
 
@@ -352,7 +347,7 @@ async function loadShips() {
     ships.value = { loading: false, error: '', list: await props.controller.loadShipments() }
   } catch (error) {
     console.error('[Dashboard] Gagal memuat pengiriman:', error)
-    ships.value = { loading: false, error: 'Data pengiriman gagal dimuat.', list: [] }
+    ships.value = { loading: false, error: 'dashboard.error.ships', list: [] }
   }
 }
 
@@ -367,7 +362,8 @@ const anyLoading = computed(() => sensus.value.loading || plans.value.loading ||
 const lastUpdatedLabel = computed(() => {
   const d = lastUpdated.value
   if (!d) return ''
-  return `${d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} ${d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })}`
+  void locale.value
+  return `${d.toLocaleDateString(currentIntlLocale(), { day: 'numeric', month: 'short', year: 'numeric' })} ${d.toLocaleTimeString(currentIntlLocale(), { hour: '2-digit', minute: '2-digit', hour12: false })}`
 })
 
 watch(() => appStore.ready, (ready) => { if (ready) loadAll() }, { immediate: true })
@@ -399,14 +395,16 @@ const chartSeries = computed(() => GROUPS.map((g) => ({
   ...g, color: GROUP_COLOR[g.key], visible: !selectedGroup.value || selectedGroup.value === g.key
 })))
 const sensusFinding = computed(() => {
+  void locale.value
   const totals = GROUPS.map((g) => ({ ...g, total: sensusRows.value.reduce((t, r) => t + r[g.key], 0) }))
     .sort((a, b) => b.total - a.total)
-  if (!totals[0].total) return `Belum ada sensus tercatat dalam ${periodDays.value} hari terakhir.`
+  const days = periodDays.value
+  if (!totals[0].total) return t('dashboard.sensus.findNone', { days })
   const top = totals[0]
-  const tied = totals.filter((t) => t.total === top.total)
-  if (tied.length === totals.length) return `Semua kelompok sama: masing-masing ${formatNumber(top.total)} sensus dalam ${periodDays.value} hari.`
-  if (tied.length > 1) return `${tied.map((t) => t.label).join(' dan ')} paling banyak dicatat: masing-masing ${formatNumber(top.total)} sensus dalam ${periodDays.value} hari.`
-  return `${top.label} paling banyak dicatat: ${formatNumber(top.total)} sensus dalam ${periodDays.value} hari.`
+  const tied = totals.filter((x) => x.total === top.total)
+  if (tied.length === totals.length) return t('dashboard.sensus.findAllSame', { n: formatNumber(top.total), days })
+  if (tied.length > 1) return t('dashboard.sensus.findTied', { groups: tied.map((x) => x.label).join(t('dashboard.sensus.and')), n: formatNumber(top.total), days })
+  return t('dashboard.sensus.findTop', { group: top.label, n: formatNumber(top.total), days })
 })
 
 const pendingAll = computed(() => pendingSensus(sensus.value.list))
@@ -431,7 +429,7 @@ const activePlans = computed(() => plans.value.list.filter((p) => !p.closed))
 const latePlans = computed(() => activePlans.value.filter((p) => p.lateDays > 0))
 
 function planChip(p) {
-  if (p.lateDays) return { tone: 'kritis', icon: 'alert', label: `Terlambat ${p.lateDays} hari` }
+  if (p.lateDays) return { tone: 'kritis', icon: 'alert', label: t('dashboard.plan.late', { n: p.lateDays }) }
   if (p.status === 'in_progress') return { tone: 'info', icon: 'clock', label: PLAN_STATUS.in_progress }
   if (p.status === 'planned') return { tone: 'netral', icon: 'calendar', label: PLAN_STATUS.planned }
   if (PLAN_STATUS[p.status]) return { tone: 'netral', icon: 'calendar', label: PLAN_STATUS[p.status] }
@@ -455,10 +453,10 @@ const planRows = computed(() => {
 })
 
 const planFinding = computed(() => {
-  if (!activePlans.value.length) return 'Tidak ada rencana yang sedang berjalan atau direncanakan.'
-  if (!latePlans.value.length) return `${formatNumber(activePlans.value.length)} rencana aktif, semuanya masih dalam tenggat.`
+  if (!activePlans.value.length) return t('dashboard.plan.findNone')
+  if (!latePlans.value.length) return t('dashboard.plan.findAllOnTime', { n: formatNumber(activePlans.value.length) })
   const worst = [...latePlans.value].sort((a, b) => b.lateDays - a.lateDays)[0]
-  return `${formatNumber(latePlans.value.length)} rencana lewat tenggat; terlama ${worst.job} di ${worst.block} (${worst.lateDays} hari).`
+  return t('dashboard.plan.findLate', { n: formatNumber(latePlans.value.length), job: worst.job, block: worst.block, days: worst.lateDays })
 })
 
 // ── Pengiriman ─────────────────────────────────────────────────────────────
@@ -483,7 +481,7 @@ const groupKpi = computed(() => {
     return [g.key, { cur, prev, delta: percentChange(cur, prev) }]
   }))
 })
-const prevLabel = computed(() => `${formatDay(range.value.prevFrom)}–${formatDay(range.value.prevTo)}`)
+const prevLabel = computed(() => locale.value && `${formatDay(range.value.prevFrom)}–${formatDay(range.value.prevTo)}`)
 const receivedDelta = computed(() => percentChange(shipCur.value.received, shipPrev.value.received))
 const shipDaysPeriod = computed(() => shipmentDaily(ships.value.list, unit.value.primary, periodDays.value, now.value))
 const overDays = computed(() => shipDaysPeriod.value.filter((d) => d.selisihPct !== null && d.selisihPct > SELISIH_LIMIT))
@@ -491,24 +489,25 @@ const shipDays7 = computed(() => shipmentDaily(ships.value.list, unit.value.prim
 const shipMax = computed(() => Math.max(1, ...shipDays7.value.flatMap((d) => [d.shipped, d.received])))
 const barWidth = (v) => `${Math.max(0, (v / shipMax.value) * 100)}%`
 const shipFinding = computed(() => {
+  void locale.value
   const days = shipDays7.value
-  if (!unit.value.primary) return `Belum ada pengiriman dalam ${SHIPMENT_WINDOW_DAYS} hari terakhir.`
-  if (!days.some((d) => d.trips)) return 'Tidak ada pengiriman dalam 7 hari terakhir.'
+  if (!unit.value.primary) return t('dashboard.ship.findNoneWindow', { days: SHIPMENT_WINDOW_DAYS })
+  if (!days.some((d) => d.trips)) return t('dashboard.ship.findNone7')
   const over = days.filter((d) => d.selisihPct !== null && d.selisihPct > SELISIH_LIMIT)
   return over.length
-    ? `Selisih lebih dari ${SELISIH_LIMIT}% pada ${over.map((d) => formatDay(d.date)).join(', ')}.`
-    : `Selisih semua hari dalam batas ${SELISIH_LIMIT}%.`
+    ? t('dashboard.ship.findOver', { limit: SELISIH_LIMIT, dates: over.map((d) => formatDay(d.date)).join(', ') })
+    : t('dashboard.ship.findOk', { limit: SELISIH_LIMIT })
 })
 
 // ── Tindak lanjut ──────────────────────────────────────────────────────────
 
 const feedLoading = computed(() => anyLoading.value)
 const feedErrors = computed(() => [
-  sensus.value.error && 'sensus',
-  plans.value.error && 'rencana kerja',
-  ships.value.error && 'pengiriman'
+  sensus.value.error && t('dashboard.source.sensus'),
+  plans.value.error && t('dashboard.source.plans'),
+  ships.value.error && t('dashboard.source.ships')
 ].filter(Boolean))
-const feedAll = computed(() => buildFeed({
+const feedAll = computed(() => locale.value && buildFeed({
   plans: plans.value.list,
   pending: pendingAll.value,
   shipDays: shipDaysPeriod.value,

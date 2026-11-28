@@ -1,21 +1,21 @@
 <template>
-  <MdPage title="Blok" description="Blok kebun; tiap blok berisi beberapa petak (Data Master → Nomor Petak). Klik kartu atau batang grafik untuk menyaring tabel.">
+  <MdPage :title="t('blocks.title')" :description="t('blocks.description')">
     <template #actions>
-      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah Blok</button>
+      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />{{ t('blocks.add') }}</button>
     </template>
 
     <div class="md-kpis">
-      <MdKpi icon="grid" tone="info" label="Total blok" :value="rows.length" :sub="`${fmt(totalPetak)} petak`" action hint="Tampilkan semua" @select="clearAll" />
-      <MdKpi icon="leaf" tone="success" label="Blok ada TM" :value="countStatus('tm')" :sub="`${pct(countStatus('tm'))}% dari blok`" action :pressed="onlyStatus('tm')" @select="quickStatus('tm')" />
-      <MdKpi icon="tree" tone="warning" label="Blok TBM" :value="countStatus('tbm')" :sub="`${countEmpty} blok tanpa petak`" action :pressed="onlyStatus('tbm')" @select="quickStatus('tbm')" />
-      <MdKpi icon="pin" tone="brand" label="TPH · pohon panen" :value="fmt(totalTph)" :sub="`${fmt(totalHarvest)} pohon panen`" action hint="Urutkan" @select="table?.setSort('tph_count', -1)" />
+      <MdKpi icon="grid" tone="info" :label="t('blocks.kpi.total')" :value="rows.length" :sub="t('blocks.kpi.totalSub', { n: fmt(totalPetak) })" action :hint="t('blocks.ui.showAll')" @select="clearAll" />
+      <MdKpi icon="leaf" tone="success" :label="t('blocks.kpi.hasTm')" :value="countStatus('tm')" :sub="t('blocks.kpi.hasTmSub', { n: pct(countStatus('tm')) })" action :pressed="onlyStatus('tm')" @select="quickStatus('tm')" />
+      <MdKpi icon="tree" tone="warning" :label="t('blocks.kpi.tbm')" :value="countStatus('tbm')" :sub="t('blocks.kpi.tbmSub', { n: countEmpty })" action :pressed="onlyStatus('tbm')" @select="quickStatus('tbm')" />
+      <MdKpi icon="pin" tone="brand" :label="t('blocks.kpi.tph')" :value="fmt(totalTph)" :sub="t('blocks.kpi.tphSub', { n: fmt(totalHarvest) })" action :hint="t('blocks.ui.sort')" @select="table?.setSort('tph_count', -1)" />
     </div>
 
     <MdBarChart
       v-if="rows.length"
-      title="Jumlah petak per blok"
-      :subtitle="`${fmt(totalPetak)} petak di ${rows.length} blok`"
-      :legend="[{ label: 'Ada TM', color: 'var(--success)' }, { label: 'TBM', color: '#f59e0b' }]"
+      :title="t('blocks.chart.title')"
+      :subtitle="t('blocks.chart.subtitle', { petak: fmt(totalPetak), blok: rows.length })"
+      :legend="[{ label: t('blocks.hasTm'), color: 'var(--success)' }, { label: 'TBM', color: '#f59e0b' }]"
       :bars="bars"
       :selected="filterBlok"
       @toggle="toggleBlok" />
@@ -27,35 +27,35 @@
       :total-rows="rows.length"
       :loading="loading"
       :error="fetchError || ''"
-      entity-label="Blok"
+      :entity-label="t('blocks.entity')"
       empty-icon="grid"
-      empty-text="Tambahkan blok pertama, lalu isi petaknya di Nomor Petak."
-      add-label="Tambah Blok"
+      :empty-text="t('blocks.empty')"
+      :add-label="t('blocks.add')"
       :can-add="canWrite"
       initial-sort="name"
-      aria-label="Daftar blok"
+      :aria-label="t('blocks.aria')"
       @retry="loadData"
       @add="openCreate"
       @clear-filters="clearAll">
       <template #toolbar>
         <label class="md-search">
           <MdIcon name="search" />
-          <input v-model.trim="search" type="search" placeholder="Cari nomor blok atau catatan…" aria-label="Cari blok" />
+          <input v-model.trim="search" type="search" :placeholder="t('blocks.searchPlaceholder')" :aria-label="t('blocks.searchAria')" />
         </label>
-        <MdDropdown v-model="filterStatus" label="Status" :options="statusFilterOptions" multiple />
-        <MdDropdown v-model="filterPetak" label="Petak" :options="petakFilterOptions" />
+        <MdDropdown v-model="filterStatus" :label="t('blocks.ui.status')" :options="statusFilterOptions" multiple />
+        <MdDropdown v-model="filterPetak" :label="t('blocks.filter.petak')" :options="petakFilterOptions" />
         <div class="md-chips">
-          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="t('blocks.ui.removeFilter', { label: c.label })" @click="c.remove()">
             {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
           </button>
-          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">{{ t('blocks.ui.clearAll') }}</button>
         </div>
       </template>
 
       <template #cell-name="{ row }">
         <div class="md-ident">
           <span class="md-avatar">{{ row.name }}</span>
-          <div><b>Blok {{ row.name }}</b><small>{{ row.block_count || 0 }} petak</small></div>
+          <div><b>{{ t('blocks.blokLabel', { name: row.name }) }}</b><small>{{ t('blocks.petakCount', { n: row.block_count || 0 }) }}</small></div>
         </div>
       </template>
       <template #cell-block_count="{ row }"><span class="md-num">{{ row.block_count || 0 }}</span></template>
@@ -63,7 +63,7 @@
       <template #cell-tree_count="{ row }"><MdBarCell :value="row.tree_count" :max="maxTrees" /></template>
       <template #cell-tree_harvest_count="{ row }"><span class="md-num">{{ fmt(row.tree_harvest_count) }}</span></template>
       <template #cell-has_tm="{ row }">
-        <MdBadge :tone="row.has_tm ? 'success' : 'warning'">{{ row.has_tm ? 'Ada TM' : 'TBM' }}</MdBadge>
+        <MdBadge :tone="row.has_tm ? 'success' : 'warning'">{{ row.has_tm ? t('blocks.hasTm') : 'TBM' }}</MdBadge>
       </template>
       <template #cell-notes="{ row }">
         <span class="md-muted" :title="row.notes || undefined" style="display: inline-block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom">{{ row.notes || '—' }}</span>
@@ -73,31 +73,35 @@
       </template>
 
       <template v-if="canWrite" #actions="{ row }">
-        <button type="button" class="md-icon-btn" :aria-label="`Ubah blok ${row.name}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
-        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus blok ${row.name}`" :disabled="row.block_count > 0" :title="row.block_count > 0 ? 'Masih berisi petak' : undefined" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+        <button type="button" class="md-icon-btn" :aria-label="t('blocks.editAria', { name: row.name })" @click="openEdit(row)"><MdIcon name="edit" /></button>
+        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="t('blocks.deleteAria', { name: row.name })" :disabled="row.block_count > 0" :title="row.block_count > 0 ? t('blocks.deleteBlocked') : undefined" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
       </template>
 
       <template #card="{ row }">
         <div class="md-card__top">
           <span class="md-avatar">{{ row.name }}</span>
-          <div style="flex: 1"><b class="md-strong">Blok {{ row.name }}</b><div class="md-muted" style="font-size: 12px">Diubah oleh {{ userName(row.updated_by || row.created_by) }}</div></div>
-          <MdBadge :tone="row.has_tm ? 'success' : 'warning'">{{ row.has_tm ? 'Ada TM' : 'TBM' }}</MdBadge>
+          <div style="flex: 1"><b class="md-strong">{{ t('blocks.blokLabel', { name: row.name }) }}</b><div class="md-muted" style="font-size: 12px">{{ t('blocks.updatedByName', { name: userName(row.updated_by || row.created_by) }) }}</div></div>
+          <MdBadge :tone="row.has_tm ? 'success' : 'warning'">{{ row.has_tm ? t('blocks.hasTm') : 'TBM' }}</MdBadge>
         </div>
         <div class="md-card__grid">
-          <div>Petak<b>{{ row.block_count || 0 }}</b></div>
+          <div>{{ t('blocks.col.petak') }}<b>{{ row.block_count || 0 }}</b></div>
           <div>TPH<b>{{ row.tph_count || 0 }}</b></div>
-          <div>Pohon perawatan<b>{{ fmt(row.tree_count) }}</b></div>
-          <div>Pohon panen<b>{{ fmt(row.tree_harvest_count) }}</b></div>
+          <div>{{ t('blocks.col.treeCare') }}<b>{{ fmt(row.tree_count) }}</b></div>
+          <div>{{ t('blocks.col.treeHarvest') }}<b>{{ fmt(row.tree_harvest_count) }}</b></div>
         </div>
       </template>
     </MdDataTable>
 
     <BlockForm :visible="showForm" :block="editing" :submitting="submitting" :error="actionError || ''" @submit="onFormSubmit" @cancel="closeForm" />
 
-    <MdConfirm :open="!!deleting" title="Hapus blok?" :busy="submitting" :blocked="(deleting?.block_count || 0) > 0" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
+    <MdConfirm :open="!!deleting" :title="t('blocks.confirm.title')" :busy="submitting" :blocked="(deleting?.block_count || 0) > 0" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
       <template v-if="deleting">
-        <b>Blok {{ deleting.name }}</b> akan dihapus permanen. Tidak bisa dibatalkan.
-        <template v-if="deleting.block_count > 0"> Blok ini masih berisi <b>{{ deleting.block_count }} petak</b>; pindahkan atau hapus petaknya dulu.</template>
+        <i18n-t keypath="blocks.confirm.body" scope="global">
+          <template #name><b>{{ t('blocks.blokLabel', { name: deleting.name }) }}</b></template>
+        </i18n-t>
+        <i18n-t v-if="deleting.block_count > 0" keypath="blocks.confirm.hasPetak" scope="global">
+          <template #n><b>{{ t('blocks.petakCount', { n: deleting.block_count }) }}</b></template>
+        </i18n-t>
       </template>
     </MdConfirm>
   </MdPage>
@@ -105,28 +109,31 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BlockForm from './BlockForm.vue'
 import { listBlocks, createBlock, updateBlock, deleteBlock } from '../model'
 import { useToast } from '../../../../utils/toast'
 import { useUserNames } from '../../../../auth/useUserNames'
 import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
+import { currentIntlLocale } from '../../../../i18n'
 import { MdPage, MdKpi, MdBarChart, MdDataTable, MdDropdown, MdBadge, MdBarCell, MdConfirm, MdIcon } from '../../../shared/masterdata-ui'
 
+const { t, locale } = useI18n()
 const { userName } = useUserNames()
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
 const canWrite = useCanManageMasterData()
 const { show: showToast } = useToast()
 
-const columns = [
-  { key: 'name', label: 'Blok' },
-  { key: 'block_count', label: 'Petak', sortValue: (r) => r.block_count || 0 },
-  { key: 'tph_count', label: 'TPH', sortValue: (r) => r.tph_count || 0 },
-  { key: 'tree_count', label: 'Pohon perawatan', sortValue: (r) => r.tree_count || 0 },
-  { key: 'tree_harvest_count', label: 'Pohon panen', sortValue: (r) => r.tree_harvest_count || 0 },
-  { key: 'has_tm', label: 'Status', sortValue: (r) => (r.has_tm ? 1 : 0) },
-  { key: 'notes', label: 'Catatan', sortable: false },
-  { key: 'updated_by', label: 'Diubah oleh', sortable: false }
-]
+const columns = computed(() => [
+  { key: 'name', label: t('blocks.col.name') },
+  { key: 'block_count', label: t('blocks.col.petak'), sortValue: (r) => r.block_count || 0 },
+  { key: 'tph_count', label: t('blocks.col.tph'), sortValue: (r) => r.tph_count || 0 },
+  { key: 'tree_count', label: t('blocks.col.treeCare'), sortValue: (r) => r.tree_count || 0 },
+  { key: 'tree_harvest_count', label: t('blocks.col.treeHarvest'), sortValue: (r) => r.tree_harvest_count || 0 },
+  { key: 'has_tm', label: t('blocks.ui.status'), sortValue: (r) => (r.has_tm ? 1 : 0) },
+  { key: 'notes', label: t('blocks.ui.notes'), sortable: false },
+  { key: 'updated_by', label: t('blocks.ui.updatedBy'), sortable: false }
+])
 
 const table = ref(null)
 const rows = ref([])
@@ -143,7 +150,8 @@ const showForm = ref(false)
 const editing = ref(null)
 const deleting = ref(null)
 
-const fmt = (n) => (n == null ? '—' : Number(n).toLocaleString('id-ID'))
+// locale.value dibaca agar template ikut diperbarui saat bahasa berganti.
+const fmt = (n) => (locale.value, n == null ? '—' : Number(n).toLocaleString(currentIntlLocale()))
 const statusKey = (r) => (r.has_tm ? 'tm' : 'tbm')
 const countStatus = (s) => rows.value.filter((r) => statusKey(r) === s).length
 const pct = (n) => (rows.value.length ? Math.round((n / rows.value.length) * 100) : 0)
@@ -156,19 +164,19 @@ const countEmpty = computed(() => rows.value.filter((r) => !r.block_count).lengt
 const maxTrees = computed(() => Math.max(1, ...rows.value.map((r) => r.tree_count || 0)))
 
 const statusFilterOptions = computed(() => [
-  { value: 'tm', label: 'Ada TM', count: countStatus('tm') },
+  { value: 'tm', label: t('blocks.hasTm'), count: countStatus('tm') },
   { value: 'tbm', label: 'TBM', count: countStatus('tbm') }
 ])
 const petakFilterOptions = computed(() => [
-  { value: 'has', label: 'Berisi petak', count: rows.value.length - countEmpty.value },
-  { value: 'empty', label: 'Tanpa petak', count: countEmpty.value }
+  { value: 'has', label: t('blocks.filter.hasPetak'), count: rows.value.length - countEmpty.value },
+  { value: 'empty', label: t('blocks.filter.noPetak'), count: countEmpty.value }
 ])
 
 const bars = computed(() =>
   rows.value.slice().sort(byName).map((r) => ({
     key: r.name,
     label: r.name,
-    ariaLabel: `Blok ${r.name}: ${r.block_count || 0} petak, ${r.has_tm ? 'ada TM' : 'TBM'}`,
+    ariaLabel: t('blocks.chart.barAria', { name: r.name, n: r.block_count || 0, status: r.has_tm ? t('blocks.chart.barTm') : 'TBM' }),
     segments: [{ value: r.block_count || 0, color: r.has_tm ? 'var(--success)' : '#f59e0b' }]
   }))
 )
@@ -186,9 +194,9 @@ const filteredRows = computed(() => {
 const chips = computed(() => {
   const c = []
   if (search.value) c.push({ key: 'q', label: `“${search.value}”`, remove: () => (search.value = '') })
-  filterStatus.value.forEach((s) => c.push({ key: `s-${s}`, label: s === 'tm' ? 'Ada TM' : 'TBM', remove: () => (filterStatus.value = filterStatus.value.filter((x) => x !== s)) }))
-  filterBlok.value.forEach((b) => c.push({ key: `b-${b}`, label: `Blok ${b}`, remove: () => (filterBlok.value = filterBlok.value.filter((x) => x !== b)) }))
-  if (filterPetak.value) c.push({ key: 'p', label: filterPetak.value === 'has' ? 'Berisi petak' : 'Tanpa petak', remove: () => (filterPetak.value = null) })
+  filterStatus.value.forEach((s) => c.push({ key: `s-${s}`, label: s === 'tm' ? t('blocks.hasTm') : 'TBM', remove: () => (filterStatus.value = filterStatus.value.filter((x) => x !== s)) }))
+  filterBlok.value.forEach((b) => c.push({ key: `b-${b}`, label: t('blocks.blokLabel', { name: b }), remove: () => (filterBlok.value = filterBlok.value.filter((x) => x !== b)) }))
+  if (filterPetak.value) c.push({ key: 'p', label: filterPetak.value === 'has' ? t('blocks.filter.hasPetak') : t('blocks.filter.noPetak'), remove: () => (filterPetak.value = null) })
   return c
 })
 
@@ -213,7 +221,7 @@ async function loadData() {
     rows.value = await listBlocks()
   } catch (err) {
     console.error('[Blocks] Failed to load:', err)
-    fetchError.value = err?.message || 'Gagal memuat blok.'
+    fetchError.value = err?.message || t('blocks.error.load')
   } finally {
     loading.value = false
   }
@@ -236,8 +244,8 @@ function closeForm() {
 
 const friendly = (err, fallback) => {
   const m = err?.message || ''
-  if (/block_group_name_uq|sudah ada/i.test(m)) return 'Nomor blok sudah ada.'
-  if (/dirujuk/i.test(m)) return 'Blok masih berisi petak, jadi tidak bisa dihapus.'
+  if (/block_group_name_uq|sudah ada/i.test(m)) return t('blocks.error.duplicate')
+  if (/dirujuk/i.test(m)) return t('blocks.error.inUse')
   return m || fallback
 }
 
@@ -247,16 +255,16 @@ async function onFormSubmit(payload) {
   try {
     if (editing.value?.id) {
       await updateBlock(editing.value.id, payload)
-      showToast('Blok berhasil diubah.')
+      showToast(t('blocks.toast.updated'))
     } else {
       await createBlock(payload)
-      showToast('Blok berhasil ditambahkan.')
+      showToast(t('blocks.toast.created'))
     }
     closeForm()
     await loadData()
   } catch (err) {
     console.error('[Blocks] Save failed:', err)
-    actionError.value = friendly(err, 'Gagal menyimpan blok.')
+    actionError.value = friendly(err, t('blocks.error.save'))
   } finally {
     submitting.value = false
   }
@@ -278,10 +286,10 @@ async function onDeleteConfirm() {
     await deleteBlock(deleting.value.id)
     rows.value = rows.value.filter((r) => r.id !== deleting.value.id)
     deleting.value = null
-    showToast('Blok berhasil dihapus.')
+    showToast(t('blocks.toast.deleted'))
   } catch (err) {
     console.error('[Blocks] Delete failed:', err)
-    deleteError.value = friendly(err, 'Gagal menghapus blok.')
+    deleteError.value = friendly(err, t('blocks.error.delete'))
   } finally {
     submitting.value = false
   }

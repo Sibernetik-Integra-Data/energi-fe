@@ -18,7 +18,7 @@
             <h3 :id="titleId">{{ title }}</h3>
             <p v-if="subtitle || $slots.subtitle"><slot name="subtitle">{{ subtitle }}</slot></p>
           </div>
-          <button v-if="!alert" type="button" class="md-icon-btn" aria-label="Tutup" @click="$emit('close')"><MdIcon name="x" /></button>
+          <button v-if="!alert" type="button" class="md-icon-btn" :aria-label="t('mdui.close')" @click="$emit('close')"><MdIcon name="x" /></button>
         </div>
         <div v-if="$slots.default" class="md-modal__body"><slot /></div>
         <div class="md-modal__foot"><slot name="footer" /></div>
@@ -31,6 +31,9 @@
 // Modal Data Master. `asForm` membungkus isi dengan <form> (Enter = submit). Esc menutup; fokus dijaga di dalam.
 import { nextTick, ref, watch } from 'vue'
 import MdIcon from './MdIcon.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   open: { type: Boolean, default: false },

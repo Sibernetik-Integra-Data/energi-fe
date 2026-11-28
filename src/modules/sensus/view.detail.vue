@@ -4,8 +4,8 @@
 
     <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
       <BaseHeader
-        eyebrow="Sensus"
-        title="Sensus Detail"
+        :eyebrow="t('nav.sensus')"
+        :title="t('sensus.detail.title')"
         :notifications="0"
         :user="user"
         :on-logout="logoutFromKeycloak"
@@ -19,12 +19,12 @@
           class="inline-flex items-center gap-1.5 text-sm font-semibold text-(--brand) hover:text-[color-mix(in_srgb,var(--brand)_80%,black)] transition-colors mb-5 no-underline"
         >
           <span aria-hidden="true">←</span>
-          Kembali ke Sensus list
+          {{ t('sensus.detail.backToList') }}
         </RouterLink>
 
         <!-- Loading -->
         <div v-if="loading" class="flex justify-center items-center py-24 text-sm text-(--text-muted)">
-          Memuat data&hellip;
+          {{ t('common.loading') }}
         </div>
 
         <!-- Error -->
@@ -54,7 +54,7 @@
               class="flex flex-col items-center justify-center py-20 gap-3 text-(--text-muted)"
             >
               <span class="text-4xl">📋</span>
-              <p class="text-sm font-medium">Tidak ada pekerjaan ditemukan untuk sensus ini.</p>
+              <p class="text-sm font-medium">{{ t('sensus.detail.noJobs') }}</p>
             </div>
 
             <!-- Card grid -->
@@ -68,7 +68,7 @@
                 :job-type="item.jobType"
                 :group-of-work="item.groupOfWork"
                 :date="item.date"
-                :sensus-ref="'Sensus ' + item.sensusId"
+                :sensus-ref="t('sensus.sensusRef', { id: item.sensusId })"
                 :blocks="item.blocks"
                 :photo="item.photo"
                 :progress-status="item.progressStatus"
@@ -130,6 +130,7 @@ import SensusPlanningDetailPanel from './components/SensusPlanningDetailPanel.vu
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
 import { canManagePlanning } from '../../auth/access'
 import { useAppStore } from '../../stores'
+import { useI18n } from 'vue-i18n'
 
 import { useToast } from '../../utils/toast'
 
@@ -144,6 +145,7 @@ const navigation = computed(() => props.controller.getNavigation())
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 const canPlan = computed(() => canManagePlanning(user.value))
 const { show: showToast } = useToast()
+const { t } = useI18n()
 
 const loading = ref(false)
 const error = ref(null)
@@ -171,7 +173,7 @@ async function loadPlans() {
     plans.value = await props.controller.loadSensusPlanning(idSensus)
   } catch (err) {
     console.error('[SensusDetail] loadPlans error:', err)
-    showToast(err?.message || 'Gagal memuat data perencanaan.', 'error')
+    showToast(err?.message || t('sensus.detail.loadPlansFailed'), 'error')
   } finally {
     plansLoading.value = false
   }
@@ -185,11 +187,11 @@ async function addPlan(payload) {
   try {
     console.log('[SensusDetail] addPlan payload before send:', payload)
     await props.controller.saveSensusPlanning(payload)
-    showToast('Rencana berhasil dibuat.')
+    showToast(t('sensus.detail.planCreated'))
     await loadPlans()
   } catch (err) {
     console.error('[SensusDetail] addPlan error:', err)
-    showToast(err?.message || 'Gagal membuat rencana.', 'error')
+    showToast(err?.message || t('sensus.detail.planCreateFailed'), 'error')
     throw err
   }
 }
@@ -211,7 +213,7 @@ function handleEditPlan(plan) {
 
 onMounted(async () => {
   if (!props.id) {
-    error.value = 'ID sensus tidak ditemukan.'
+    error.value = t('sensus.detail.idNotFound')
     return
   }
   loading.value = true
@@ -222,7 +224,7 @@ onMounted(async () => {
     items.value  = result.items  || []
   } catch (err) {
     console.error('[SensusDetail] load error:', err)
-    error.value = err?.message || 'Gagal memuat data sensus.'
+    error.value = err?.message || t('sensus.list.loadFailed')
   } finally {
     loading.value = false
   }

@@ -2,26 +2,26 @@
   <div class="flex h-screen bg-(--bg) text-(--text) max-[920px]:flex-col">
     <BaseSidebar :items="navigation" :user="user" />
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <BaseHeader eyebrow="Bantuan & SOP" :title="page?.title || 'Panduan'" :notifications="0" :user="user"
+      <BaseHeader :eyebrow="t('bantuan.title')" :title="page?.title || t('bantuan.guide')" :notifications="0" :user="user"
         :on-logout="logoutFromKeycloak" />
       <main class="min-w-0 flex-1 overflow-y-auto bg-(--surface-muted) p-6 max-[920px]:p-4">
         <RouterLink to="/bantuan" class="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-(--brand) no-underline">
-          <span aria-hidden="true">←</span> Semua panduan
+          <span aria-hidden="true">←</span> {{ t('bantuan.allGuides') }}
         </RouterLink>
 
-        <p v-if="loading" class="text-sm text-(--text-muted)">Memuat panduan…</p>
+        <p v-if="loading" class="text-sm text-(--text-muted)">{{ t('bantuan.loading') }}</p>
         <p v-else-if="error" class="rounded-xl border border-(--border) bg-(--surface) p-4 text-sm text-(--text-muted)">
-          Panduan tidak dapat dimuat saat ini. Coba lagi beberapa saat lagi.
+          {{ t('bantuan.loadError') }}
         </p>
         <p v-else-if="!page" class="rounded-xl border border-(--border) bg-(--surface) p-4 text-sm text-(--text-muted)">
-          Panduan tidak ditemukan atau sudah tidak diterbitkan.
+          {{ t('bantuan.notFound') }}
         </p>
 
         <article v-else class="help-article max-w-3xl rounded-2xl border border-(--border) bg-(--surface) p-6 max-[920px]:p-4">
           <p v-if="page.category" class="m-0 text-xs font-bold uppercase tracking-wider text-(--brand)">{{ page.category }}</p>
           <h1 class="m-0 mt-1 text-2xl font-semibold">{{ page.title }}</h1>
           <p v-if="page.summary" class="m-0 mt-2 text-(--text-muted)">{{ page.summary }}</p>
-          <p v-if="updatedText" class="m-0 mt-2 text-xs text-(--text-soft)">Diperbarui {{ updatedText }}</p>
+          <p v-if="updatedText" class="m-0 mt-2 text-xs text-(--text-soft)">{{ t('bantuan.updated', { date: updatedText }) }}</p>
 
           <div class="mt-5 flex flex-col gap-4">
             <template v-for="(section, index) in page.body" :key="index">
@@ -46,7 +46,7 @@
                 </span>
                 <span class="min-w-0">
                   <span class="block truncate font-semibold">{{ section.label }}</span>
-                  <span class="block text-xs text-(--text-muted)">Unduh{{ section.file.sizeKb ? ` · ${formatFileSize(section.file.sizeKb)}` : '' }}</span>
+                  <span class="block text-xs text-(--text-muted)">{{ t('bantuan.download') }}{{ section.file.sizeKb ? ` · ${formatFileSize(section.file.sizeKb)}` : '' }}</span>
                 </span>
               </a>
             </template>
@@ -58,6 +58,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import BaseHeader from '../shared/header'
@@ -65,10 +66,12 @@ import BaseSidebar from '../shared/sidebar'
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
 import { useAppStore } from '../../stores'
 import { navigation as sharedNavigation } from '../shared/navigation'
+import { currentIntlLocale } from '../../i18n'
 import HelpRichText from './components/HelpRichText'
 import { fetchHelpPage, formatFileSize, safeMediaUrl } from './api'
 
 const route = useRoute()
+const { t, locale } = useI18n()
 const appStore = useAppStore()
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 const navigation = sharedNavigation
@@ -78,9 +81,10 @@ const loading = ref(true)
 const error = ref(false)
 
 const updatedText = computed(() => {
+  void locale.value
   const date = page.value?.updatedAt ? new Date(page.value.updatedAt) : null
   return date && !Number.isNaN(date.getTime())
-    ? date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+    ? date.toLocaleDateString(currentIntlLocale(), { day: 'numeric', month: 'long', year: 'numeric' })
     : ''
 })
 

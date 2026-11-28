@@ -2,7 +2,7 @@
   <div class="bg-(--surface) border border-(--border) rounded-2xl p-6 relative shadow-sm">
     <!-- Status badge -->
     <div class="absolute top-5 right-5">
-      <span :class="statusChipClass(status)">{{ status || 'Open' }}</span>
+      <span :class="statusChipClass(status)">{{ statusLabel(status) }}</span>
     </div>
 
     <!-- Sensus ID -->
@@ -10,9 +10,9 @@
 
     <!-- Meta info grid -->
     <dl class="grid gap-y-2.5" style="grid-template-columns: auto 1fr">
-      <dt class="text-sm text-(--text-muted) font-medium pr-8">Date & Time</dt>
+      <dt class="text-sm text-(--text-muted) font-medium pr-8">{{ t('sensus.record.dateTime') }}</dt>
       <dd class="text-sm text-(--text)">{{ date || '—' }}</dd>
-      <dt class="text-sm text-(--text-muted) font-medium pr-8">Reporter</dt>
+      <dt class="text-sm text-(--text-muted) font-medium pr-8">{{ t('sensus.record.reporter') }}</dt>
       <dd class="text-sm text-(--text)">{{ reporter || '—' }}</dd>
     </dl>
   </div>
@@ -20,6 +20,9 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t, te } = useI18n()
 
 const props = defineProps({
   sensusId: { type: String, default: '' },
@@ -34,6 +37,11 @@ const displayId = computed(() => {
   if (props.sensusId.toLowerCase().startsWith('sensus')) return props.sensusId
   return props.sensusId
 })
+
+function statusLabel(status) {
+  const s = (status || 'open').toLowerCase()
+  return te(`sensus.status.${s}`) ? t(`sensus.status.${s}`) : status
+}
 
 function statusChipClass(status) {
   const base = 'inline-block py-1.5 px-4 rounded-full text-xs font-semibold border'

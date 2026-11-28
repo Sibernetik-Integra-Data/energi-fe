@@ -1,0 +1,37 @@
+{
+  "auditLog": {
+    "eyebrow": "Pemantauan",
+    "kicker": "Jejak aktivitas sistem",
+    "subtitle": "Riwayat perubahan data dan operasi sistem.",
+    "list": {
+      "searchLabel": "Cari audit log pada halaman ini",
+      "searchPlaceholder": "Cari modul, aksi, ID, aktor…",
+      "sort": "Urutkan", "newest": "Terbaru", "oldest": "Terlama", "rows": "Baris", "reload": "Muat ulang",
+      "searchHint": "Pencarian dan urutan diterapkan pada halaman yang sedang dibuka.",
+      "loading": "Memuat audit log…",
+      "time": "Waktu (WIB)", "moduleAction": "Modul / aksi", "entity": "Entitas", "actor": "Aktor", "outcome": "Hasil",
+      "source": "Sumber", "detail": "Detail", "service": "Layanan", "view": "Lihat",
+      "noMatch": "Tidak ada data yang cocok dengan pencarian.",
+      "empty": "Belum ada audit log pada rentang waktu default API.",
+      "page": "Halaman {n}", "searchResults": "{n} hasil pencarian",
+      "pagination": "Paginasi audit log", "firstPage": "Halaman pertama", "first": "Awal",
+      "previousPage": "Halaman sebelumnya", "nextPage": "Halaman berikutnya", "last": "Terakhir",
+      "loadingPage": "Memuat halaman…", "loadError": "Gagal memuat audit log."
+    },
+    "detail": {
+      "title": "Detail Jejak Audit", "back": "Kembali ke Jejak Audit", "loading": "Memuat detail audit…",
+      "eventInfo": "Informasi kejadian", "actor": "Aktor", "requestContext": "Konteks request", "dataChanges": "Perubahan data",
+      "before": "Sebelum", "after": "Sesudah",
+      "incomplete": "ID dan waktu audit tidak lengkap. Buka detail melalui tombol Lihat pada daftar audit log.",
+      "notFound": "Audit log tidak ditemukan.", "loadError": "Gagal memuat detail audit log."
+    },
+    "field": {
+      "createdAt": "Waktu dibuat (WIB)", "occurredAt": "Waktu kejadian (WIB)", "schemaVersion": "Versi skema",
+      "module": "Modul", "action": "Aksi", "outcome": "Hasil", "entityType": "Jenis entitas", "entityId": "ID entitas",
+      "reasonCode": "Kode alasan", "reason": "Alasan", "actorType": "Jenis aktor", "actorId": "ID aktor", "issuer": "Issuer",
+      "emailSnapshot": "Email snapshot", "accessSnapshot": "Akses snapshot", "rolesSnapshot": "Roles snapshot",
+      "requestId": "Request ID", "correlationId": "Correlation ID", "operationId": "Operation ID", "ipAddress": "Alamat IP",
+      "source": "Sumber", "changedFields": "Field berubah"
+    }
+  }
+}

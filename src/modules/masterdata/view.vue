@@ -4,8 +4,8 @@
 
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
       <BaseHeader
-        eyebrow="Data Master"
-        title="Data Master"
+        :eyebrow="t('nav.masterData')"
+        :title="t('nav.masterData')"
         :notifications="0"
         :user="user"
         :on-logout="logoutFromKeycloak"
@@ -14,10 +14,10 @@
       <main class="master-data-page flex-1 min-w-0 overflow-y-auto p-6 max-[920px]:p-4.5">
         <section class="master-data-hero">
           <div>
-            <p class="master-data-kicker">Kelola referensi sistem</p>
-            <h2>Pilih data yang ingin dikelola</h2>
+            <p class="master-data-kicker">{{ t('masterIndex.kicker') }}</p>
+            <h2>{{ t('masterIndex.title') }}</h2>
             <p class="master-data-description">
-              Akses seluruh halaman master data dalam satu tempat untuk menjaga data operasional tetap rapi dan konsisten.
+              {{ t('masterIndex.description') }}
             </p>
           </div>
           <div class="master-data-hero-icon" aria-hidden="true">
@@ -28,8 +28,8 @@
         <section class="master-data-section" aria-labelledby="master-data-list-title">
           <div class="master-data-section-heading">
             <div>
-              <h3 id="master-data-list-title">Daftar halaman</h3>
-              <p>{{ masterDataItems.length }} halaman tersedia</p>
+              <h3 id="master-data-list-title">{{ t('masterIndex.listTitle') }}</h3>
+              <p>{{ t('masterIndex.available', { n: masterDataItems.length }) }}</p>
             </div>
           </div>
 
@@ -45,8 +45,8 @@
                 <BaseIcon :name="item.icon || 'database'" :size="23" />
               </span>
               <span class="master-data-card-copy">
-                <span class="master-data-card-title">{{ item.label }}</span>
-                <span class="master-data-card-caption">Kelola {{ item.label.toLowerCase() }}</span>
+                <span class="master-data-card-title">{{ labelOf(item) }}</span>
+                <span class="master-data-card-caption">{{ t('masterIndex.manage', { label: labelOf(item).toLowerCase() }) }}</span>
               </span>
               <span class="master-data-card-arrow" aria-hidden="true">→</span>
             </button>
@@ -66,6 +66,11 @@ import BaseSidebar from '../shared/sidebar'
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
 import { useAppStore } from '../../stores'
 import { navigation as sharedNavigation } from '../shared/navigation'
+import { useI18n } from 'vue-i18n'
+import { navLabel } from '../shared/sidebar/navLabels'
+
+const { t, locale } = useI18n()
+const labelOf = (item) => navLabel(item, t, locale.value)
 
 const router = useRouter()
 const appStore = useAppStore()

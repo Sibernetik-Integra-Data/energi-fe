@@ -6,7 +6,7 @@
     :class="{ 'md-kpi--action': action }"
     :aria-pressed="action ? String(pressed) : undefined"
     @click="action && $emit('select')">
-    <span v-if="action && hint" class="md-kpi__hint">{{ hint }}</span>
+    <span v-if="action && hint" class="md-kpi__hint">{{ hint ?? t('mdui.filter') }}</span>
     <div class="md-kpi__top">
       <span class="md-kpi__ico" :class="`md-tone-${tone}`"><MdIcon :name="icon" /></span>
       {{ label }}
@@ -19,6 +19,9 @@
 <script setup>
 // Kartu KPI. Bila `action`, kartu menjadi tombol (filter cepat) dan memancarkan `select`.
 import MdIcon from './MdIcon.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 defineProps({
   icon: { type: String, default: 'info' },
@@ -28,7 +31,7 @@ defineProps({
   sub: { type: String, default: '' },
   action: { type: Boolean, default: false },
   pressed: { type: Boolean, default: false },
-  hint: { type: String, default: 'Saring' }
+  hint: { type: String, default: undefined }
 })
 defineEmits(['select'])
 </script>

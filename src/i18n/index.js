@@ -1,8 +1,17 @@
 // Multibahasa (vue-i18n, Composition API). Bahasa sumber: Indonesia.
 // Teks yang belum diterjemahkan jatuh ke Bahasa Indonesia (fallbackLocale).
 import { createI18n } from 'vue-i18n'
-import id from './locales/id.json'
-import en from './locales/en.json'
+
+// Satu file per modul: locales/<bahasa>/<modul>.json, kunci teratas = nama modul
+// (core.json memuat kunci bersama: common, app, header, sidebar, nav, …).
+// Digabung otomatis saat build supaya tiap modul bisa diterjemahkan terpisah.
+function mergeLocale(files) {
+  const out = {}
+  for (const mod of Object.values(files)) Object.assign(out, mod.default || mod)
+  return out
+}
+const id = mergeLocale(import.meta.glob('./locales/id/*.json', { eager: true }))
+const en = mergeLocale(import.meta.glob('./locales/en/*.json', { eager: true }))
 
 export const SUPPORTED_LOCALES = [
   { code: 'id', label: 'ID', name: 'Bahasa Indonesia', intl: 'id-ID' },

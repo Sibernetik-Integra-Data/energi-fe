@@ -1,0 +1,135 @@
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "introDescription": "Overview of estate activity, work progress and open follow-up items.",
+    "toolbar": "Dashboard controls",
+    "loadingData": "Loading data…",
+    "lastUpdated": "Last updated {time}",
+    "reload": "Reload",
+    "period": "Period",
+    "days": "{n} days",
+    "quickLinks": "Quick links",
+    "summary": "Summary",
+    "kpi": {
+      "sensusGroup": "Census {group}",
+      "failed": "Failed to load",
+      "reports": "reports",
+      "vs": "vs {label}: {value}",
+      "receivedVolume": "Volume received, {n} days",
+      "noShipments": "No shipments yet",
+      "diff": " · difference {pct}%",
+      "receivedShare": "{pct}% of shipped volume received",
+      "latePlans": "Late plans",
+      "ofTotal": "of {n}",
+      "clickLatePlans": "Click to see the plan list",
+      "noComparison": "No comparison",
+      "up": "up ",
+      "down": "down "
+    },
+    "sensus": {
+      "title": "Daily census by group",
+      "subtitle": "censuses per day",
+      "filterGroup": "Filter group",
+      "findNone": "No census recorded in the last {days} days.",
+      "findAllSame": "All groups are equal: {n} censuses each in {days} days.",
+      "findTied": "{groups} recorded the most: {n} censuses each in {days} days.",
+      "findTop": "{group} recorded the most: {n} censuses in {days} days.",
+      "and": " and ",
+      "chartLabel": "Line chart of daily census by group, {days} days. Total: {totals}. Use the left and right arrows to read each day."
+    },
+    "feed": {
+      "title": "Needs follow-up",
+      "count": "{n} items",
+      "filterLevel": "Filter level",
+      "partialError": "Some sources failed to load: {sources}.",
+      "empty": "No follow-up items.",
+      "emptyFiltered": "No follow-up items for this filter.",
+      "planLate": "Plan {job} in {block} is {days} days late (due {due}).",
+      "sensusWaiting": "Census {code} ({block}) awaiting verification for {wait}.",
+      "weighDiff": "Weighing difference {pct}% on shipment {date} (shipped {shipped} {unit}, received {received} {unit})."
+    },
+    "level": {
+      "kritis": "Critical",
+      "serius": "Serious",
+      "peringatan": "Warning",
+      "kritisTag": "CRITICAL",
+      "seriusTag": "SERIOUS",
+      "peringatanTag": "WARNING"
+    },
+    "kind": {
+      "telat": "Late plans",
+      "tunggu": "Waiting > 24 hours",
+      "timbang": "Weighing difference"
+    },
+    "ship": {
+      "title": "Shipments, 7 days",
+      "subtitle": "shipped vs received by shipping date",
+      "shipped": "Shipped",
+      "received": "Received",
+      "receivedLower": "received",
+      "perDay": "Shipped and received per day",
+      "none": "none",
+      "notReceived": "not received yet",
+      "overLimit": "{pct}% over limit",
+      "diff": "difference {pct}%",
+      "pending": " · {n} not received yet",
+      "note": "The difference only counts received shipments with the same unit. Limit {limit}%.",
+      "findNoneWindow": "No shipments in the last {days} days.",
+      "findNone7": "No shipments in the last 7 days.",
+      "findOver": "Difference above {limit}% on {dates}.",
+      "findOk": "Difference within {limit}% on all days.",
+      "noUnit": "no unit"
+    },
+    "pending": {
+      "title": "Awaiting verification",
+      "count": "{n} waiting",
+      "waiting": "waiting {wait}",
+      "check": "Review census {code}",
+      "empty": "No census awaiting verification.",
+      "emptyGroup": "No census awaiting verification for this group.",
+      "seeAll": "See all in Census"
+    },
+    "plan": {
+      "title": "Active work plans",
+      "onlyLate": "late only",
+      "clearFilters": "clear filters",
+      "hint": "click a chart series to filter",
+      "emptyFiltered": "No plans for this filter.",
+      "empty": "No active work plans yet.",
+      "late": "{n} days late",
+      "findNone": "No plans in progress or planned.",
+      "findAllOnTime": "{n} active plans, all on schedule.",
+      "findLate": "{n} plans past due; longest {job} in {block} ({days} days).",
+      "col": {
+        "group": "Group",
+        "job": "Work",
+        "block": "Block",
+        "start": "Start",
+        "end": "End",
+        "status": "Status"
+      },
+      "status": {
+        "planned": "Planned",
+        "in_progress": "In progress",
+        "done": "Done",
+        "cancelled": "Cancelled"
+      }
+    },
+    "error": {
+      "sensus": "Failed to load census data.",
+      "plans": "Failed to load work plan data.",
+      "ships": "Failed to load shipment data."
+    },
+    "source": {
+      "sensus": "census",
+      "plans": "work plans",
+      "ships": "shipments"
+    },
+    "wait": {
+      "lessThanHour": "less than 1 hour",
+      "hours": "{n} hours",
+      "days": "{n} days"
+    },
+    "block": "Block {id}"
+  }
+}

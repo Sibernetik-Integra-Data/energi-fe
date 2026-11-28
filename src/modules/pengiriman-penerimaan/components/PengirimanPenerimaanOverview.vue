@@ -7,7 +7,7 @@
             <p class="mt-2 max-w-130 text-(--text-muted) text-sm leading-relaxed">{{ intro.description }}</p>
         </div>
         <label class="flex items-center gap-2 text-sm text-(--text-muted)">
-            Status
+            {{ t('shipping.list.status') }}
             <select :value="status" @change="$emit('update:status', $event.target.value)"
                 class="rounded-lg border border-(--border) bg-(--surface) px-3 py-2 text-sm text-(--text) outline-none hover:cursor-pointer">
                 <option v-for="option in statusFilters" :key="option.value" :value="option.value">
@@ -18,19 +18,19 @@
     </section>
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <PengirimanPenerimanCard label="Jumlah Trip" :value="summary.totalTrips" unit="Trip"
+        <PengirimanPenerimanCard :label="t('shipping.overview.totalTrips')" :value="summary.totalTrips" :unit="t('shipping.overview.tripUnit')"
             icon-bg-class="bg-[#4674ba]">
             <template #icon>
                 <BaseIcon name="package" :size="20" class="text-white" />
             </template>
         </PengirimanPenerimanCard>
-        <PengirimanPenerimanCard label="Total Dikirim" :value="summary.shippedLabel"
+        <PengirimanPenerimanCard :label="t('shipping.overview.totalShipped')" :value="summary.shippedLabel"
             icon-bg-class="bg-[#b8a44c]">
             <template #icon>
                 <BaseIcon name="location" :size="20" class="text-white" />
             </template>
         </PengirimanPenerimanCard>
-        <PengirimanPenerimanCard label="Total Diterima" :value="summary.receivedLabel"
+        <PengirimanPenerimanCard :label="t('shipping.overview.totalReceived')" :value="summary.receivedLabel"
             icon-bg-class="bg-[#00842a]">
             <template #icon>
                 <span class="text-white text-lg leading-none" aria-hidden="true">✓</span>
@@ -46,9 +46,12 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
 import BaseIcon from '../../shared/icon'
 import PengirimanPenerimanCard from './PengirimanPenerimanCard.vue'
 import PengirimanPenerimaanList from './PengirimanPenerimaanList.vue'
+
+const { t } = useI18n()
 
 defineProps({
     intro: { type: Object, required: true },

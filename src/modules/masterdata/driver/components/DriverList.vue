@@ -1,21 +1,21 @@
 <template>
-    <MdPage title="Pengemudi" description="Kelola pengemudi angkutan panen beserta lokasi dan kendaraannya. Klik kartu atau batang grafik untuk menyaring tabel.">
+    <MdPage :title="t('driver.title')" :description="t('driver.description')">
         <template #actions>
-            <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah Pengemudi</button>
+            <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />{{ t('driver.add') }}</button>
         </template>
 
         <div class="md-kpis">
-            <MdKpi icon="users" tone="info" label="Total pengemudi" :value="rows.length" :sub="`${locationOptions.length} lokasi`" action hint="Tampilkan semua" @select="clearAll" />
-            <MdKpi icon="truck" tone="success" label="Punya kendaraan" :value="countVehicle('has')" :sub="`${pct(countVehicle('has'))}% dari pengemudi`" action :pressed="filterVehicle === 'has'" @select="quickVehicle('has')" />
-            <MdKpi icon="alert" tone="warning" label="Tanpa kendaraan" :value="countVehicle('none')" :sub="`${pct(countVehicle('none'))}% dari pengemudi`" action :pressed="filterVehicle === 'none'" @select="quickVehicle('none')" />
-            <MdKpi icon="pin" tone="brand" label="Tanpa lokasi" :value="countLocation(NO_LOC)" :sub="`${pct(countLocation(NO_LOC))}% dari pengemudi`" action :pressed="onlyLocation(NO_LOC)" @select="quickLocation(NO_LOC)" />
+            <MdKpi icon="users" tone="info" :label="t('driver.kpi.total')" :value="rows.length" :sub="t('driver.kpi.totalSub', { n: locationOptions.length })" action :hint="t('driver.ui.showAll')" @select="clearAll" />
+            <MdKpi icon="truck" tone="success" :label="t('driver.hasVehicle')" :value="countVehicle('has')" :sub="t('driver.kpi.pctSub', { n: pct(countVehicle('has')) })" action :pressed="filterVehicle === 'has'" @select="quickVehicle('has')" />
+            <MdKpi icon="alert" tone="warning" :label="t('driver.noVehicle')" :value="countVehicle('none')" :sub="t('driver.kpi.pctSub', { n: pct(countVehicle('none')) })" action :pressed="filterVehicle === 'none'" @select="quickVehicle('none')" />
+            <MdKpi icon="pin" tone="brand" :label="t('driver.noLocation')" :value="countLocation(NO_LOC)" :sub="t('driver.kpi.pctSub', { n: pct(countLocation(NO_LOC)) })" action :pressed="onlyLocation(NO_LOC)" @select="quickLocation(NO_LOC)" />
         </div>
 
         <MdBarChart
             v-if="rows.length && locationOptions.length"
-            title="Jumlah pengemudi per lokasi"
-            :subtitle="`${rows.length} pengemudi di ${locationOptions.length} lokasi`"
-            :legend="[{ label: 'Punya kendaraan', color: 'var(--success)' }, { label: 'Tanpa kendaraan', color: 'var(--border-strong)' }]"
+            :title="t('driver.chart.title')"
+            :subtitle="t('driver.chart.subtitle', { n: rows.length, l: locationOptions.length })"
+            :legend="[{ label: t('driver.hasVehicle'), color: 'var(--success)' }, { label: t('driver.noVehicle'), color: 'var(--border-strong)' }]"
             :bars="bars"
             :selected="filterLocation"
             @toggle="toggleLocation" />
@@ -27,28 +27,28 @@
             :total-rows="rows.length"
             :loading="loading"
             :error="fetchError || ''"
-            entity-label="Pengemudi"
+            :entity-label="t('driver.entity')"
             empty-icon="users"
-            empty-text="Tambahkan pengemudi pertama agar bisa dipakai di pengangkutan panen."
-            add-label="Tambah Pengemudi"
+            :empty-text="t('driver.empty')"
+            :add-label="t('driver.add')"
             :can-add="canWrite"
             initial-sort="name"
-            aria-label="Daftar pengemudi"
+            :aria-label="t('driver.aria')"
             @retry="loadData"
             @add="openCreate"
             @clear-filters="clearAll">
             <template #toolbar>
                 <label class="md-search">
                     <MdIcon name="search" />
-                    <input v-model.trim="searchName" type="search" placeholder="Cari nama pengemudi…" aria-label="Cari pengemudi" />
+                    <input v-model.trim="searchName" type="search" :placeholder="t('driver.searchPlaceholder')" :aria-label="t('driver.searchAria')" />
                 </label>
-                <MdDropdown v-model="filterLocation" label="Lokasi" :options="locationFilterOptions" multiple />
-                <MdDropdown v-model="filterVehicle" label="Kendaraan" :options="vehicleFilterOptions" />
+                <MdDropdown v-model="filterLocation" :label="t('driver.location')" :options="locationFilterOptions" multiple />
+                <MdDropdown v-model="filterVehicle" :label="t('driver.vehicle')" :options="vehicleFilterOptions" />
                 <div class="md-chips">
-                    <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+                    <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="t('driver.ui.removeFilter', { label: c.label })" @click="c.remove()">
                         {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
                     </button>
-                    <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+                    <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">{{ t('driver.ui.clearAll') }}</button>
                 </div>
             </template>
 
@@ -63,7 +63,7 @@
             </template>
             <template #cell-vehicle="{ row }">
                 <span v-if="row.vehicle?.name">{{ row.vehicle.name }}</span>
-                <MdBadge v-else tone="neutral">Tanpa kendaraan</MdBadge>
+                <MdBadge v-else tone="neutral">{{ t('driver.noVehicle') }}</MdBadge>
             </template>
             <template #cell-plate="{ row }">
                 <span class="md-num" style="white-space: nowrap">{{ row.vehicle?.plate_number?.trim() || '—' }}</span>
@@ -76,21 +76,21 @@
             </template>
 
             <template v-if="canWrite" #actions="{ row }">
-                <button type="button" class="md-icon-btn" :aria-label="`Ubah pengemudi ${row.name}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
-                <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus pengemudi ${row.name}`" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+                <button type="button" class="md-icon-btn" :aria-label="t('driver.editAria', { name: row.name })" @click="openEdit(row)"><MdIcon name="edit" /></button>
+                <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="t('driver.deleteAria', { name: row.name })" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
             </template>
 
             <template #card="{ row }">
                 <div class="md-card__top">
                     <span class="md-avatar">{{ initials(row.name) }}</span>
-                    <div style="flex: 1"><b class="md-strong">{{ row.name }}</b><div class="md-muted" style="font-size: 12px">{{ row.location || 'Tanpa lokasi' }}</div></div>
-                    <MdBadge :tone="row.vehicle?.name ? 'success' : 'neutral'">{{ row.vehicle?.name || 'Tanpa kendaraan' }}</MdBadge>
+                    <div style="flex: 1"><b class="md-strong">{{ row.name }}</b><div class="md-muted" style="font-size: 12px">{{ row.location || t('driver.noLocation') }}</div></div>
+                    <MdBadge :tone="row.vehicle?.name ? 'success' : 'neutral'">{{ row.vehicle?.name || t('driver.noVehicle') }}</MdBadge>
                 </div>
                 <div class="md-card__grid">
-                    <div>Nomor polisi<b>{{ row.vehicle?.plate_number?.trim() || '—' }}</b></div>
-                    <div>Alamat<b>{{ row.address || '—' }}</b></div>
-                    <div>Dibuat oleh<b>{{ userName(row.created_by) }}</b></div>
-                    <div>Diubah oleh<b>{{ userName(row.updated_by) }}</b></div>
+                    <div>{{ t('driver.plate') }}<b>{{ row.vehicle?.plate_number?.trim() || '—' }}</b></div>
+                    <div>{{ t('driver.address') }}<b>{{ row.address || '—' }}</b></div>
+                    <div>{{ t('driver.ui.createdBy') }}<b>{{ userName(row.created_by) }}</b></div>
+                    <div>{{ t('driver.ui.updatedBy') }}<b>{{ userName(row.updated_by) }}</b></div>
                 </div>
             </template>
         </MdDataTable>
@@ -103,9 +103,11 @@
             @submit="onFormSubmit"
             @cancel="closeForm" />
 
-        <MdConfirm :open="showDeleteConfirm" title="Hapus pengemudi?" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
+        <MdConfirm :open="showDeleteConfirm" :title="t('driver.confirm.title')" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
             <template v-if="deletingDriver">
-                Pengemudi <b>{{ deletingDriver.name }}</b> akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.
+                <i18n-t keypath="driver.confirm.body" scope="global">
+                    <template #name><b>{{ deletingDriver.name }}</b></template>
+                </i18n-t>
             </template>
         </MdConfirm>
     </MdPage>
@@ -113,6 +115,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import DriverForm from './DriverForm.vue'
 import { listDrivers, createDriver, updateDriver, deleteDriver } from '../model'
 import { useToast } from '../../../../utils/toast'
@@ -120,6 +123,7 @@ import { useUserNames } from '../../../../auth/useUserNames'
 import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
 import { MdPage, MdKpi, MdBarChart, MdDataTable, MdDropdown, MdBadge, MdConfirm, MdIcon } from '../../../shared/masterdata-ui'
 
+const { t } = useI18n()
 const { userName } = useUserNames()
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
 const canWrite = useCanManageMasterData()
@@ -127,14 +131,14 @@ const { show: showToast } = useToast()
 
 const NO_LOC = '-'
 
-const columns = [
-    { key: 'name', label: 'Nama' },
-    { key: 'location', label: 'Lokasi' },
-    { key: 'vehicle', label: 'Kendaraan', sortValue: (r) => r.vehicle?.name || '' },
-    { key: 'plate', label: 'Nomor polisi', sortValue: (r) => r.vehicle?.plate_number?.trim() || '' },
-    { key: 'created_by', label: 'Dibuat oleh', sortable: false },
-    { key: 'updated_by', label: 'Diubah oleh', sortable: false }
-]
+const columns = computed(() => [
+    { key: 'name', label: t('driver.ui.name') },
+    { key: 'location', label: t('driver.location') },
+    { key: 'vehicle', label: t('driver.vehicle'), sortValue: (r) => r.vehicle?.name || '' },
+    { key: 'plate', label: t('driver.plate'), sortValue: (r) => r.vehicle?.plate_number?.trim() || '' },
+    { key: 'created_by', label: t('driver.ui.createdBy'), sortable: false },
+    { key: 'updated_by', label: t('driver.ui.updatedBy'), sortable: false }
+])
 
 const table = ref(null)
 const rows = ref([])
@@ -165,12 +169,12 @@ const byName = (a, b) => String(a).localeCompare(String(b), 'id', { numeric: tru
 const locationOptions = computed(() => [...new Set(rows.value.map((r) => r.location?.trim()).filter(Boolean))].sort(byName))
 const locationFilterOptions = computed(() => {
     const opts = locationOptions.value.map((l) => ({ value: l, label: l, count: countLocation(l) }))
-    if (countLocation(NO_LOC)) opts.push({ value: NO_LOC, label: 'Tanpa lokasi', count: countLocation(NO_LOC) })
+    if (countLocation(NO_LOC)) opts.push({ value: NO_LOC, label: t('driver.noLocation'), count: countLocation(NO_LOC) })
     return opts
 })
 const vehicleFilterOptions = computed(() => [
-    { value: 'has', label: 'Punya kendaraan', count: countVehicle('has') },
-    { value: 'none', label: 'Tanpa kendaraan', count: countVehicle('none') }
+    { value: 'has', label: t('driver.hasVehicle'), count: countVehicle('has') },
+    { value: 'none', label: t('driver.noVehicle'), count: countVehicle('none') }
 ])
 
 const bars = computed(() =>
@@ -180,7 +184,7 @@ const bars = computed(() =>
         return {
             key: o.value,
             label: o.label,
-            ariaLabel: `${o.label}: ${rs.length} pengemudi, ${withV} punya kendaraan`,
+            ariaLabel: t('driver.chart.barAria', { label: o.label, n: rs.length, v: withV }),
             segments: [
                 { value: withV, color: 'var(--success)' },
                 { value: rs.length - withV, color: 'var(--border-strong)' }
@@ -201,8 +205,8 @@ const filteredRows = computed(() => {
 const chips = computed(() => {
     const c = []
     if (searchName.value) c.push({ key: 'q', label: `“${searchName.value}”`, remove: () => (searchName.value = '') })
-    filterLocation.value.forEach((l) => c.push({ key: `l-${l}`, label: l === NO_LOC ? 'Tanpa lokasi' : l, remove: () => (filterLocation.value = filterLocation.value.filter((x) => x !== l)) }))
-    if (filterVehicle.value) c.push({ key: 'v', label: filterVehicle.value === 'has' ? 'Punya kendaraan' : 'Tanpa kendaraan', remove: () => (filterVehicle.value = null) })
+    filterLocation.value.forEach((l) => c.push({ key: `l-${l}`, label: l === NO_LOC ? t('driver.noLocation') : l, remove: () => (filterLocation.value = filterLocation.value.filter((x) => x !== l)) }))
+    if (filterVehicle.value) c.push({ key: 'v', label: filterVehicle.value === 'has' ? t('driver.hasVehicle') : t('driver.noVehicle'), remove: () => (filterVehicle.value = null) })
     return c
 })
 
@@ -229,7 +233,7 @@ async function loadData() {
         rows.value = await listDrivers()
     } catch (err) {
         console.error('[Drivers] Failed to load:', err)
-        fetchError.value = err?.message || 'Gagal memuat pengemudi.'
+        fetchError.value = err?.message || t('driver.error.load')
     } finally {
         loading.value = false
     }
@@ -260,16 +264,16 @@ async function onFormSubmit(formData) {
             const updated = await updateDriver(editingDriver.value.id, formData)
             const idx = rows.value.findIndex((r) => r.id === editingDriver.value.id)
             if (idx !== -1) rows.value[idx] = updated || { ...rows.value[idx], ...formData }
-            showToast('Pengemudi berhasil diubah.')
+            showToast(t('driver.toast.updated'))
         } else {
             const created = await createDriver(formData)
             if (created) rows.value.unshift(created)
-            showToast('Pengemudi berhasil ditambahkan.')
+            showToast(t('driver.toast.created'))
         }
         closeForm()
     } catch (err) {
         console.error('[Drivers] Save failed:', err)
-        actionError.value = err?.message || 'Gagal menyimpan data.'
+        actionError.value = err?.message || t('driver.ui.saveFailed')
     } finally {
         submitting.value = false
     }
@@ -296,10 +300,10 @@ async function onDeleteConfirm() {
         rows.value = rows.value.filter((r) => r.id !== deletingDriver.value.id)
         showDeleteConfirm.value = false
         deletingDriver.value = null
-        showToast('Pengemudi berhasil dihapus.')
+        showToast(t('driver.toast.deleted'))
     } catch (err) {
         console.error('[Drivers] Delete failed:', err)
-        deleteError.value = err?.message || 'Gagal menghapus pengemudi.'
+        deleteError.value = err?.message || t('driver.error.delete')
     } finally {
         submitting.value = false
     }

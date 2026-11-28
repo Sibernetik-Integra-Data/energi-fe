@@ -2,7 +2,7 @@
   <div class="flex h-screen bg-(--bg) text-(--text)">
     <BaseSidebar :items="navigation" :user="user" />
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <BaseHeader eyebrow="Profile" title="Profile" :user="user" :on-logout="logoutFromKeycloak" />
+      <BaseHeader :eyebrow="t('header.profile')" :title="t('header.profile')" :user="user" :on-logout="logoutFromKeycloak" />
 
       <main class="flex-1 overflow-y-auto p-7 pb-10 max-[720px]:p-4">
         <div class="mx-auto flex max-w-400 items-start gap-6 max-[860px]:flex-col">
@@ -16,52 +16,52 @@
               <p class="m-0 text-center text-xs text-(--text-muted)">{{ profile?.access || profile?.jobTitle || '-' }}</p>
               <p v-if="profile?.id" class="m-0 break-all text-center text-[11px] text-(--text-soft)">ID{{ profile.id }}</p>
             </div>
-            <nav class="flex flex-col p-2" aria-label="Profile navigation">
-              <button class="side-button" :class="{ active: activeSection === 'profile' }" type="button" @click="activeSection = 'profile'"><BaseIcon name="profile" :size="16" /> Profile</button>
-              <button class="side-button" :class="{ active: activeSection === 'password' }" type="button" @click="activeSection = 'password'"><BaseIcon name="key" :size="16" /> Ubah Kata Sandi</button>
+            <nav class="flex flex-col p-2" :aria-label="t('profile.navLabel')">
+              <button class="side-button" :class="{ active: activeSection === 'profile' }" type="button" @click="activeSection = 'profile'"><BaseIcon name="profile" :size="16" /> {{ t('profile.profileTab') }}</button>
+              <button class="side-button" :class="{ active: activeSection === 'password' }" type="button" @click="activeSection = 'password'"><BaseIcon name="key" :size="16" /> {{ t('profile.changePassword') }}</button>
               <div class="my-1.5 h-px bg-(--border)"></div>
-              <button class="side-button muted" type="button" @click="handleLogout"><BaseIcon name="logout" :size="16" /> Logout</button>
+              <button class="side-button muted" type="button" @click="handleLogout"><BaseIcon name="logout" :size="16" /> {{ t('header.logout') }}</button>
             </nav>
           </aside>
 
-          <section class="flex min-w-0 flex-1 flex-col gap-6 rounded-2xl border border-(--border) bg-(--surface) p-7 max-[640px]:p-4" aria-label="Profile details">
+          <section class="flex min-w-0 flex-1 flex-col gap-6 rounded-2xl border border-(--border) bg-(--surface) p-7 max-[640px]:p-4" :aria-label="t('profile.detailsLabel')">
             <template v-if="activeSection === 'profile'">
               <div class="flex items-start gap-5 border-b border-(--border) pb-6">
                 <div class="flex h-18 w-18 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-(--border) bg-(--brand-soft) text-(--brand)">
                   <img v-if="avatarUrl" :src="avatarUrl" :alt="fullName" class="h-full w-full object-cover" /><BaseIcon v-else name="profile" :size="32" />
                 </div>
-                <div><p class="m-0 text-sm font-bold">Foto Profil</p><p class="m-0 mt-1 text-xs leading-relaxed text-(--text-soft)">Foto profil dikelola terpisah dan tidak diubah dari halaman ini.</p></div>
+                <div><p class="m-0 text-sm font-bold">{{ t('profile.photo') }}</p><p class="m-0 mt-1 text-xs leading-relaxed text-(--text-soft)">{{ t('profile.photoHint') }}</p></div>
               </div>
 
               <form class="flex flex-col gap-6" @submit.prevent="saveProfile">
                 <div v-if="profileError" class="rounded-xl bg-(--danger-soft) px-4 py-3 text-sm text-(--danger)" role="alert">{{ profileError }}</div>
                 <div class="grid grid-cols-2 gap-x-6 gap-y-4 max-[640px]:grid-cols-1">
-                  <label class="field"><span>Nama Depan *</span><input v-model.trim="profileForm.firstName" required :readonly="!editing" /></label>
-                  <label class="field"><span>Nama Belakang</span><input v-model.trim="profileForm.lastName" :readonly="!editing" /></label>
-                  <label class="field"><span>Tanggal Lahir</span><input v-model="profileForm.birthDate" type="date" :readonly="!editing" /></label>
-                  <label class="field"><span>Marital Status</span><select v-model="profileForm.maritalStatus" :disabled="!editing"><option value="">-</option><option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option></select></label>
-                  <label class="field"><span>Email *</span><input v-model.trim="profileForm.email" required type="email" :readonly="!editing" /></label>
-                  <label class="field"><span>User Access</span><input :value="profile?.access || profile?.jobTitle || '-'" readonly /></label>
-                  <label class="field"><span>Gender</span><select v-model="profileForm.gender" :disabled="!editing"><option value="">-</option><option value="Laki-Laki">Laki-Laki</option><option value="Perempuan">Perempuan</option></select></label>
-                  <label class="field col-span-2 max-[640px]:col-span-1"><span>Address 1</span><textarea v-model.trim="profileForm.address1" rows="2" :readonly="!editing"></textarea></label>
-                  <label class="field col-span-2 max-[640px]:col-span-1"><span>Address 2</span><textarea v-model.trim="profileForm.address2" rows="2" :readonly="!editing"></textarea></label>
+                  <label class="field"><span>{{ t('profile.firstName') }} *</span><input v-model.trim="profileForm.firstName" required :readonly="!editing" /></label>
+                  <label class="field"><span>{{ t('profile.lastName') }}</span><input v-model.trim="profileForm.lastName" :readonly="!editing" /></label>
+                  <label class="field"><span>{{ t('profile.birthDate') }}</span><input v-model="profileForm.birthDate" type="date" :readonly="!editing" /></label>
+                  <label class="field"><span>{{ t('profile.maritalStatus') }}</span><select v-model="profileForm.maritalStatus" :disabled="!editing"><option value="">-</option><option value="Single">{{ t('profile.marital.single') }}</option><option value="Married">{{ t('profile.marital.married') }}</option><option value="Divorced">{{ t('profile.marital.divorced') }}</option><option value="Widowed">{{ t('profile.marital.widowed') }}</option></select></label>
+                  <label class="field"><span>{{ t('profile.email') }} *</span><input v-model.trim="profileForm.email" required type="email" :readonly="!editing" /></label>
+                  <label class="field"><span>{{ t('profile.userAccess') }}</span><input :value="profile?.access || profile?.jobTitle || '-'" readonly /></label>
+                  <label class="field"><span>{{ t('profile.gender') }}</span><select v-model="profileForm.gender" :disabled="!editing"><option value="">-</option><option value="Laki-Laki">{{ t('profile.genderMale') }}</option><option value="Perempuan">{{ t('profile.genderFemale') }}</option></select></label>
+                  <label class="field col-span-2 max-[640px]:col-span-1"><span>{{ t('profile.address1') }}</span><textarea v-model.trim="profileForm.address1" rows="2" :readonly="!editing"></textarea></label>
+                  <label class="field col-span-2 max-[640px]:col-span-1"><span>{{ t('profile.address2') }}</span><textarea v-model.trim="profileForm.address2" rows="2" :readonly="!editing"></textarea></label>
                 </div>
                 <div class="flex justify-end gap-3">
-                  <template v-if="editing"><button class="secondary-button" type="button" :disabled="savingProfile" @click="cancelEdit">Batal</button><button class="primary-button" type="submit" :disabled="savingProfile">{{ savingProfile ? 'Menyimpan…' : 'Simpan' }}</button></template>
-                  <button v-else class="primary-button" type="button" @click="editing = true">Edit Profile</button>
+                  <template v-if="editing"><button class="secondary-button" type="button" :disabled="savingProfile" @click="cancelEdit">{{ t('profile.cancel') }}</button><button class="primary-button" type="submit" :disabled="savingProfile">{{ savingProfile ? t('profile.saving') : t('profile.save') }}</button></template>
+                  <button v-else class="primary-button" type="button" @click="editing = true">{{ t('profile.edit') }}</button>
                 </div>
               </form>
             </template>
 
             <template v-else>
-              <div class="border-b border-(--border) pb-4 text-base font-bold">Ubah Kata Sandi</div>
+              <div class="border-b border-(--border) pb-4 text-base font-bold">{{ t('profile.changePassword') }}</div>
               <form class="flex flex-col gap-6" @submit.prevent="changePassword">
                 <div v-if="passwordError" class="rounded-xl bg-(--danger-soft) px-4 py-3 text-sm text-(--danger)" role="alert">{{ passwordError }}</div>
                 <div class="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
-                  <label class="field"><span>Kata Sandi Baru *</span><input v-model="passwordForm.newPassword" required minlength="8" type="password" autocomplete="new-password" placeholder="Minimal 8 karakter" /></label>
-                  <label class="field"><span>Konfirmasi Kata Sandi Baru *</span><input v-model="passwordForm.confirm" required type="password" autocomplete="new-password" placeholder="Ulangi kata sandi baru" /></label>
+                  <label class="field"><span>{{ t('profile.newPassword') }} *</span><input v-model="passwordForm.newPassword" required minlength="8" type="password" autocomplete="new-password" :placeholder="t('profile.newPasswordPlaceholder')" /></label>
+                  <label class="field"><span>{{ t('profile.confirmPassword') }} *</span><input v-model="passwordForm.confirm" required type="password" autocomplete="new-password" :placeholder="t('profile.confirmPasswordPlaceholder')" /></label>
                 </div>
-                <div class="flex justify-end"><button class="primary-button" type="submit" :disabled="savingPassword">{{ savingPassword ? 'Menyimpan…' : 'Simpan Password' }}</button></div>
+                <div class="flex justify-end"><button class="primary-button" type="submit" :disabled="savingPassword">{{ savingPassword ? t('profile.saving') : t('profile.savePassword') }}</button></div>
               </form>
             </template>
           </section>
@@ -73,6 +73,7 @@
 
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseHeader from '../shared/header'
 import BaseSidebar from '../shared/sidebar'
 import BaseIcon from '../shared/icon'
@@ -83,6 +84,7 @@ import { useAppStore } from '../../stores'
 import { useToast } from '../../utils/toast'
 import { encryptPassword } from '../user-management/services/passwordEncryption'
 
+const { t } = useI18n()
 const appStore = useAppStore()
 const { show: showToast } = useToast()
 const activeSection = ref('profile')
@@ -113,20 +115,20 @@ async function saveProfile() {
   try {
     const updated = await updateOwnProfile({ ...profileForm })
     appStore.setProfile({ ...profile.value, ...updated })
-    editing.value = false; showToast('Profile berhasil diperbarui.')
-  } catch (error) { profileError.value = error?.message || 'Gagal memperbarui profile.' }
+    editing.value = false; showToast(t('profile.messages.profileUpdated'))
+  } catch (error) { profileError.value = error?.message || t('profile.messages.profileFailed') }
   finally { savingProfile.value = false }
 }
 async function changePassword() {
   passwordError.value = ''
-  if (passwordForm.newPassword.length < 8) { passwordError.value = 'Password minimal 8 karakter.'; return }
-  if (passwordForm.newPassword !== passwordForm.confirm) { passwordError.value = 'Konfirmasi password tidak sama.'; return }
+  if (passwordForm.newPassword.length < 8) { passwordError.value = t('profile.messages.passwordMin'); return }
+  if (passwordForm.newPassword !== passwordForm.confirm) { passwordError.value = t('profile.messages.passwordMismatch'); return }
   savingPassword.value = true
   try {
     const { publicKey } = await getPasswordEncryptionKey()
     await resetOwnPassword(await encryptPassword(passwordForm.newPassword, publicKey))
-    passwordForm.newPassword = ''; passwordForm.confirm = ''; showToast('Password berhasil diperbarui.')
-  } catch (error) { passwordError.value = error?.message || 'Gagal memperbarui password.' }
+    passwordForm.newPassword = ''; passwordForm.confirm = ''; showToast(t('profile.messages.passwordUpdated'))
+  } catch (error) { passwordError.value = error?.message || t('profile.messages.passwordFailed') }
   finally { savingPassword.value = false }
 }
 function handleLogout() { void logoutFromKeycloak() }

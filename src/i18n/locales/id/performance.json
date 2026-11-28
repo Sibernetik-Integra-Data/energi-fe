@@ -1,0 +1,25 @@
+{
+  "performance": {
+    "eyebrow": "Manajemen",
+    "subtitle": "Pantau kegiatan dan operasional kebun Anda",
+    "totalWorkers": "Total Pekerja",
+    "totalWorkDays": "Total hari kerja",
+    "loading": "Memuat data performa…",
+    "loadError": "Gagal memuat data performa.",
+    "action": "Aksi",
+    "view": "Lihat",
+    "filters": { "month": "Bulan", "year": "Tahun" },
+    "table": {
+      "title": "Daftar Pekerja",
+      "subtitle": "Ringkasan aktivitas pekerja pada periode yang dipilih.",
+      "name": "Nama", "position": "Jabatan", "workDays": "Jumlah Hari Kerja", "cleaning": "Jumlah Pembersihan",
+      "fertilizing": "Jumlah Pemupukan", "harvest": "Jumlah Panen", "totalWorkDays": "Total Hari Kerja",
+      "days": "{n} hari", "empty": "Tidak ada data pada periode ini."
+    },
+    "worker": {
+      "loading": "Memuat laporan pekerjaan…", "loadError": "Gagal memuat laporan pekerjaan.",
+      "date": "Tanggal", "work": "Pekerjaan", "workGroup": "Tipe Pekerjaan", "sensusId": "ID Sensus",
+      "empty": "Tidak ada laporan pada periode ini."
+    }
+  }
+}

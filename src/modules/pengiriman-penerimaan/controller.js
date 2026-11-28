@@ -5,8 +5,8 @@ import {
   loadUnits,
   receiveTrip,
   cancelReceipt,
-  HARVEST_TYPES,
-  STATUS_FILTERS
+  getHarvestTypes,
+  getStatusFilters
 } from './model'
 
 export function createPengirimanPenerimaanController() {
@@ -16,8 +16,8 @@ export function createPengirimanPenerimaanController() {
     getNavigation: () => model.getNavigation(),
     getHeader: () => model.getHeader(),
     getIntro: () => model.getIntro(),
-    getHarvestTypes: () => HARVEST_TYPES,
-    getStatusFilters: () => STATUS_FILTERS,
+    getHarvestTypes: () => getHarvestTypes(),
+    getStatusFilters: () => getStatusFilters(),
     fetchList: (filters = {}) => loadPengirimanPenerimaanList(filters),
     fetchDetail: (tripId) => loadPengirimanPenerimaanDetail(tripId),
     fetchUnits: () => loadUnits(),

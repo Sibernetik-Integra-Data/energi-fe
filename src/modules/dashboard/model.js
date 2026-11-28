@@ -2,6 +2,9 @@ import { getAuthenticatedUser } from '../../auth/keycloak'
 import { navigation as sharedNavigation } from '../shared/navigation'
 import { signedApiFetch } from '../../api/fetch'
 import { resolveUsernames } from '../../utils/userCache'
+import i18n from '../../i18n'
+
+const t = (...args) => i18n.global.t(...args)
 
 // Dasbor "Ruang kendali" (prototipe p08). Semua angka berasal dari API:
 // /sensus, /planning dan /trip-receipts. Tidak ada data contoh di sini.
@@ -47,9 +50,9 @@ export function dayDiff(a, b) {
 // ── Kelompok pekerjaan ─────────────────────────────────────────────────────
 
 export const GROUPS = [
-  { key: 'pembersihan', label: 'Pembersihan' },
-  { key: 'pemupukan', label: 'Pemupukan' },
-  { key: 'panen', label: 'Panen' }
+  { key: 'pembersihan', get label() { return t('nav.pembersihan') } },
+  { key: 'pemupukan', get label() { return t('nav.pemupukan') } },
+  { key: 'panen', get label() { return t('nav.panen') } }
 ]
 // Cadangan bila nama kelompok tidak dikirim: id yang dipakai dasbor lama.
 const GROUP_BY_ID = { 1: 'pembersihan', 2: 'panen', 3: 'pemupukan' }
@@ -65,7 +68,7 @@ export function groupKeyOf(typeOfWork) {
 
 function blockNames(blocks) {
   return [...new Set((Array.isArray(blocks) ? blocks : [])
-    .map((b) => String((typeof b === 'string' ? b : b?.name) || (b?.id ? `Blok ${b.id}` : '')).replace(/^Block\b/i, 'Blok'))
+    .map((b) => String((typeof b === 'string' ? b : b?.name) || (b?.id ? t('dashboard.block', { id: b.id }) : '')).replace(/^Block\b/i, 'Blok'))
     .filter(Boolean))]
 }
 
@@ -137,10 +140,10 @@ export async function withWorkerNames(rows) {
 // ── Planning ───────────────────────────────────────────────────────────────
 
 export const PLAN_STATUS = {
-  planned: 'Direncanakan',
-  in_progress: 'Berjalan',
-  done: 'Selesai',
-  cancelled: 'Dibatalkan'
+  get planned() { return t('dashboard.plan.status.planned') },
+  get in_progress() { return t('dashboard.plan.status.in_progress') },
+  get done() { return t('dashboard.plan.status.done') },
+  get cancelled() { return t('dashboard.plan.status.cancelled') }
 }
 
 function mapPlanning(p, todayKey) {
@@ -231,12 +234,12 @@ export function createDashboardModel() {
       return cloneNavigation(navigation)
     },
     getHeader() {
-      return { title: 'Dasbor', notifications: 0, user: { ...getAuthenticatedUser() } }
+      return { title: t('dashboard.title'), notifications: 0, user: { ...getAuthenticatedUser() } }
     },
     getIntro() {
       return {
-        title: 'Dasbor',
-        description: 'Ringkasan aktivitas kebun, progres pekerjaan, dan daftar tindak lanjut yang sedang berjalan.'
+        title: t('dashboard.title'),
+        description: t('dashboard.introDescription')
       }
     },
     loadSensus: loadSensusList,

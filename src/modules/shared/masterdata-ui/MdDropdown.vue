@@ -11,7 +11,7 @@
       :aria-expanded="String(open)"
       @click="toggle">
       <template v-if="field">
-        <span :class="{ 'md-muted': !isSet }">{{ isSet ? summary : placeholder }}</span>
+        <span :class="{ 'md-muted': !isSet }">{{ isSet ? summary : (placeholder ?? t('mdui.choose')) }}</span>
       </template>
       <template v-else>
         <span>{{ label }}</span>
@@ -43,10 +43,10 @@
           <span v-if="o.count != null" class="md-opt__cnt">{{ o.count }}</span>
           <span v-else-if="!multiple && isChosen(o.value)" class="md-opt__cnt"><MdIcon name="check" :size="14" /></span>
         </button>
-        <p v-if="!options.length" class="md-opt md-muted" style="cursor: default">{{ emptyText }}</p>
+        <p v-if="!options.length" class="md-opt md-muted" style="cursor: default">{{ emptyText ?? t('mdui.noOptions') }}</p>
         <template v-if="multiple && isSet">
           <div class="md-menu__sep" />
-          <button type="button" class="md-opt" @click="clear">Bersihkan pilihan</button>
+          <button type="button" class="md-opt" @click="clear">{{ t('mdui.clearSelection') }}</button>
         </template>
       </slot>
     </div>
@@ -61,14 +61,17 @@
 // - Slot default: isi menu kustom (mis. rentang tahun); `active`/`summaryText` mengatur label tombol.
 import { computed, nextTick, onBeforeUnmount, ref } from 'vue'
 import MdIcon from './MdIcon.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   modelValue: { type: [Array, String, Number, Boolean, null], default: null },
   options: { type: Array, default: () => [] }, // [{ value, label, count? }]
   label: { type: String, default: '' },
-  placeholder: { type: String, default: 'Pilih' },
-  allText: { type: String, default: 'Semua' },
-  emptyText: { type: String, default: 'Tidak ada pilihan.' },
+  placeholder: { type: String, default: undefined },
+  allText: { type: String, default: undefined },
+  emptyText: { type: String, default: undefined },
   multiple: { type: Boolean, default: false },
   field: { type: Boolean, default: false },
   invalid: { type: Boolean, default: false },
@@ -98,8 +101,8 @@ const isSet = computed(() => {
 const labelOf = (v) => props.options.find((o) => same(o.value, v))?.label ?? String(v)
 const summary = computed(() => {
   if (props.summaryText) return props.summaryText
-  if (!isSet.value) return props.allText
-  if (props.multiple) return chosen.value.length === 1 ? labelOf(chosen.value[0]) : `${chosen.value.length} dipilih`
+  if (!isSet.value) return props.allText ?? t('mdui.all')
+  if (props.multiple) return chosen.value.length === 1 ? labelOf(chosen.value[0]) : t('mdui.nSelected', { n: chosen.value.length })
   return labelOf(chosen.value)
 })
 

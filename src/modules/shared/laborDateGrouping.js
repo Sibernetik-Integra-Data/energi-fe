@@ -1,3 +1,5 @@
+import i18n from '../../i18n'
+
 function normalizeDate(value) {
   if (!value) return ''
   const direct = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/)
@@ -97,5 +99,5 @@ export function buildLaborDateRange(start, end) {
 export function formatLaborDateLabel(value) {
   const date = normalizeDate(value)
   const match = date.match(/^(\d{4})-(\d{2})-(\d{2})$/)
-  return match ? `${match[1]} - ${match[2]} - ${match[3]}` : (value || 'Tanggal belum ditentukan')
+  return match ? `${match[1]} - ${match[2]} - ${match[3]}` : (value || i18n.global.t('shared.dateNotSet'))
 }

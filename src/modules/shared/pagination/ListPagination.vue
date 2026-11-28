@@ -4,21 +4,17 @@
     class="mt-auto pt-5 flex items-center justify-between gap-3 flex-wrap"
   >
     <p class="text-xs text-(--text-muted) font-medium m-0 shrink-0">
-      Menampilkan
-      {{ totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1 }}–{{
-        Math.min(currentPage * pageSize, totalItems)
-      }}
-      dari {{ totalItems }} data
+      {{ t('shared.pagination.showing', { from: totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1, to: Math.min(currentPage * pageSize, totalItems), total: totalItems }) }}
     </p>
 
     <div class="flex items-center gap-3 flex-wrap ml-auto">
       <div class="flex items-center gap-2 shrink-0">
-        <label class="text-xs text-(--text-muted) font-medium" for="list-page-size">Tampilkan:</label>
+        <label class="text-xs text-(--text-muted) font-medium" for="list-page-size">{{ t('shared.pagination.show') }}</label>
         <select
           id="list-page-size"
           :value="pageSize"
           class="border border-(--border) bg-(--surface) rounded-lg px-2.5 py-1.5 text-xs text-(--text) outline-none focus:ring-2 focus:ring-teal-200 cursor-pointer"
-          aria-label="Jumlah data per halaman"
+          :aria-label="t('shared.pagination.perPage')"
           @change="$emit('update:pageSize', Number($event.target.value))"
         >
           <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
@@ -28,13 +24,13 @@
       <nav
         v-if="totalPages > 1"
         class="flex items-center gap-1 shrink-0"
-        aria-label="Pagination"
+        :aria-label="t('shared.pagination.pagination')"
       >
         <button
           type="button"
           :disabled="currentPage === 1"
           class="flex items-center justify-center w-9 h-9 rounded-lg border border-(--border) bg-(--surface) text-(--text) hover:bg-(--surface-muted) disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 cursor-pointer"
-          aria-label="Halaman sebelumnya"
+          :aria-label="t('shared.pagination.prev')"
           @click="$emit('update:currentPage', currentPage - 1)"
         >
           <svg
@@ -74,7 +70,7 @@
           type="button"
           :disabled="currentPage === totalPages"
           class="flex items-center justify-center w-9 h-9 rounded-lg border border-(--border) bg-(--surface) text-(--text) hover:bg-(--surface-muted) disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 cursor-pointer"
-          aria-label="Halaman berikutnya"
+          :aria-label="t('shared.pagination.next')"
           @click="$emit('update:currentPage', currentPage + 1)"
         >
           <svg
@@ -94,7 +90,10 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { PAGE_SIZE_OPTIONS } from './useListPagination.js'
+
+const { t } = useI18n()
 
 defineProps({
   totalItems: { type: Number, default: 0 },

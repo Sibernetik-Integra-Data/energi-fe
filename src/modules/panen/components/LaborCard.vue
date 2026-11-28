@@ -18,7 +18,7 @@
                 <p class="text-sm font-medium text-(--text) truncate m-0">
                     {{ fullName }}
                 </p>
-                <p class="text-[10px] text-(--text-muted) truncate mt-0.5 m-0">ID Pekerja {{ shortUserId }}</p>
+                <p class="text-[10px] text-(--text-muted) truncate mt-0.5 m-0">{{ t('activity.workerId', { id: shortUserId }) }}</p>
             </div>
 
             <span class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" aria-hidden="true">
@@ -38,6 +38,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { useI18n } from "vue-i18n";
 import LaborActionPopup from "./LaborActionPopup.vue";
 import { signedApiFetchBlob } from "../../../api/fetch";
 import clipboardIcon from "@/assets/icons/figma/clipboard-text.svg";
@@ -49,12 +50,13 @@ const props = defineProps({
     workDate: { type: String, default: "" },
 });
 
+const { t } = useI18n();
 const popupOpen = ref(false);
 const avatarUrl = ref("");
 
 const shortUserId = computed(() => {
     const value = String(props.labor.userId || "").trim();
-    if (!value) return `Pekerja #${props.labor.id}`;
+    if (!value) return t('activity.workerNo', { id: props.labor.id });
     return value.slice(0, 7);
 });
 

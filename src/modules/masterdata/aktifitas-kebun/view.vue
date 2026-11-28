@@ -3,7 +3,7 @@
         <BaseSidebar :items="navigation" :user="user" />
         <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
             <BaseHeader
-                eyebrow="Data Master"
+                :eyebrow="t('nav.masterData')"
                 :title="pageTitle"
                 :notifications="0"
                 :user="user"
@@ -17,6 +17,7 @@
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseHeader from '../../shared/header'
 import BaseSidebar from '../../shared/sidebar'
 import KebunList from './components/KebunList.vue'
@@ -25,10 +26,13 @@ import { useAppStore } from '../../../stores'
 import { navigation as sharedNavigation } from '../../shared/navigation'
 import { loadStrapiSidebarNavigation } from '../../shared/sidebar/strapiNavigation'
 
+const { t } = useI18n()
 const appStore = useAppStore()
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 const navigation = sharedNavigation
-const pageTitle = ref('Aktivitas Kebun')
+// Judul dari Strapi (bila ada) menimpa judul terjemahan bawaan.
+const strapiTitle = ref('')
+const pageTitle = computed(() => strapiTitle.value || t('nav.aktifitasKebun'))
 const targetPath = '/master-data/aktifitas-kebun'
 let refreshTimerId = null
 
@@ -54,7 +58,7 @@ async function hydratePageTitle() {
         const items = await loadStrapiSidebarNavigation()
         const match = findNavigationItem(items, targetPath)
         if (match?.label) {
-            pageTitle.value = match.label
+            strapiTitle.value = match.label
         }
     } catch (error) {
         console.warn('[Aktifitas Kebun] Failed to load Strapi title, using fallback title.', error)

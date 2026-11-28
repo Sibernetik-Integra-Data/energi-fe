@@ -6,13 +6,13 @@
             class="relative w-full max-w-5xl max-h-[90vh] overflow-auto bg-(--surface) border border-(--border) rounded-2xl shadow-2xl"
             role="dialog"
             aria-modal="true"
-            :aria-label="`Rencana baru untuk ${displayName}`">
+            :aria-label="t('activity.newPlanFor', { name: displayName })">
             <div class="px-6 py-4 border-b border-(--border) flex items-center">
-                <h4 class="text-sm font-bold text-(--text) m-0">Rencana Baru</h4>
+                <h4 class="text-sm font-bold text-(--text) m-0">{{ t('activity.newPlan') }}</h4>
                 <button
                     type="button"
                     class="ml-auto w-8 h-8 rounded-lg border-0 bg-transparent text-(--text-muted) hover:text-(--text) hover:bg-(--surface-muted) cursor-pointer"
-                    aria-label="Tutup modal"
+                    :aria-label="t('activity.closeModal')"
                     @click="$emit('close')">
                     ✕
                 </button>
@@ -33,10 +33,10 @@
                 </div>
 
                 <div class="grid grid-cols-[110px_1fr] gap-x-4 gap-y-3 text-xs mb-4 items-start">
-                    <p class="m-0 text-(--text-muted)">Tanggal Pengerjaan</p>
+                    <p class="m-0 text-(--text-muted)">{{ t('activity.workDate') }}</p>
                     <p class="m-0 text-(--text) font-medium">{{ formattedWorkDate }}</p>
 
-                    <p class="m-0 text-(--text-muted)">Nomor Petak</p>
+                    <p class="m-0 text-(--text-muted)">{{ t('activity.plotNumber') }}</p>
                     <div class="flex flex-wrap gap-1.5">
                         <span
                             v-for="(block, index) in blocks"
@@ -53,35 +53,35 @@
                         </template>
                     </template>
                     <template v-else>
-                        <p class="m-0 text-(--text-muted)">Jumlah Pokok</p>
+                        <p class="m-0 text-(--text-muted)">{{ t('activity.treeCount') }}</p>
                         <p class="m-0 text-(--text) font-medium">—</p>
                     </template>
                 </div>
 
                 <div class="grid grid-cols-[110px_1fr] gap-x-4 gap-y-4 text-xs">
-                    <p class="m-0 text-(--text-muted)">Foto Sebelum Pengerjaan</p>
+                    <p class="m-0 text-(--text-muted)">{{ t('activity.photoBefore') }}</p>
                     <div v-if="beforePhotos.length" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <img
                             v-for="(src, index) in beforePhotos"
                             :key="`before-${index}`"
                             :src="src"
-                            alt="Foto sebelum pengerjaan"
+                            :alt="t('activity.photoBeforeAlt')"
                             class="w-full h-32 object-cover rounded-lg border border-(--border)" />
                     </div>
                     <p v-else class="m-0 text-(--text)">-</p>
 
-                    <p class="m-0 text-(--text-muted)">Foto Setelah Pengerjaan</p>
+                    <p class="m-0 text-(--text-muted)">{{ t('activity.photoAfter') }}</p>
                     <div v-if="afterPhotos.length" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <img
                             v-for="(src, index) in afterPhotos"
                             :key="`after-${index}`"
                             :src="src"
-                            alt="Foto setelah pengerjaan"
+                            :alt="t('activity.photoAfterAlt')"
                             class="w-full h-32 object-cover rounded-lg border border-(--border)" />
                     </div>
                     <p v-else class="m-0 text-(--text)">-</p>
 
-                    <p class="m-0 text-(--text-muted)">Status</p>
+                    <p class="m-0 text-(--text-muted)">{{ t('activity.statusLabel') }}</p>
                     <p class="m-0 text-(--text) leading-relaxed">{{ status }}</p>
                 </div>
             </div>
@@ -91,6 +91,7 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { signedApiFetchBlob } from "../../../api/fetch";
 
 const props = defineProps({
@@ -101,6 +102,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["close"]);
+const { t } = useI18n();
 const avatarUrl = ref("");
 const beforePhotos = ref([]);
 const afterPhotos = ref([]);
@@ -111,13 +113,13 @@ const displayName = computed(() => {
     const last = String(props.labor.lastName || "").trim();
     const fullName = [first, last].filter(Boolean).join(" ");
     if (fullName) return fullName;
-    return props.labor.userId || `Pekerja #${props.labor.id}`;
+    return props.labor.userId || t('activity.workerNo', { id: props.labor.id });
 });
 
 const workerIdLabel = computed(() => {
     const userId = String(props.labor.userId || "").trim();
-    if (userId) return `ID Pekerja ${userId.slice(0, 7)}`;
-    return `ID Pekerja ${String(props.labor.id || "").padStart(4, "0")}`;
+    if (userId) return t('activity.workerId', { id: userId.slice(0, 7) });
+    return t('activity.workerId', { id: String(props.labor.id || "").padStart(4, "0") });
 });
 
 const formattedWorkDate = computed(() => {
@@ -147,7 +149,7 @@ const fulfillmentItems = computed(() => {
         .filter((mapping) => mapping && mapping.is_view !== 0)
         .map((mapping, index) => {
             const need = mapping.type_of_need || {};
-            const name = need.name || 'Jumlah';
+            const name = need.name || t('activity.amount');
             const unitName = need.unit_name ? ` (${need.unit_name})` : '';
             return {
                 key: `${mapping.id ?? index}-${need.unit_id ?? 'unit'}`,

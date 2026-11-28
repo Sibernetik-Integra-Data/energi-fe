@@ -1,16 +1,24 @@
 import { signedApiFetch } from '../../api/fetch'
 import { navigation as sharedNavigation } from '../shared/navigation'
+import i18n, { currentIntlLocale } from '../../i18n'
 
-export const HARVEST_TYPES = [
-  { value: 'TBS', label: 'TBS' },
-  { value: 'LOOSE_FRUIT', label: 'Loose Fruit' }
-]
+const t = (...args) => i18n.global.t(...args)
 
-export const STATUS_FILTERS = [
-  { value: '', label: 'Semua' },
-  { value: 'pending', label: 'Belum diterima' },
-  { value: 'received', label: 'Sudah diterima' }
-]
+// Labels are read when called, so they follow the active language.
+export function getHarvestTypes() {
+  return [
+    { value: 'TBS', label: t('shipping.harvestType.tbs') },
+    { value: 'LOOSE_FRUIT', label: t('shipping.harvestType.looseFruit') }
+  ]
+}
+
+export function getStatusFilters() {
+  return [
+    { value: '', label: t('shipping.status.all') },
+    { value: 'pending', label: t('shipping.status.pending') },
+    { value: 'received', label: t('shipping.status.received') }
+  ]
+}
 
 function cloneNavigation(items = []) {
   return items.map((item) => ({
@@ -27,24 +35,24 @@ function formatDate(value) {
   const plain = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value))
   const date = plain ? new Date(Number(plain[1]), Number(plain[2]) - 1, Number(plain[3])) : new Date(value)
   if (Number.isNaN(date.getTime())) return String(value)
-  return date.toLocaleDateString('id-ID', DATE_OPTIONS)
+  return date.toLocaleDateString(currentIntlLocale(), DATE_OPTIONS)
 }
 
 function formatDateTime(value) {
   if (!value) return '-'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return String(value)
-  return `${date.toLocaleDateString('id-ID', DATE_OPTIONS)} ${date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
+  return `${date.toLocaleDateString(currentIntlLocale(), DATE_OPTIONS)} ${date.toLocaleTimeString(currentIntlLocale(), { hour: '2-digit', minute: '2-digit' })}`
 }
 
 export function formatQuantity(value, unitName = '') {
   const quantity = Number(value)
   if (value === null || value === undefined || !Number.isFinite(quantity)) return '-'
-  return `${quantity.toLocaleString('id-ID', { maximumFractionDigits: 3 })}${unitName ? ` ${unitName}` : ''}`
+  return `${quantity.toLocaleString(currentIntlLocale(), { maximumFractionDigits: 3 })}${unitName ? ` ${unitName}` : ''}`
 }
 
 function harvestLabel(value) {
-  return HARVEST_TYPES.find((item) => item.value === value)?.label || '-'
+  return getHarvestTypes().find((item) => item.value === value)?.label || '-'
 }
 
 function parseListMeta(meta, fallback = {}) {
@@ -80,7 +88,7 @@ function mapReceipt(receipt) {
     harvestLabel: harvestLabel(receipt.harvest_type),
     notes: receipt.notes || '-',
     status: receipt.status || 'posted',
-    statusLabel: cancelled ? 'Dibatalkan' : 'Berlaku',
+    statusLabel: cancelled ? t('shipping.receiptStatus.cancelled') : t('shipping.receiptStatus.posted'),
     createdAt: formatDateTime(receipt.created_at),
     cancelledAt: cancelled ? formatDateTime(receipt.cancelled_at) : '-',
     cancelReason: receipt.cancel_reason || '-',
@@ -97,7 +105,7 @@ function mapShipmentToListItem(row = {}) {
     destinationName: row.destination_name || '-',
     volumeLabel: formatQuantity(row.shipped_quantity, row.shipped_unit_name),
     received: Boolean(receipt),
-    statusLabel: receipt ? 'Sudah diterima' : 'Belum diterima',
+    statusLabel: receipt ? t('shipping.status.received') : t('shipping.status.pending'),
     receiptNo: receipt?.receiptNo || '-',
     receivedDate: receipt?.receivedDate || '-',
     receivedLabel: receipt?.quantityLabel || '-'
@@ -127,12 +135,12 @@ export function createPengirimanPenerimaanModel() {
       return cloneNavigation(sharedNavigation)
     },
     getHeader() {
-      return { title: 'Pengiriman dan Penerimaan Panen', notifications: 0 }
+      return { title: t('shipping.title'), notifications: 0 }
     },
     getIntro() {
       return {
-        title: 'Pengiriman dan Penerimaan Panen',
-        description: 'Pantau pengiriman hasil panen dan catat penerimaannya di tujuan.'
+        title: t('shipping.title'),
+        description: t('shipping.description')
       }
     }
   }

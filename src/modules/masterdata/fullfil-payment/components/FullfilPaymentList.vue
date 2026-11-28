@@ -1,21 +1,21 @@
 <template>
-  <MdPage title="Pembayaran Kebutuhan" description="Nilai pembayaran untuk setiap pemetaan kebutuhan beserta satuannya. Klik kartu atau batang grafik untuk menyaring tabel.">
+  <MdPage :title="t('fullfilPayment.title')" :description="t('fullfilPayment.description')">
     <template #actions>
-      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah Pembayaran</button>
+      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />{{ t('fullfilPayment.add') }}</button>
     </template>
 
     <div class="md-kpis">
-      <MdKpi icon="database" tone="info" label="Total pembayaran" :value="rows.length" :sub="`${mappingOptions.length} pemetaan`" action hint="Tampilkan semua" @select="clearAll" />
-      <MdKpi icon="layers" tone="success" label="Pemetaan tercakup" :value="mappingOptions.length" :sub="`dari ${mappings.length} pemetaan`" action hint="Urutkan" @select="table?.setSort('fullfil_id', 1)" />
-      <MdKpi icon="grid" tone="brand" label="Satuan dipakai" :value="unitOptions.length" :sub="topUnit ? `Terbanyak: ${unitName(topUnit)}` : 'Belum ada'" action :pressed="!!topUnit && only('unit', topUnit)" @select="topUnit && quick('unit', topUnit)" />
-      <MdKpi icon="bookmark" tone="warning" label="Tanpa catatan" :value="noNotes" :sub="`${rows.length - noNotes} bercatatan`" action hint="Urutkan nilai" @select="table?.setSort('value', -1)" />
+      <MdKpi icon="database" tone="info" :label="t('fullfilPayment.kpi.total')" :value="rows.length" :sub="t('fullfilPayment.kpi.totalSub', { n: mappingOptions.length })" action :hint="t('fullfilPayment.showAll')" @select="clearAll" />
+      <MdKpi icon="layers" tone="success" :label="t('fullfilPayment.kpi.covered')" :value="mappingOptions.length" :sub="t('fullfilPayment.kpi.coveredSub', { n: mappings.length })" action :hint="t('fullfilPayment.sort')" @select="table?.setSort('fullfil_id', 1)" />
+      <MdKpi icon="grid" tone="brand" :label="t('fullfilPayment.kpi.unitsUsed')" :value="unitOptions.length" :sub="topUnit ? t('fullfilPayment.mostCommonUnit', { label: unitName(topUnit) }) : t('fullfilPayment.none')" action :pressed="!!topUnit && only('unit', topUnit)" @select="topUnit && quick('unit', topUnit)" />
+      <MdKpi icon="bookmark" tone="warning" :label="t('fullfilPayment.kpi.noNotes')" :value="noNotes" :sub="t('fullfilPayment.kpi.noNotesSub', { n: rows.length - noNotes })" action :hint="t('fullfilPayment.sortValue')" @select="table?.setSort('value', -1)" />
     </div>
 
     <MdBarChart
       v-if="bars.length"
-      title="Pembayaran per pemetaan kebutuhan"
-      :subtitle="`${rows.length} pembayaran di ${mappingOptions.length} pemetaan`"
-      :legend="[{ label: 'Pembayaran', color: 'var(--success)' }]"
+      :title="t('fullfilPayment.chartTitle')"
+      :subtitle="t('fullfilPayment.chartSubtitle', { n: rows.length, g: mappingOptions.length })"
+      :legend="[{ label: t('fullfilPayment.legend'), color: 'var(--success)' }]"
       :bars="bars"
       :selected="filterMapping"
       @toggle="toggleMapping" />
@@ -27,28 +27,28 @@
       :total-rows="rows.length"
       :loading="loading"
       :error="error || ''"
-      entity-label="Pembayaran"
+      :entity-label="t('fullfilPayment.entity')"
       empty-icon="database"
-      empty-text="Tambahkan pembayaran pertama untuk pemetaan kebutuhan."
-      add-label="Tambah Pembayaran"
+      :empty-text="t('fullfilPayment.empty')"
+      :add-label="t('fullfilPayment.add')"
       :can-add="canWrite"
       initial-sort="name"
-      aria-label="Daftar pembayaran kebutuhan"
+      :aria-label="t('fullfilPayment.tableAria')"
       @retry="load"
       @add="openCreate"
       @clear-filters="clearAll">
       <template #toolbar>
         <label class="md-search">
           <MdIcon name="search" />
-          <input v-model.trim="search" type="search" placeholder="Cari pemetaan, nama, atau catatan…" aria-label="Cari pembayaran" />
+          <input v-model.trim="search" type="search" :placeholder="t('fullfilPayment.searchPlaceholder')" :aria-label="t('fullfilPayment.searchAria')" />
         </label>
-        <MdDropdown v-model="filterMapping" label="Pemetaan" :options="mappingFilterOptions" multiple />
-        <MdDropdown v-model="filterUnit" label="Satuan" :options="unitFilterOptions" multiple />
+        <MdDropdown v-model="filterMapping" :label="t('fullfilPayment.mapping')" :options="mappingFilterOptions" multiple />
+        <MdDropdown v-model="filterUnit" :label="t('fullfilPayment.col.unit')" :options="unitFilterOptions" multiple />
         <div class="md-chips">
-          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="t('fullfilPayment.removeFilter', { label: c.label })" @click="c.remove()">
             {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
           </button>
-          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">{{ t('fullfilPayment.clearAll') }}</button>
         </div>
       </template>
 
@@ -67,8 +67,8 @@
       </template>
 
       <template v-if="canWrite" #actions="{ row }">
-        <button type="button" class="md-icon-btn" :aria-label="`Ubah pembayaran ${row.name}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
-        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus pembayaran ${row.name}`" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+        <button type="button" class="md-icon-btn" :aria-label="t('fullfilPayment.editAria', { name: row.name })" @click="openEdit(row)"><MdIcon name="edit" /></button>
+        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="t('fullfilPayment.deleteAria', { name: row.name })" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
       </template>
 
       <template #card="{ row }">
@@ -78,19 +78,19 @@
           <MdBadge tone="neutral">{{ unitName(row.unit_id) }}</MdBadge>
         </div>
         <div class="md-card__grid">
-          <div>Pemetaan<b>{{ mappingName(row.fullfil_id) }}</b></div>
-          <div>Nilai<b>{{ fmt(row.value) }} {{ unitName(row.unit_id) }}</b></div>
-          <div>Catatan<b>{{ row.notes || '—' }}</b></div>
-          <div>Diubah<b>{{ formatDate(row.updated_at) }}</b></div>
+          <div>{{ t('fullfilPayment.mapping') }}<b>{{ mappingName(row.fullfil_id) }}</b></div>
+          <div>{{ t('fullfilPayment.col.value') }}<b>{{ fmt(row.value) }} {{ unitName(row.unit_id) }}</b></div>
+          <div>{{ t('fullfilPayment.col.notes') }}<b>{{ row.notes || '—' }}</b></div>
+          <div>{{ t('fullfilPayment.col.updatedAt') }}<b>{{ formatDate(row.updated_at) }}</b></div>
         </div>
       </template>
     </MdDataTable>
 
     <FullfilPaymentForm :visible="showForm" :item="editing" :mappings="mappings" :units="units" :submitting="submitting" :error="actionError || ''" @submit="save" @cancel="closeForm" />
 
-    <MdConfirm :open="!!deleteTarget" title="Hapus pembayaran kebutuhan?" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="remove">
+    <MdConfirm :open="!!deleteTarget" :title="t('fullfilPayment.confirmTitle')" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="remove">
       <template v-if="deleteTarget">
-        Pembayaran <b>{{ deleteTarget.name }}</b> ({{ mappingName(deleteTarget.fullfil_id) }}) akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.
+        {{ t('fullfilPayment.confirmBefore') }} <b>{{ deleteTarget.name }}</b> ({{ mappingName(deleteTarget.fullfil_id) }}) {{ t('fullfilPayment.confirmAfter') }}
       </template>
     </MdConfirm>
   </MdPage>
@@ -98,6 +98,8 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { currentIntlLocale } from '../../../../i18n'
 import FullfilPaymentForm from './FullfilPaymentForm.vue'
 import { createFullfilPayment, deleteFullfilPayment, listFullfilMappings, listFullfilPayments, listTypeOfUnits, updateFullfilPayment } from '../model'
 import { getAuthenticatedUser, getTokenClaims } from '../../../../auth/keycloak'
@@ -107,18 +109,19 @@ import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
 import { MdPage, MdKpi, MdBarChart, MdDataTable, MdDropdown, MdBadge, MdConfirm, MdIcon } from '../../../shared/masterdata-ui'
 
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
+const { t } = useI18n()
 const canWrite = useCanManageMasterData()
 const { userName } = useUserNames()
 const { show: showToast } = useToast()
 
-const columns = [
-  { key: 'name', label: 'Nama' },
-  { key: 'fullfil_id', label: 'Pemetaan kebutuhan', sortValue: (r) => mappingName(r.fullfil_id) },
-  { key: 'value', label: 'Nilai', sortValue: (r) => (r.value == null ? null : Number(r.value)) },
-  { key: 'unit_id', label: 'Satuan', sortValue: (r) => unitName(r.unit_id) },
-  { key: 'notes', label: 'Catatan', sortable: false },
-  { key: 'updated_at', label: 'Diubah' }
-]
+const columns = computed(() => [
+  { key: 'name', label: t('fullfilPayment.col.name') },
+  { key: 'fullfil_id', label: t('fullfilPayment.col.mapping'), sortValue: (r) => mappingName(r.fullfil_id) },
+  { key: 'value', label: t('fullfilPayment.col.value'), sortValue: (r) => (r.value == null ? null : Number(r.value)) },
+  { key: 'unit_id', label: t('fullfilPayment.col.unit'), sortValue: (r) => unitName(r.unit_id) },
+  { key: 'notes', label: t('fullfilPayment.col.notes'), sortable: false },
+  { key: 'updated_at', label: t('fullfilPayment.col.updatedAt') }
+])
 
 const table = ref(null)
 const rows = ref([]); const mappings = ref([]); const units = ref([])
@@ -130,7 +133,7 @@ const showForm = ref(false); const editing = ref(null); const deleteTarget = ref
 const unitName = (id) => units.value.find((item) => Number(item.id) === Number(id))?.name || `#${id}`
 const mappingName = (id) => mappings.value.find((item) => Number(item.id) === Number(id))?.name || `#${id}`
 const formatDate = (value) => value ? String(value).replace(/\.\d+/, '').replace('T', ' ').replace('Z', '') : '-'
-const fmt = (n) => (n == null || n === '' ? '—' : Number(n).toLocaleString('id-ID', { maximumFractionDigits: 2 }))
+const fmt = (n) => (n == null || n === '' ? '—' : Number(n).toLocaleString(currentIntlLocale(), { maximumFractionDigits: 2 }))
 const initial = (name) => String(name || '#').trim().charAt(0).toUpperCase() || '#'
 const byName = (a, b) => String(a).localeCompare(String(b), 'id', { numeric: true })
 const countBy = (key, id) => rows.value.filter((r) => String(r[key]) === id).length
@@ -144,7 +147,7 @@ const noNotes = computed(() => rows.value.filter((r) => !r.notes).length)
 
 const bars = computed(() => mappingOptions.value.map((id) => {
   const n = countBy('fullfil_id', id)
-  return { key: id, label: mappingName(id), ariaLabel: `${mappingName(id)}: ${n} pembayaran`, segments: [{ value: n, color: 'var(--success)' }] }
+  return { key: id, label: mappingName(id), ariaLabel: t('fullfilPayment.barAria', { label: mappingName(id), n }), segments: [{ value: n, color: 'var(--success)' }] }
 }))
 
 const filteredRows = computed(() => {
@@ -178,7 +181,7 @@ async function load() {
     const result = await Promise.all([listFullfilPayments(), listFullfilMappings(), listTypeOfUnits()])
     rows.value = result[0].data; mappings.value = result[1]; units.value = result[2]
   } catch (err) {
-    error.value = err?.message || 'Gagal memuat data.'
+    error.value = err?.message || t('fullfilPayment.loadFailed')
   } finally {
     loading.value = false
   }
@@ -190,14 +193,14 @@ function currentUserId() { return getAuthenticatedUser()?.userId || getTokenClai
 async function save(payload) {
   submitting.value = true; actionError.value = null
   try {
-    if (editing.value?.id) { await updateFullfilPayment(editing.value.id, payload); showToast('Pembayaran Kebutuhan berhasil diubah.') }
+    if (editing.value?.id) { await updateFullfilPayment(editing.value.id, payload); showToast(t('fullfilPayment.toastUpdated')) }
     else {
       const userId = currentUserId()
-      if (!userId) throw new Error('Tidak bisa mengenali pengguna yang sedang masuk.')
-      await createFullfilPayment({ ...payload, user_id: userId }); showToast('Pembayaran Kebutuhan berhasil ditambahkan.') }
+      if (!userId) throw new Error(t('fullfilPayment.noUser'))
+      await createFullfilPayment({ ...payload, user_id: userId }); showToast(t('fullfilPayment.toastCreated')) }
     closeForm(); await load()
   } catch (err) {
-    actionError.value = err?.message || 'Gagal menyimpan data.'
+    actionError.value = err?.message || t('fullfilPayment.saveFailed')
   } finally {
     submitting.value = false
   }
@@ -210,10 +213,10 @@ async function remove() {
   try {
     await deleteFullfilPayment(deleteTarget.value.id)
     deleteTarget.value = null
-    showToast('Pembayaran Kebutuhan berhasil dihapus.')
+    showToast(t('fullfilPayment.toastDeleted'))
     await load()
   } catch (err) {
-    deleteError.value = err?.message || 'Gagal menghapus data.'
+    deleteError.value = err?.message || t('fullfilPayment.deleteFailed')
   } finally {
     submitting.value = false
   }

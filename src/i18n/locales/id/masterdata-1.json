@@ -1,0 +1,737 @@
+{
+  "petak": {
+    "ui": {
+      "cancel": "Batal",
+      "save": "Simpan",
+      "saving": "Menyimpan…",
+      "saveChanges": "Simpan Perubahan",
+      "clearAll": "Bersihkan semua",
+      "removeFilter": "Hapus filter {label}",
+      "createdBy": "Dibuat oleh",
+      "updatedBy": "Diubah oleh",
+      "showAll": "Tampilkan semua",
+      "sort": "Urutkan",
+      "name": "Nama",
+      "notes": "Catatan",
+      "optional": "Opsional.",
+      "loading": "Memuat…",
+      "nameRequired": "Nama wajib diisi.",
+      "saveFailed": "Gagal menyimpan data.",
+      "status": "Status",
+      "none": "— Tidak ada —",
+      "notesExtra": "Catatan tambahan",
+      "yes": "Ya",
+      "no": "Tidak",
+      "int": "Bilangan bulat ≥ 0."
+    },
+    "title": "Nomor Petak",
+    "description": "Ringkasan petak per blok, status tanam, dan jumlah pohon. Klik kartu atau batang grafik untuk menyaring tabel.",
+    "add": "Tambah Petak",
+    "kpi": {
+      "total": "Total petak",
+      "totalSub": "{n} blok",
+      "tm": "Menghasilkan (TM)",
+      "tmSub": "{n}% dari petak",
+      "tbm": "Belum menghasilkan (TBM)",
+      "tbmSub": "{n} belum diisi",
+      "tph": "TPH · pohon",
+      "tphSub": "{n} pohon tercatat"
+    },
+    "chart": {
+      "title": "Jumlah petak per blok",
+      "subtitle": "{petak} petak di {blok} blok",
+      "barAria": "Blok {b}: {n} petak, {tm} TM, {tbm} TBM"
+    },
+    "entity": "Petak",
+    "empty": "Tambahkan petak pertama agar bisa dipakai di sensus dan perencanaan kerja.",
+    "aria": "Daftar petak",
+    "searchPlaceholder": "Cari nomor petak atau blok…",
+    "searchAria": "Cari petak",
+    "filter": {
+      "blok": "Blok",
+      "year": "Tahun tanam",
+      "from": "Dari",
+      "to": "Sampai",
+      "clearRange": "Bersihkan rentang",
+      "all": "Semua",
+      "yearChip": "Tahun {range}"
+    },
+    "blokLabel": "Blok {name}",
+    "noBlok": "Tanpa blok",
+    "status": {
+      "auto": "{s} · otomatis",
+      "autoTitle": "Otomatis TM: ada TPH panen aktif",
+      "notSet": "Belum diisi",
+      "tmOpt": "TM · Menghasilkan",
+      "tbmOpt": "TBM · Belum menghasilkan"
+    },
+    "yearsAbbr": "{n} th",
+    "tphTitle": "Perawatan {p} · Panen {h}",
+    "editAria": "Ubah petak {name}",
+    "deleteAria": "Hapus petak {name}",
+    "col": {
+      "name": "Petak",
+      "status": "Status tanam",
+      "year": "Tahun tanam",
+      "wide": "Luas",
+      "tph": "TPH",
+      "trees": "Pohon"
+    },
+    "confirm": {
+      "title": "Hapus petak?",
+      "body": "Petak {name}{blok} akan dihapus permanen.",
+      "blokSuffix": " (Blok {b})",
+      "hasTph": " Petak ini masih punya {n}; penghapusan akan ditolak sampai TPH-nya dihapus atau dipindahkan.",
+      "tphCount": "{n} TPH"
+    },
+    "toast": {
+      "updated": "Petak {name} berhasil diubah.",
+      "created": "Petak {name} berhasil ditambahkan.",
+      "deleted": "Petak {name} berhasil dihapus."
+    },
+    "error": {
+      "load": "Koneksi ke server bermasalah. Periksa jaringan, lalu coba lagi.",
+      "save": "Gagal menyimpan petak.",
+      "delete": "Gagal menghapus petak.",
+      "inUse": "Petak masih dipakai TPH atau data lain, jadi tidak bisa dihapus."
+    },
+    "form": {
+      "titleEdit": "Ubah Petak {name}",
+      "subtitle": "Lengkapi data petak. Kolom bertanda * wajib diisi.",
+      "name": "Nomor petak",
+      "nameHint": "Huruf di akhir menandai bagian blok, mis. 113a.",
+      "namePlaceholder": "mis. 113a",
+      "blokHint": "Dipilih otomatis dari angka awal nomor petak.",
+      "blokPlaceholder": "Pilih blok",
+      "blokLoadFailed": "Gagal memuat blok.",
+      "statusHint": "Otomatis TM bila petak punya TPH panen aktif.",
+      "yearHint": "1950 sampai {max}.",
+      "yearPlaceholder": "mis. 2015",
+      "wide": "Luas (ha)",
+      "widePlaceholder": "mis. 12,5",
+      "trees": "Jumlah pohon",
+      "treesPlaceholder": "mis. 1500",
+      "nameRequired": "Nomor petak wajib diisi.",
+      "nameDuplicate": "Petak {name} sudah ada.",
+      "blokRequired": "Pilih blok.",
+      "yearRange": "Tahun harus 1950–{max}.",
+      "num": "Angka ≥ 0."
+    }
+  },
+  "blocks": {
+    "ui": {
+      "cancel": "Batal",
+      "save": "Simpan",
+      "saving": "Menyimpan…",
+      "saveChanges": "Simpan Perubahan",
+      "clearAll": "Bersihkan semua",
+      "removeFilter": "Hapus filter {label}",
+      "createdBy": "Dibuat oleh",
+      "updatedBy": "Diubah oleh",
+      "showAll": "Tampilkan semua",
+      "sort": "Urutkan",
+      "name": "Nama",
+      "notes": "Catatan",
+      "optional": "Opsional.",
+      "loading": "Memuat…",
+      "nameRequired": "Nama wajib diisi.",
+      "saveFailed": "Gagal menyimpan data.",
+      "status": "Status",
+      "none": "— Tidak ada —",
+      "notesExtra": "Catatan tambahan",
+      "yes": "Ya",
+      "no": "Tidak",
+      "int": "Bilangan bulat ≥ 0."
+    },
+    "title": "Blok",
+    "description": "Blok kebun; tiap blok berisi beberapa petak (Data Master → Nomor Petak). Klik kartu atau batang grafik untuk menyaring tabel.",
+    "add": "Tambah Blok",
+    "kpi": {
+      "total": "Total blok",
+      "totalSub": "{n} petak",
+      "hasTm": "Blok ada TM",
+      "hasTmSub": "{n}% dari blok",
+      "tbm": "Blok TBM",
+      "tbmSub": "{n} blok tanpa petak",
+      "tph": "TPH · pohon panen",
+      "tphSub": "{n} pohon panen"
+    },
+    "chart": {
+      "title": "Jumlah petak per blok",
+      "subtitle": "{petak} petak di {blok} blok",
+      "barAria": "Blok {name}: {n} petak, {status}",
+      "barTm": "ada TM"
+    },
+    "hasTm": "Ada TM",
+    "entity": "Blok",
+    "empty": "Tambahkan blok pertama, lalu isi petaknya di Nomor Petak.",
+    "aria": "Daftar blok",
+    "searchPlaceholder": "Cari nomor blok atau catatan…",
+    "searchAria": "Cari blok",
+    "filter": {
+      "petak": "Petak",
+      "hasPetak": "Berisi petak",
+      "noPetak": "Tanpa petak"
+    },
+    "blokLabel": "Blok {name}",
+    "petakCount": "{n} petak",
+    "deleteBlocked": "Masih berisi petak",
+    "editAria": "Ubah blok {name}",
+    "deleteAria": "Hapus blok {name}",
+    "updatedByName": "Diubah oleh {name}",
+    "col": {
+      "name": "Blok",
+      "petak": "Petak",
+      "tph": "TPH",
+      "treeCare": "Pohon perawatan",
+      "treeHarvest": "Pohon panen"
+    },
+    "confirm": {
+      "title": "Hapus blok?",
+      "body": "{name} akan dihapus permanen. Tidak bisa dibatalkan.",
+      "hasPetak": " Blok ini masih berisi {n}; pindahkan atau hapus petaknya dulu."
+    },
+    "toast": {
+      "updated": "Blok berhasil diubah.",
+      "created": "Blok berhasil ditambahkan.",
+      "deleted": "Blok berhasil dihapus."
+    },
+    "error": {
+      "load": "Gagal memuat blok.",
+      "save": "Gagal menyimpan blok.",
+      "delete": "Gagal menghapus blok.",
+      "duplicate": "Nomor blok sudah ada.",
+      "inUse": "Blok masih berisi petak, jadi tidak bisa dihapus."
+    },
+    "form": {
+      "titleEdit": "Ubah Blok {name}",
+      "subtitle": "Lengkapi data blok. Kolom bertanda * wajib diisi.",
+      "name": "Nomor blok",
+      "nameHint": "Petak di blok ini (mis. 113a, 113b) diatur di Nomor Petak.",
+      "namePlaceholder": "mis. 113",
+      "notesPlaceholder": "Opsional",
+      "nameRequired": "Nomor blok wajib diisi."
+    }
+  },
+  "tph": {
+    "ui": {
+      "cancel": "Batal",
+      "save": "Simpan",
+      "saving": "Menyimpan…",
+      "saveChanges": "Simpan Perubahan",
+      "clearAll": "Bersihkan semua",
+      "removeFilter": "Hapus filter {label}",
+      "createdBy": "Dibuat oleh",
+      "updatedBy": "Diubah oleh",
+      "showAll": "Tampilkan semua",
+      "sort": "Urutkan",
+      "name": "Nama",
+      "notes": "Catatan",
+      "optional": "Opsional.",
+      "loading": "Memuat…",
+      "nameRequired": "Nama wajib diisi.",
+      "saveFailed": "Gagal menyimpan data.",
+      "status": "Status",
+      "none": "— Tidak ada —",
+      "notesExtra": "Catatan tambahan",
+      "yes": "Ya",
+      "no": "Tidak",
+      "int": "Bilangan bulat ≥ 0."
+    },
+    "title": "TPH",
+    "description": "Tempat pengumpulan hasil per petak: jenis, sisi, nomor jalur dan jumlah pohon. Klik kartu atau batang grafik untuk menyaring tabel.",
+    "add": "Tambah TPH",
+    "kpi": {
+      "total": "Total TPH",
+      "totalSub": "{active} aktif · {inactive} nonaktif",
+      "panen": "TPH panen",
+      "panenSub": "{n} TPH perawatan",
+      "missing": "Pohon belum diisi",
+      "missingSub": "{n}% dari TPH",
+      "trees": "Total pohon",
+      "treesSub": "{n} pada hasil saringan"
+    },
+    "chart": {
+      "title": "Jumlah TPH per blok",
+      "subtitle": "{n} TPH di {blok} blok",
+      "barAria": "Blok {b}: {n} TPH, {h} panen, {m} perawatan"
+    },
+    "type": {
+      "panen": "Panen",
+      "perawatan": "Perawatan"
+    },
+    "entity": "TPH",
+    "empty": "Tambahkan TPH pertama agar bisa dipakai di sensus dan penugasan.",
+    "aria": "Daftar TPH",
+    "searchPlaceholder": "Cari kode, mis. U01…",
+    "searchAria": "Cari TPH",
+    "filter": {
+      "blok": "Blok",
+      "petak": "Petak",
+      "type": "Jenis",
+      "allActive": "Aktif & nonaktif",
+      "missing": "Jumlah pohon kosong"
+    },
+    "active": "Aktif",
+    "inactive": "Nonaktif",
+    "notSet": "Belum diisi",
+    "noPetak": "Tanpa petak",
+    "noPetakLower": "tanpa petak",
+    "line": "Jalur {n}",
+    "blokLabel": "Blok {name}",
+    "petakLabel": "Petak {name}",
+    "editAria": "Ubah TPH {name}",
+    "deleteAria": "Hapus TPH {name}",
+    "col": {
+      "code": "Kode",
+      "petak": "Petak",
+      "blok": "Blok",
+      "type": "Jenis",
+      "side": "Sisi",
+      "line": "Jalur",
+      "trees": "Pohon"
+    },
+    "confirm": {
+      "title": "Hapus TPH?",
+      "body": "TPH {code} di {petak} akan dihapus permanen. TPH yang sudah dipakai sensus atau penugasan tidak bisa dihapus; nonaktifkan lewat Ubah."
+    },
+    "toast": {
+      "updated": "TPH berhasil diubah.",
+      "created": "TPH berhasil ditambahkan.",
+      "deleted": "TPH berhasil dihapus."
+    },
+    "error": {
+      "load": "Gagal memuat TPH.",
+      "save": "Gagal menyimpan TPH.",
+      "delete": "Gagal menghapus TPH.",
+      "duplicate": "Petak ini sudah punya TPH dengan jenis, sisi dan nomor jalur yang sama.",
+      "inUse": "TPH sudah dipakai sensus atau penugasan. Nonaktifkan lewat Ubah (matikan Aktif)."
+    },
+    "form": {
+      "titleEdit": "Ubah TPH {name}",
+      "subtitle": "Lengkapi data TPH. Kolom bertanda * wajib diisi.",
+      "petakHint": "Sumber: Data Master → Nomor Petak",
+      "petakPlaceholder": "Pilih petak",
+      "petakLoadFailed": "Gagal memuat petak.",
+      "typeAria": "Jenis TPH",
+      "sideU": "U (utara)",
+      "sideS": "S (selatan)",
+      "sideUS": "US (utara-selatan)",
+      "line": "Nomor jalur",
+      "lineHint": "Kode TPH: {code} (otomatis dari sisi + nomor jalur)",
+      "trees": "Jumlah pohon",
+      "treesPlaceholder": "mis. 40",
+      "latPlaceholder": "mis. -0.5123",
+      "lngPlaceholder": "mis. 117.1234",
+      "notesPlaceholder": "Opsional",
+      "activeDesc": "TPH nonaktif tidak dipakai di sensus dan penugasan baru.",
+      "petakRequired": "Pilih petak.",
+      "typeRequired": "Pilih jenis.",
+      "sideRequired": "Pilih sisi.",
+      "lat": "Angka -90 s.d. 90.",
+      "lng": "Angka -180 s.d. 180."
+    }
+  },
+  "vehicle": {
+    "ui": {
+      "cancel": "Batal",
+      "save": "Simpan",
+      "saving": "Menyimpan…",
+      "saveChanges": "Simpan Perubahan",
+      "clearAll": "Bersihkan semua",
+      "removeFilter": "Hapus filter {label}",
+      "createdBy": "Dibuat oleh",
+      "updatedBy": "Diubah oleh",
+      "showAll": "Tampilkan semua",
+      "sort": "Urutkan",
+      "name": "Nama",
+      "notes": "Catatan",
+      "optional": "Opsional.",
+      "loading": "Memuat…",
+      "nameRequired": "Nama wajib diisi.",
+      "saveFailed": "Gagal menyimpan data.",
+      "status": "Status",
+      "none": "— Tidak ada —",
+      "notesExtra": "Catatan tambahan",
+      "yes": "Ya",
+      "no": "Tidak",
+      "int": "Bilangan bulat ≥ 0."
+    },
+    "title": "Kendaraan",
+    "description": "Kelola kendaraan angkut kebun: nama, tipe, dan nomor polisi. Klik kartu atau batang grafik untuk menyaring tabel.",
+    "add": "Tambah Kendaraan",
+    "kpi": {
+      "total": "Total kendaraan",
+      "totalSub": "{n} tipe",
+      "top": "Tipe terbanyak",
+      "topNone": "Belum ada tipe",
+      "noTypeSub": "{n}% dari kendaraan"
+    },
+    "noType": "Tanpa tipe",
+    "chart": {
+      "title": "Jumlah kendaraan per tipe",
+      "subtitle": "{n} kendaraan dalam {t} tipe",
+      "barAria": "{label}: {n} kendaraan"
+    },
+    "entity": "Kendaraan",
+    "empty": "Tambahkan kendaraan pertama agar bisa dipakai di pengangkutan panen.",
+    "aria": "Daftar kendaraan",
+    "searchPlaceholder": "Cari nama, tipe, atau nomor polisi…",
+    "searchAria": "Cari kendaraan",
+    "type": "Tipe",
+    "plate": "Nomor polisi",
+    "titleField": "Judul",
+    "editAria": "Ubah kendaraan {name}",
+    "deleteAria": "Hapus kendaraan {name}",
+    "confirm": {
+      "title": "Hapus kendaraan?",
+      "body": "Kendaraan {name}{plate} akan dihapus permanen. Tindakan ini tidak bisa dibatalkan."
+    },
+    "toast": {
+      "updated": "Kendaraan berhasil diubah.",
+      "created": "Kendaraan berhasil ditambahkan.",
+      "deleted": "Kendaraan berhasil dihapus."
+    },
+    "error": {
+      "load": "Gagal memuat kendaraan.",
+      "delete": "Gagal menghapus kendaraan."
+    },
+    "form": {
+      "titleEdit": "Ubah Kendaraan {name}",
+      "subtitle": "Lengkapi data kendaraan. Kolom bertanda * wajib diisi.",
+      "namePlaceholder": "mis. Truck A",
+      "plateHint": "Otomatis huruf besar, mis. KT 1234 AB.",
+      "platePlaceholder": "mis. KT 1234 AB",
+      "titlePlaceholder": "mis. Heavy Truck",
+      "typePlaceholder": "mis. Dump Truck",
+      "plateRequired": "Nomor polisi wajib diisi."
+    }
+  },
+  "driver": {
+    "ui": {
+      "cancel": "Batal",
+      "save": "Simpan",
+      "saving": "Menyimpan…",
+      "saveChanges": "Simpan Perubahan",
+      "clearAll": "Bersihkan semua",
+      "removeFilter": "Hapus filter {label}",
+      "createdBy": "Dibuat oleh",
+      "updatedBy": "Diubah oleh",
+      "showAll": "Tampilkan semua",
+      "sort": "Urutkan",
+      "name": "Nama",
+      "notes": "Catatan",
+      "optional": "Opsional.",
+      "loading": "Memuat…",
+      "nameRequired": "Nama wajib diisi.",
+      "saveFailed": "Gagal menyimpan data.",
+      "status": "Status",
+      "none": "— Tidak ada —",
+      "notesExtra": "Catatan tambahan",
+      "yes": "Ya",
+      "no": "Tidak",
+      "int": "Bilangan bulat ≥ 0."
+    },
+    "title": "Pengemudi",
+    "description": "Kelola pengemudi angkutan panen beserta lokasi dan kendaraannya. Klik kartu atau batang grafik untuk menyaring tabel.",
+    "add": "Tambah Pengemudi",
+    "kpi": {
+      "total": "Total pengemudi",
+      "totalSub": "{n} lokasi",
+      "pctSub": "{n}% dari pengemudi"
+    },
+    "hasVehicle": "Punya kendaraan",
+    "noVehicle": "Tanpa kendaraan",
+    "noLocation": "Tanpa lokasi",
+    "chart": {
+      "title": "Jumlah pengemudi per lokasi",
+      "subtitle": "{n} pengemudi di {l} lokasi",
+      "barAria": "{label}: {n} pengemudi, {v} punya kendaraan"
+    },
+    "entity": "Pengemudi",
+    "empty": "Tambahkan pengemudi pertama agar bisa dipakai di pengangkutan panen.",
+    "aria": "Daftar pengemudi",
+    "searchPlaceholder": "Cari nama pengemudi…",
+    "searchAria": "Cari pengemudi",
+    "location": "Lokasi",
+    "vehicle": "Kendaraan",
+    "plate": "Nomor polisi",
+    "address": "Alamat",
+    "editAria": "Ubah pengemudi {name}",
+    "deleteAria": "Hapus pengemudi {name}",
+    "confirm": {
+      "title": "Hapus pengemudi?",
+      "body": "Pengemudi {name} akan dihapus permanen. Tindakan ini tidak bisa dibatalkan."
+    },
+    "toast": {
+      "updated": "Pengemudi berhasil diubah.",
+      "created": "Pengemudi berhasil ditambahkan.",
+      "deleted": "Pengemudi berhasil dihapus."
+    },
+    "error": {
+      "load": "Gagal memuat pengemudi.",
+      "delete": "Gagal menghapus pengemudi."
+    },
+    "form": {
+      "titleEdit": "Ubah Pengemudi {name}",
+      "subtitle": "Lengkapi data pengemudi. Kolom bertanda * wajib diisi.",
+      "namePlaceholder": "mis. Budi",
+      "addressPlaceholder": "Alamat jalan",
+      "locationHint": "Sumber: Data Master → Tujuan",
+      "locationLoading": "Memuat lokasi…",
+      "vehicleHint": "Sumber: Data Master → Kendaraan",
+      "vehicleLoading": "Memuat kendaraan…",
+      "plateHint": "Otomatis dari kendaraan.",
+      "platePlaceholder": "Pilih kendaraan dulu",
+      "legacyLocation": "{name} (nilai lama, belum ada di Destination)",
+      "locationLoadFailed": "Gagal memuat lokasi.",
+      "vehicleLoadFailed": "Gagal memuat kendaraan."
+    }
+  },
+  "destination": {
+    "ui": {
+      "cancel": "Batal",
+      "save": "Simpan",
+      "saving": "Menyimpan…",
+      "saveChanges": "Simpan Perubahan",
+      "clearAll": "Bersihkan semua",
+      "removeFilter": "Hapus filter {label}",
+      "createdBy": "Dibuat oleh",
+      "updatedBy": "Diubah oleh",
+      "showAll": "Tampilkan semua",
+      "sort": "Urutkan",
+      "name": "Nama",
+      "notes": "Catatan",
+      "optional": "Opsional.",
+      "loading": "Memuat…",
+      "nameRequired": "Nama wajib diisi.",
+      "saveFailed": "Gagal menyimpan data.",
+      "status": "Status",
+      "none": "— Tidak ada —",
+      "notesExtra": "Catatan tambahan",
+      "yes": "Ya",
+      "no": "Tidak",
+      "int": "Bilangan bulat ≥ 0."
+    },
+    "title": "Tujuan",
+    "description": "Lokasi tujuan pengiriman hasil kebun beserta tipe dan koordinatnya. Klik kartu atau batang grafik untuk menyaring tabel.",
+    "add": "Tambah Tujuan",
+    "kpi": {
+      "total": "Total tujuan",
+      "totalSub": "{n} tipe",
+      "pctSub": "{n}% dari tujuan",
+      "noCoordSub": "Lengkapi latitude & longitude",
+      "top": "Tipe terbanyak",
+      "topSub": "{n} tujuan",
+      "noData": "Belum ada data"
+    },
+    "hasCoord": "Berkoordinat",
+    "noCoord": "Tanpa koordinat",
+    "chart": {
+      "title": "Jumlah tujuan per tipe",
+      "subtitle": "{n} tujuan di {t} tipe",
+      "barAria": "{label}: {n} tujuan, {c} berkoordinat"
+    },
+    "entity": "Tujuan",
+    "empty": "Tambahkan tujuan pertama agar bisa dipakai saat pengiriman hasil panen.",
+    "aria": "Daftar tujuan",
+    "searchPlaceholder": "Cari nama, tujuan, atau catatan…",
+    "searchAria": "Cari tujuan",
+    "type": "Tipe",
+    "coord": "Koordinat",
+    "noType": "Tanpa tipe",
+    "typeN": "Tipe {key}",
+    "noLocation": "Tanpa keterangan tujuan",
+    "editAria": "Ubah tujuan {name}",
+    "deleteAria": "Hapus tujuan {name}",
+    "confirm": {
+      "title": "Hapus tujuan?",
+      "body": "Tujuan {name} akan dihapus permanen. Tindakan ini tidak bisa dibatalkan."
+    },
+    "toast": {
+      "updated": "Tujuan berhasil diubah.",
+      "created": "Tujuan berhasil ditambahkan.",
+      "deleted": "Tujuan berhasil dihapus."
+    },
+    "error": {
+      "load": "Gagal memuat tujuan.",
+      "delete": "Gagal menghapus tujuan.",
+      "inUse": "Tujuan masih dipakai data lain, jadi tidak bisa dihapus."
+    },
+    "form": {
+      "titleEdit": "Ubah Tujuan {name}",
+      "subtitle": "Lengkapi data tujuan. Kolom bertanda * wajib diisi.",
+      "namePlaceholder": "mis. PKS Utara",
+      "type": "Tipe tujuan",
+      "typeLoading": "Memuat tipe…",
+      "typePlaceholder": "Pilih tipe tujuan",
+      "typeLoadFailed": "Gagal memuat tipe tujuan.",
+      "typeRequired": "Pilih tipe tujuan.",
+      "location": "Tujuan",
+      "locationPlaceholder": "mis. Pabrik Utara",
+      "latPlaceholder": "mis. -1.234567",
+      "lngPlaceholder": "mis. 103.123456"
+    }
+  },
+  "aktifitasKebun": {
+    "ui": {
+      "cancel": "Batal",
+      "save": "Simpan",
+      "saving": "Menyimpan…",
+      "saveChanges": "Simpan Perubahan",
+      "clearAll": "Bersihkan semua",
+      "removeFilter": "Hapus filter {label}",
+      "createdBy": "Dibuat oleh",
+      "updatedBy": "Diubah oleh",
+      "showAll": "Tampilkan semua",
+      "sort": "Urutkan",
+      "name": "Nama",
+      "notes": "Catatan",
+      "optional": "Opsional.",
+      "loading": "Memuat…",
+      "nameRequired": "Nama wajib diisi.",
+      "saveFailed": "Gagal menyimpan data.",
+      "status": "Status",
+      "none": "— Tidak ada —",
+      "notesExtra": "Catatan tambahan",
+      "yes": "Ya",
+      "no": "Tidak",
+      "int": "Bilangan bulat ≥ 0."
+    },
+    "title": "Aktivitas Kebun",
+    "description": "Jenis pekerjaan kebun per kelompok pekerjaan dan kebutuhan bukti fotonya. Klik kartu atau batang grafik untuk menyaring tabel.",
+    "add": "Tambah Aktivitas",
+    "kpi": {
+      "total": "Total aktivitas",
+      "totalSub": "{n} kelompok terpakai",
+      "pctSub": "{n}% dari aktivitas",
+      "noFotoSub": "Tidak perlu bukti foto",
+      "groups": "Kelompok pekerjaan",
+      "emptyGroups": "{n} belum punya aktivitas",
+      "allFilled": "Semua sudah terisi"
+    },
+    "needFoto": "Perlu foto",
+    "noFoto": "Tanpa foto",
+    "chart": {
+      "title": "Jumlah aktivitas per kelompok",
+      "subtitle": "{n} aktivitas di {g} kelompok",
+      "barAria": "{label}: {n} aktivitas, {f} perlu foto"
+    },
+    "entity": "Aktivitas",
+    "empty": "Tambahkan aktivitas pertama agar bisa dipakai di perencanaan kerja.",
+    "aria": "Daftar aktivitas kebun",
+    "searchPlaceholder": "Cari nama atau keterangan aktivitas…",
+    "searchAria": "Cari aktivitas",
+    "group": "Kelompok",
+    "foto": "Foto",
+    "detail": "Keterangan",
+    "noGroup": "Tanpa kelompok",
+    "groupN": "Kelompok {key}",
+    "editAria": "Ubah aktivitas {name}",
+    "deleteAria": "Hapus aktivitas {name}",
+    "confirm": {
+      "title": "Hapus aktivitas?",
+      "body": "Aktivitas {name} akan dihapus permanen. Tindakan ini tidak bisa dibatalkan."
+    },
+    "toast": {
+      "updated": "Aktivitas berhasil diubah.",
+      "created": "Aktivitas berhasil ditambahkan.",
+      "deleted": "Aktivitas berhasil dihapus."
+    },
+    "error": {
+      "load": "Gagal memuat data.",
+      "delete": "Gagal menghapus aktivitas.",
+      "inUse": "Aktivitas masih dipakai rencana kerja atau data lain, jadi tidak bisa dihapus."
+    },
+    "form": {
+      "titleEdit": "Ubah Aktivitas {name}",
+      "subtitle": "Lengkapi data aktivitas. Kolom bertanda * wajib diisi.",
+      "namePlaceholder": "mis. Pemupukan Dasar",
+      "group": "Kelompok pekerjaan",
+      "groupLoading": "Memuat kelompok…",
+      "groupPlaceholder": "Pilih kelompok…",
+      "groupLoadFailed": "Gagal memuat kelompok pekerjaan.",
+      "groupRequired": "Kelompok Pekerjaan wajib diisi.",
+      "detailPlaceholder": "Keterangan aktivitas",
+      "upload": "Perlu unggah foto",
+      "uploadDesc": "Tanda bahwa pekerjaan ini perlu bukti foto. Aplikasi mobile belum mewajibkannya."
+    }
+  },
+  "groupOfWork": {
+    "ui": {
+      "cancel": "Batal",
+      "save": "Simpan",
+      "saving": "Menyimpan…",
+      "saveChanges": "Simpan Perubahan",
+      "clearAll": "Bersihkan semua",
+      "removeFilter": "Hapus filter {label}",
+      "createdBy": "Dibuat oleh",
+      "updatedBy": "Diubah oleh",
+      "showAll": "Tampilkan semua",
+      "sort": "Urutkan",
+      "name": "Nama",
+      "notes": "Catatan",
+      "optional": "Opsional.",
+      "loading": "Memuat…",
+      "nameRequired": "Nama wajib diisi.",
+      "saveFailed": "Gagal menyimpan data.",
+      "status": "Status",
+      "none": "— Tidak ada —",
+      "notesExtra": "Catatan tambahan",
+      "yes": "Ya",
+      "no": "Tidak",
+      "int": "Bilangan bulat ≥ 0."
+    },
+    "title": "Kelompok Pekerjaan",
+    "description": "Pengelompokan pekerjaan kebun dan jenis TPH yang boleh dipakai di sensus serta penugasan. Klik kartu untuk menyaring tabel.",
+    "add": "Tambah Kelompok",
+    "kpi": {
+      "total": "Total kelompok",
+      "totalSub": "Semua jenis TPH",
+      "pctSub": "{n}% dari kelompok",
+      "perawatan": "TPH perawatan",
+      "panen": "TPH panen",
+      "needsFill": "Perlu dilengkapi",
+      "allFilled": "Semua berketerangan"
+    },
+    "noDetail": "Tanpa keterangan",
+    "type": {
+      "panen": "Panen",
+      "perawatan": "Perawatan",
+      "notSet": "Belum diisi"
+    },
+    "entity": "Kelompok",
+    "empty": "Tambahkan kelompok pekerjaan pertama agar aktivitas kebun bisa dikelompokkan.",
+    "aria": "Daftar kelompok pekerjaan",
+    "searchPlaceholder": "Cari nama atau keterangan kelompok…",
+    "searchAria": "Cari kelompok pekerjaan",
+    "tphType": "Jenis TPH",
+    "detail": "Keterangan",
+    "editAria": "Ubah kelompok {name}",
+    "deleteAria": "Hapus kelompok {name}",
+    "confirm": {
+      "title": "Hapus kelompok pekerjaan?",
+      "body": "Kelompok {name} akan dihapus permanen. Tindakan ini tidak bisa dibatalkan."
+    },
+    "toast": {
+      "updated": "Kelompok Pekerjaan berhasil diubah.",
+      "created": "Kelompok Pekerjaan berhasil ditambahkan.",
+      "deleted": "Kelompok Pekerjaan berhasil dihapus."
+    },
+    "error": {
+      "load": "Gagal memuat data.",
+      "delete": "Gagal menghapus.",
+      "inUse": "Kelompok masih dipakai aktivitas kebun atau data lain, jadi tidak bisa dihapus."
+    },
+    "form": {
+      "titleEdit": "Ubah Kelompok Pekerjaan",
+      "titleAdd": "Tambah Kelompok Pekerjaan",
+      "subtitle": "Lengkapi data kelompok. Kolom bertanda * wajib diisi.",
+      "nameHint": "Maksimal 100 karakter.",
+      "namePlaceholder": "mis. Pembersihan",
+      "tphHint": "Pekerjaan di kelompok ini hanya bisa memakai TPH berjenis ini.",
+      "detailPlaceholder": "Keterangan (opsional)",
+      "nameMax": "Nama maksimal 100 karakter."
+    }
+  }
+}

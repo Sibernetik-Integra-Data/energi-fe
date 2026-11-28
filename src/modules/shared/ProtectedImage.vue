@@ -1,12 +1,13 @@
 <template>
   <div v-if="src" class="protected-image" :class="containerClass">
     <img v-if="resolvedSrc" :src="resolvedSrc" :alt="alt" :class="imageClass" @error="handleError" />
-    <span v-else-if="loading" class="protected-image__loading">Memuat gambar…</span>
+    <span v-else-if="loading" class="protected-image__loading">{{ t('shared.imageLoading') }}</span>
   </div>
 </template>
 
 <script setup>
 import { onBeforeUnmount, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { signedApiFetchBlob } from '../../api/fetch'
 
 const props = defineProps({
@@ -16,6 +17,7 @@ const props = defineProps({
   containerClass: { type: String, default: '' }
 })
 
+const { t } = useI18n()
 const resolvedSrc = ref('')
 const loading = ref(false)
 let objectUrl = ''

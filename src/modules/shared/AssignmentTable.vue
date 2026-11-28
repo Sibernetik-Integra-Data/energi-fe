@@ -17,10 +17,10 @@
           <td class="py-3 px-4 text-sm text-(--text) whitespace-nowrap">{{ item.startDateFormatted || item.sensusDateFormatted || '—' }}</td>
           <td class="py-3 px-4 text-sm text-(--text) whitespace-nowrap">{{ item.labors?.length || 0 }}</td>
           <td class="py-3 px-4"><span :class="statusClass(item.status)" class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap">{{ statusLabel(item.status) }}</span></td>
-          <td class="py-3 px-4"><button type="button" class="text-sm py-1.5 px-4 rounded-full border border-(--border) bg-transparent text-(--text) hover:bg-(--surface-muted) transition-colors cursor-pointer" @click="$emit('view-detail', item)">View</button></td>
+          <td class="py-3 px-4"><button type="button" class="text-sm py-1.5 px-4 rounded-full border border-(--border) bg-transparent text-(--text) hover:bg-(--surface-muted) transition-colors cursor-pointer" @click="$emit('view-detail', item)">{{ t('shared.assignment.view') }}</button></td>
         </tr>
         <tr v-if="items.length === 0">
-          <td colspan="8" class="py-10 text-center text-xs text-(--text-muted)">Tidak ada data ditemukan.</td>
+          <td colspan="8" class="py-10 text-center text-xs text-(--text-muted)">{{ t('shared.assignment.noData') }}</td>
         </tr>
       </tbody>
     </table>
@@ -28,6 +28,10 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 const props = defineProps({
   items: { type: Array, default: () => [] },
   taskType: { type: String, default: '' }
@@ -35,10 +39,16 @@ const props = defineProps({
 
 defineEmits(['view-detail'])
 
-const headings = ['Task', 'Sensus ID', 'Task Type', 'Total Block', 'Sensus Date', 'Total Pekerja Terdaftar', 'Status', 'Action']
+const headings = computed(() => ['colTask', 'colSensusId', 'colTaskType', 'colBlocks', 'colSensusDate', 'colWorkers', 'colStatus', 'colAction'].map((k) => t(`shared.assignment.${k}`)))
 
 function statusLabel(status) {
-  const map = { draft: 'Draft', wip: 'On Progress', done: 'Done', submitted: 'Submitted', in_progress: 'On Progress' }
+  const map = {
+    draft: t('shared.assignment.statusDraft'),
+    wip: t('shared.assignment.statusWip'),
+    done: t('shared.assignment.statusDone'),
+    submitted: t('shared.assignment.statusSubmitted'),
+    in_progress: t('shared.assignment.statusWip')
+  }
   return map[status] || status || '—'
 }
 

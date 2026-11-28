@@ -1,21 +1,21 @@
 <template>
-  <MdPage title="Parameter Kebutuhan" description="Nilai parameter untuk setiap pemetaan kebutuhan beserta satuannya. Klik kartu atau batang grafik untuk menyaring tabel.">
+  <MdPage :title="t('fullfilParams.title')" :description="t('fullfilParams.description')">
     <template #actions>
-      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah Parameter</button>
+      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />{{ t('fullfilParams.add') }}</button>
     </template>
 
     <div class="md-kpis">
-      <MdKpi icon="sliders" tone="info" label="Total parameter" :value="rows.length" :sub="`${mappingOptions.length} pemetaan`" action hint="Tampilkan semua" @select="clearAll" />
-      <MdKpi icon="layers" tone="success" label="Pemetaan tercakup" :value="mappingOptions.length" :sub="`dari ${mappings.length} pemetaan`" action hint="Urutkan" @select="table?.setSort('fullfil_id', 1)" />
-      <MdKpi icon="grid" tone="brand" label="Satuan dipakai" :value="unitOptions.length" :sub="topUnit ? `Terbanyak: ${unitName(topUnit)}` : 'Belum ada'" action :pressed="!!topUnit && only('unit', topUnit)" @select="topUnit && quick('unit', topUnit)" />
-      <MdKpi icon="bookmark" tone="warning" label="Tanpa catatan" :value="noNotes" :sub="`${rows.length - noNotes} bercatatan`" action hint="Urutkan nilai" @select="table?.setSort('value', -1)" />
+      <MdKpi icon="sliders" tone="info" :label="t('fullfilParams.kpi.total')" :value="rows.length" :sub="t('fullfilParams.kpi.totalSub', { n: mappingOptions.length })" action :hint="t('fullfilParams.showAll')" @select="clearAll" />
+      <MdKpi icon="layers" tone="success" :label="t('fullfilParams.kpi.covered')" :value="mappingOptions.length" :sub="t('fullfilParams.kpi.coveredSub', { n: mappings.length })" action :hint="t('fullfilParams.sort')" @select="table?.setSort('fullfil_id', 1)" />
+      <MdKpi icon="grid" tone="brand" :label="t('fullfilParams.kpi.unitsUsed')" :value="unitOptions.length" :sub="topUnit ? t('fullfilParams.mostCommonUnit', { label: unitName(topUnit) }) : t('fullfilParams.none')" action :pressed="!!topUnit && only('unit', topUnit)" @select="topUnit && quick('unit', topUnit)" />
+      <MdKpi icon="bookmark" tone="warning" :label="t('fullfilParams.kpi.noNotes')" :value="noNotes" :sub="t('fullfilParams.kpi.noNotesSub', { n: rows.length - noNotes })" action :hint="t('fullfilParams.sortValue')" @select="table?.setSort('value', -1)" />
     </div>
 
     <MdBarChart
       v-if="bars.length"
-      title="Parameter per pemetaan kebutuhan"
-      :subtitle="`${rows.length} parameter di ${mappingOptions.length} pemetaan`"
-      :legend="[{ label: 'Parameter', color: 'var(--success)' }]"
+      :title="t('fullfilParams.chartTitle')"
+      :subtitle="t('fullfilParams.chartSubtitle', { n: rows.length, g: mappingOptions.length })"
+      :legend="[{ label: t('fullfilParams.legend'), color: 'var(--success)' }]"
       :bars="bars"
       :selected="filterMapping"
       @toggle="toggleMapping" />
@@ -27,28 +27,28 @@
       :total-rows="rows.length"
       :loading="loading"
       :error="error || ''"
-      entity-label="Parameter"
+      :entity-label="t('fullfilParams.entity')"
       empty-icon="sliders"
-      empty-text="Tambahkan parameter pertama untuk pemetaan kebutuhan."
-      add-label="Tambah Parameter"
+      :empty-text="t('fullfilParams.empty')"
+      :add-label="t('fullfilParams.add')"
       :can-add="canWrite"
       initial-sort="name"
-      aria-label="Daftar parameter kebutuhan"
+      :aria-label="t('fullfilParams.tableAria')"
       @retry="load"
       @add="openCreate"
       @clear-filters="clearAll">
       <template #toolbar>
         <label class="md-search">
           <MdIcon name="search" />
-          <input v-model.trim="search" type="search" placeholder="Cari pemetaan, nama, atau catatan…" aria-label="Cari parameter" />
+          <input v-model.trim="search" type="search" :placeholder="t('fullfilParams.searchPlaceholder')" :aria-label="t('fullfilParams.searchAria')" />
         </label>
-        <MdDropdown v-model="filterMapping" label="Pemetaan" :options="mappingFilterOptions" multiple />
-        <MdDropdown v-model="filterUnit" label="Satuan" :options="unitFilterOptions" multiple />
+        <MdDropdown v-model="filterMapping" :label="t('fullfilParams.mapping')" :options="mappingFilterOptions" multiple />
+        <MdDropdown v-model="filterUnit" :label="t('fullfilParams.col.unit')" :options="unitFilterOptions" multiple />
         <div class="md-chips">
-          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="t('fullfilParams.removeFilter', { label: c.label })" @click="c.remove()">
             {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
           </button>
-          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">{{ t('fullfilParams.clearAll') }}</button>
         </div>
       </template>
 
@@ -67,8 +67,8 @@
       </template>
 
       <template v-if="canWrite" #actions="{ row }">
-        <button type="button" class="md-icon-btn" :aria-label="`Ubah parameter ${row.name}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
-        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus parameter ${row.name}`" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+        <button type="button" class="md-icon-btn" :aria-label="t('fullfilParams.editAria', { name: row.name })" @click="openEdit(row)"><MdIcon name="edit" /></button>
+        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="t('fullfilParams.deleteAria', { name: row.name })" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
       </template>
 
       <template #card="{ row }">
@@ -78,19 +78,19 @@
           <MdBadge tone="neutral">{{ unitName(row.unit_id) }}</MdBadge>
         </div>
         <div class="md-card__grid">
-          <div>Pemetaan<b>{{ mappingName(row.fullfil_id) }}</b></div>
-          <div>Nilai<b>{{ fmt(row.value) }} {{ unitName(row.unit_id) }}</b></div>
-          <div>Catatan<b>{{ row.notes || '—' }}</b></div>
-          <div>Diubah<b>{{ formatDate(row.updated_at) }}</b></div>
+          <div>{{ t('fullfilParams.mapping') }}<b>{{ mappingName(row.fullfil_id) }}</b></div>
+          <div>{{ t('fullfilParams.col.value') }}<b>{{ fmt(row.value) }} {{ unitName(row.unit_id) }}</b></div>
+          <div>{{ t('fullfilParams.col.notes') }}<b>{{ row.notes || '—' }}</b></div>
+          <div>{{ t('fullfilParams.col.updatedAt') }}<b>{{ formatDate(row.updated_at) }}</b></div>
         </div>
       </template>
     </MdDataTable>
 
     <FullfilParamsForm :visible="showForm" :item="editing" :mappings="mappings" :units="units" :submitting="submitting" :error="actionError || ''" @submit="save" @cancel="closeForm" />
 
-    <MdConfirm :open="!!deleteTarget" title="Hapus parameter kebutuhan?" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="remove">
+    <MdConfirm :open="!!deleteTarget" :title="t('fullfilParams.confirmTitle')" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="remove">
       <template v-if="deleteTarget">
-        Parameter <b>{{ deleteTarget.name }}</b> ({{ mappingName(deleteTarget.fullfil_id) }}) akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.
+        {{ t('fullfilParams.confirmBefore') }} <b>{{ deleteTarget.name }}</b> ({{ mappingName(deleteTarget.fullfil_id) }}) {{ t('fullfilParams.confirmAfter') }}
       </template>
     </MdConfirm>
   </MdPage>
@@ -98,6 +98,8 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { currentIntlLocale } from '../../../../i18n'
 import FullfilParamsForm from './FullfilParamsForm.vue'
 import { createFullfilParams, deleteFullfilParams, listFullfilMappings, listFullfilParams, listTypeOfUnits, updateFullfilParams } from '../model'
 import { useToast } from '../../../../utils/toast'
@@ -106,18 +108,19 @@ import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
 import { MdPage, MdKpi, MdBarChart, MdDataTable, MdDropdown, MdBadge, MdConfirm, MdIcon } from '../../../shared/masterdata-ui'
 
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
+const { t } = useI18n()
 const canWrite = useCanManageMasterData()
 const { userName } = useUserNames()
 const { show: showToast } = useToast()
 
-const columns = [
-  { key: 'name', label: 'Nama' },
-  { key: 'fullfil_id', label: 'Pemetaan kebutuhan', sortValue: (r) => mappingName(r.fullfil_id) },
-  { key: 'value', label: 'Nilai', sortValue: (r) => (r.value == null ? null : Number(r.value)) },
-  { key: 'unit_id', label: 'Satuan', sortValue: (r) => unitName(r.unit_id) },
-  { key: 'notes', label: 'Catatan', sortable: false },
-  { key: 'updated_at', label: 'Diubah' }
-]
+const columns = computed(() => [
+  { key: 'name', label: t('fullfilParams.col.name') },
+  { key: 'fullfil_id', label: t('fullfilParams.col.mapping'), sortValue: (r) => mappingName(r.fullfil_id) },
+  { key: 'value', label: t('fullfilParams.col.value'), sortValue: (r) => (r.value == null ? null : Number(r.value)) },
+  { key: 'unit_id', label: t('fullfilParams.col.unit'), sortValue: (r) => unitName(r.unit_id) },
+  { key: 'notes', label: t('fullfilParams.col.notes'), sortable: false },
+  { key: 'updated_at', label: t('fullfilParams.col.updatedAt') }
+])
 
 const table = ref(null)
 const rows = ref([]); const mappings = ref([]); const units = ref([])
@@ -129,7 +132,7 @@ const showForm = ref(false); const editing = ref(null); const deleteTarget = ref
 const unitName = (id) => units.value.find((item) => Number(item.id) === Number(id))?.name || `#${id}`
 const mappingName = (id) => mappings.value.find((item) => Number(item.id) === Number(id))?.name || `#${id}`
 const formatDate = (value) => value ? String(value).replace(/\.\d+/, '').replace('T', ' ').replace('Z', '') : '-'
-const fmt = (n) => (n == null || n === '' ? '—' : Number(n).toLocaleString('id-ID', { maximumFractionDigits: 2 }))
+const fmt = (n) => (n == null || n === '' ? '—' : Number(n).toLocaleString(currentIntlLocale(), { maximumFractionDigits: 2 }))
 const initial = (name) => String(name || '#').trim().charAt(0).toUpperCase() || '#'
 const byName = (a, b) => String(a).localeCompare(String(b), 'id', { numeric: true })
 const countBy = (key, id) => rows.value.filter((r) => String(r[key]) === id).length
@@ -143,7 +146,7 @@ const noNotes = computed(() => rows.value.filter((r) => !r.notes).length)
 
 const bars = computed(() => mappingOptions.value.map((id) => {
   const n = countBy('fullfil_id', id)
-  return { key: id, label: mappingName(id), ariaLabel: `${mappingName(id)}: ${n} parameter`, segments: [{ value: n, color: 'var(--success)' }] }
+  return { key: id, label: mappingName(id), ariaLabel: t('fullfilParams.barAria', { label: mappingName(id), n }), segments: [{ value: n, color: 'var(--success)' }] }
 }))
 
 const filteredRows = computed(() => {
@@ -177,7 +180,7 @@ async function load() {
     const result = await Promise.all([listFullfilParams(), listFullfilMappings(), listTypeOfUnits()])
     rows.value = result[0].data; mappings.value = result[1]; units.value = result[2]
   } catch (err) {
-    error.value = err?.message || 'Gagal memuat data.'
+    error.value = err?.message || t('fullfilParams.loadFailed')
   } finally {
     loading.value = false
   }
@@ -188,11 +191,11 @@ function closeForm() { showForm.value = false; editing.value = null }
 async function save(payload) {
   submitting.value = true; actionError.value = null
   try {
-    if (editing.value?.id) { await updateFullfilParams(editing.value.id, payload); showToast('Parameter Kebutuhan berhasil diubah.') }
-    else { await createFullfilParams(payload); showToast('Parameter Kebutuhan berhasil ditambahkan.') }
+    if (editing.value?.id) { await updateFullfilParams(editing.value.id, payload); showToast(t('fullfilParams.toastUpdated')) }
+    else { await createFullfilParams(payload); showToast(t('fullfilParams.toastCreated')) }
     closeForm(); await load()
   } catch (err) {
-    actionError.value = err?.message || 'Gagal menyimpan data.'
+    actionError.value = err?.message || t('fullfilParams.saveFailed')
   } finally {
     submitting.value = false
   }
@@ -205,10 +208,10 @@ async function remove() {
   try {
     await deleteFullfilParams(deleteTarget.value.id)
     deleteTarget.value = null
-    showToast('Parameter Kebutuhan berhasil dihapus.')
+    showToast(t('fullfilParams.toastDeleted'))
     await load()
   } catch (err) {
-    deleteError.value = err?.message || 'Gagal menghapus data.'
+    deleteError.value = err?.message || t('fullfilParams.deleteFailed')
   } finally {
     submitting.value = false
   }

@@ -3,7 +3,7 @@
     <BaseSidebar :items="navigation" :user="user" />
     <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
       <BaseHeader
-        eyebrow="Sensus"
+        :eyebrow="t('nav.sensus')"
         :title="header.title"
         :notifications="header.notifications"
         :user="user"
@@ -23,6 +23,9 @@ import BaseSidebar from '../shared/sidebar'
 import SensusList from './components/SensusList.vue'
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
 import { useAppStore } from '../../stores'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({ controller: { type: Object, required: true } })
 
@@ -44,7 +47,7 @@ onMounted(async () => {
     rows.value = await props.controller.loadRows()
   } catch (err) {
     console.error('[Sensus] Failed to load rows:', err)
-    fetchError.value = err?.message || 'Gagal memuat data sensus.'
+    fetchError.value = err?.message || t('sensus.list.loadFailed')
   } finally {
     loading.value = false
   }

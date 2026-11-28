@@ -4,8 +4,8 @@
 
     <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
       <BaseHeader
-        eyebrow="Sensus"
-        title="Sensus Detail"
+        :eyebrow="t('nav.sensus')"
+        :title="t('sensus.detail.title')"
         :notifications="0"
         :user="user"
         :on-logout="logoutFromKeycloak"
@@ -13,18 +13,18 @@
 
       <main class="flex-1 min-w-0 p-5 max-[920px]:p-4 overflow-y-auto">
         <div class="flex flex-col gap-1 mb-4">
-          <h1 class="text-2xl font-semibold leading-8 tracking-tight text-(--text) m-0">Sensus Detail</h1>
+          <h1 class="text-2xl font-semibold leading-8 tracking-tight text-(--text) m-0">{{ t('sensus.detail.title') }}</h1>
           <RouterLink
             :to="`/sensus/${id}`"
             class="inline-flex items-center gap-2 text-sm text-(--brand) hover:text-[color-mix(in_srgb,var(--brand)_80%,black)] transition-colors w-fit"
           >
             <span aria-hidden="true">←</span>
-            Kembali ke Sensus list
+            {{ t('sensus.detail.backToList') }}
           </RouterLink>
         </div>
 
         <div v-if="loading" class="flex justify-center items-center py-20 text-sm text-(--text-muted)">
-          Memuat data&hellip;
+          {{ t('common.loading') }}
         </div>
 
         <div v-else-if="error" class="flex justify-center items-center py-20 text-sm text-red-500">
@@ -38,16 +38,16 @@
                 {{ summaryId }}
               </h2>
               <span class="bg-(--status-wip-bg) text-(--status-wip-text) border border-(--status-wip-text)/30 rounded-lg px-2.5 py-1 text-xs font-medium">
-                Open
+                {{ t('sensus.status.open') }}
               </span>
             </div>
             <dl class="grid gap-2 text-sm m-0">
               <div class="flex gap-6">
-                <dt class="text-(--text-muted) w-24 shrink-0">Date &amp; Time</dt>
+                <dt class="text-(--text-muted) w-24 shrink-0">{{ t('sensus.record.dateTime') }}</dt>
                 <dd class="text-(--text) m-0">{{ sensus.sensus_date || '—' }}</dd>
               </div>
               <div class="flex gap-6">
-                <dt class="text-(--text-muted) w-24 shrink-0">Reporter</dt>
+                <dt class="text-(--text-muted) w-24 shrink-0">{{ t('sensus.record.reporter') }}</dt>
                 <dd class="text-(--text) m-0">{{ sensus.reporter || '—' }}</dd>
               </div>
             </dl>
@@ -73,12 +73,12 @@
                     </td>
                     <td class="px-5 py-2.5 text-center">
                       <button type="button" class="inline-flex items-center justify-center h-8 min-w-16 px-3 rounded-full border border-(--border-strong) text-xs font-medium text-(--text-muted) hover:bg-(--surface-muted) transition-colors cursor-pointer" @click="openTask(row)">
-                        View
+                        {{ t('sensus.record.view') }}
                       </button>
                     </td>
                   </tr>
                   <tr v-if="paginatedRows.length === 0">
-                    <td colspan="5" class="px-5 py-8 text-center text-sm text-(--text-muted)">Tidak ada detail sensus.</td>
+                    <td colspan="5" class="px-5 py-8 text-center text-sm text-(--text-muted)">{{ t('sensus.record.empty') }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -109,6 +109,7 @@ import ListPagination from '../shared/pagination/ListPagination.vue'
 import { useListPagination } from '../shared/pagination/useListPagination.js'
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
 import { useAppStore } from '../../stores'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   controller: { type: Object, required: true },
@@ -117,6 +118,7 @@ const props = defineProps({
 
 const appStore = useAppStore()
 const router = useRouter()
+const { t } = useI18n()
 const navigation = computed(() => props.controller.getNavigation())
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 const sensus = ref({})
@@ -124,13 +126,13 @@ const rows = ref([])
 const loading = ref(false)
 const error = ref(null)
 
-const columns = [
-  { key: 'task', label: 'Task' },
-  { key: 'taskType', label: 'Task Type' },
-  { key: 'totalBlock', label: 'Total Block' },
-  { key: 'status', label: 'Status' },
-  { key: 'action', label: 'Action' }
-]
+const columns = computed(() => [
+  { key: 'task', label: t('sensus.record.colTask') },
+  { key: 'taskType', label: t('sensus.record.colTaskType') },
+  { key: 'totalBlock', label: t('sensus.record.colTotalBlock') },
+  { key: 'status', label: t('sensus.record.colStatus') },
+  { key: 'action', label: t('sensus.record.colAction') }
+])
 
 const mappedRows = computed(() => rows.value.map((detail) => ({
   id: detail.id,
@@ -149,7 +151,7 @@ const {
   visiblePages
 } = useListPagination(mappedRows)
 
-const summaryId = computed(() => sensus.value.id_sensus ? `Sensus ${sensus.value.id_sensus}` : 'Sensus Detail')
+const summaryId = computed(() => sensus.value.id_sensus ? t('sensus.sensusRef', { id: sensus.value.id_sensus }) : t('sensus.detail.title'))
 
 function openTask(row) {
   router.push(`/sensus/${props.id}/record/${row.id}`)
@@ -157,15 +159,15 @@ function openTask(row) {
 
 function statusMeta(raw) {
   const value = String(raw || '').toLowerCase()
-  if (value === 'done') return { label: 'Done', className: 'inline-block bg-(--status-done-bg) text-(--status-done-text) rounded-xl px-2 py-1 text-xs' }
-  if (value === 'submitted' || value === 'planned') return { label: 'On Plan', className: 'inline-block bg-(--status-plan-bg) text-(--status-plan-text) rounded-xl px-2 py-1 text-xs' }
-  if (value === 'overtime') return { label: 'Overtime', className: 'inline-block bg-(--status-overtime-bg) text-(--status-overtime-text) rounded-xl px-2 py-1 text-xs' }
-  return { label: 'On Progress', className: 'inline-block bg-(--status-wip-bg) text-(--status-wip-text) rounded-xl px-2 py-1 text-xs' }
+  if (value === 'done') return { label: t('sensus.status.done'), className: 'inline-block bg-(--status-done-bg) text-(--status-done-text) rounded-xl px-2 py-1 text-xs' }
+  if (value === 'submitted' || value === 'planned') return { label: t('sensus.status.onPlan'), className: 'inline-block bg-(--status-plan-bg) text-(--status-plan-text) rounded-xl px-2 py-1 text-xs' }
+  if (value === 'overtime') return { label: t('sensus.status.overtime'), className: 'inline-block bg-(--status-overtime-bg) text-(--status-overtime-text) rounded-xl px-2 py-1 text-xs' }
+  return { label: t('sensus.status.onProgress'), className: 'inline-block bg-(--status-wip-bg) text-(--status-wip-text) rounded-xl px-2 py-1 text-xs' }
 }
 
 onMounted(async () => {
   if (!props.id) {
-    error.value = 'ID sensus tidak ditemukan.'
+    error.value = t('sensus.detail.idNotFound')
     return
   }
 
@@ -175,7 +177,7 @@ onMounted(async () => {
     sensus.value = data || {}
     rows.value = Array.isArray(data?.details) ? data.details : []
   } catch (err) {
-    error.value = err?.message || 'Gagal memuat detail sensus.'
+    error.value = err?.message || t('sensus.record.loadFailed')
   } finally {
     loading.value = false
   }

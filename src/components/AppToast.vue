@@ -15,7 +15,7 @@
                         type="button"
                         class="flex-shrink-0 border-0 bg-transparent cursor-pointer leading-none p-0 transition-opacity hover:opacity-100 opacity-40"
                         :style="{ color: 'var(--text-muted)' }"
-                        aria-label="Dismiss"
+                        :aria-label="t('common.close')"
                         @click="dismiss(t.id)">
                         &times;
                     </button>
@@ -26,6 +26,8 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 import { useToast } from '../utils/toast'
 
 const { toasts, dismiss } = useToast()

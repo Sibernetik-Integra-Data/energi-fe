@@ -1,5 +1,5 @@
 <template>
-  <section class="md-panel md-table-panel" :aria-label="ariaLabel">
+  <section class="md-panel md-table-panel" :aria-label="ariaLabel ?? t('mdui.dataList')">
     <div v-if="$slots.toolbar" class="md-toolbar"><slot name="toolbar" /></div>
 
     <!-- Memuat -->
@@ -8,7 +8,7 @@
         <thead>
           <tr>
             <th v-for="c in columns" :key="c.key" scope="col" :class="{ 'is-right': c.align === 'right' }">{{ c.label }}</th>
-            <th v-if="$slots.actions" scope="col"><span class="md-sr">Aksi</span></th>
+            <th v-if="$slots.actions" scope="col"><span class="md-sr">{{ t('mdui.actions') }}</span></th>
           </tr>
         </thead>
         <tbody>
@@ -25,25 +25,25 @@
     <!-- Galat -->
     <div v-else-if="error" class="md-state md-state--err" role="alert">
       <div class="md-state__ill"><MdIcon name="alert" :size="32" /></div>
-      <h3>{{ entityLabel }} gagal dimuat</h3>
+      <h3>{{ t('mdui.loadFailed', { entity: entity }) }}</h3>
       <p>{{ error }}</p>
-      <button type="button" class="md-btn md-btn--primary" @click="$emit('retry')"><MdIcon name="refresh" />Coba lagi</button>
+      <button type="button" class="md-btn md-btn--primary" @click="$emit('retry')"><MdIcon name="refresh" />{{ t('mdui.retry') }}</button>
     </div>
 
     <!-- Belum ada data sama sekali -->
     <div v-else-if="!totalRows" class="md-state">
       <div class="md-state__ill"><MdIcon :name="emptyIcon" :size="32" /></div>
-      <h3>Belum ada {{ entityLabel.toLowerCase() }}</h3>
-      <p>{{ emptyText }}</p>
-      <button v-if="canAdd" type="button" class="md-btn md-btn--primary" @click="$emit('add')"><MdIcon name="plus" />{{ addLabel }}</button>
+      <h3>{{ t('mdui.emptyTitle', { entity: entity.toLowerCase() }) }}</h3>
+      <p>{{ emptyText ?? t('mdui.defaultEmptyText') }}</p>
+      <button v-if="canAdd" type="button" class="md-btn md-btn--primary" @click="$emit('add')"><MdIcon name="plus" />{{ addLabel ?? t('mdui.add') }}</button>
     </div>
 
     <!-- Hasil filter kosong -->
     <div v-else-if="!rows.length" class="md-state">
       <div class="md-state__ill"><MdIcon name="search" :size="32" /></div>
-      <h3>Tidak ada {{ entityLabel.toLowerCase() }} yang cocok</h3>
-      <p>Coba kata kunci lain atau longgarkan filter yang sedang aktif.</p>
-      <button type="button" class="md-btn" @click="$emit('clear-filters')"><MdIcon name="x" />Bersihkan filter</button>
+      <h3>{{ t('mdui.noMatchTitle', { entity: entity.toLowerCase() }) }}</h3>
+      <p>{{ t('mdui.noMatchText') }}</p>
+      <button type="button" class="md-btn" @click="$emit('clear-filters')"><MdIcon name="x" />{{ t('mdui.clearFilters') }}</button>
     </div>
 
     <template v-else>
@@ -63,7 +63,7 @@
                 </button>
                 <template v-else>{{ c.label }}</template>
               </th>
-              <th v-if="$slots.actions" scope="col" class="is-right">Aksi</th>
+              <th v-if="$slots.actions" scope="col" class="is-right">{{ t('mdui.actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -85,18 +85,18 @@
       </div>
 
       <div class="md-tfoot">
-        <span>Menampilkan <b class="md-num">{{ from }}–{{ to }}</b> dari <b class="md-num">{{ sortedRows.length }}</b> data</span>
+        <i18n-t keypath="mdui.showing" tag="span" scope="global"><template #range><b class="md-num">{{ from }}–{{ to }}</b></template><template #total><b class="md-num">{{ sortedRows.length }}</b></template></i18n-t>
         <span class="md-pp">
-          Baris per halaman
+          {{ t('mdui.rowsPerPage') }}
           <MdDropdown v-model="perPage" :options="perPageOptions" up label="" :summary-text="String(perPage)" @change="page = 1" />
         </span>
-        <nav class="md-pager" aria-label="Halaman">
-          <button type="button" :disabled="page === 1" aria-label="Halaman sebelumnya" @click="page--"><MdIcon name="chevronLeft" :size="16" /></button>
+        <nav class="md-pager" :aria-label="t('mdui.pages')">
+          <button type="button" :disabled="page === 1" :aria-label="t('mdui.prevPage')" @click="page--"><MdIcon name="chevronLeft" :size="16" /></button>
           <template v-for="(p, i) in pages" :key="i">
             <button v-if="p === '…'" type="button" class="md-pg" disabled>…</button>
             <button v-else type="button" class="md-pg" :aria-current="p === page ? 'page' : undefined" @click="page = p">{{ p }}</button>
           </template>
-          <button type="button" :disabled="page === pageCount" aria-label="Halaman berikutnya" @click="page++"><MdIcon name="chevronRight" :size="16" /></button>
+          <button type="button" :disabled="page === pageCount" :aria-label="t('mdui.nextPage')" @click="page++"><MdIcon name="chevronRight" :size="16" /></button>
         </nav>
       </div>
     </template>
@@ -109,6 +109,9 @@
 import { computed, ref, watch } from 'vue'
 import MdIcon from './MdIcon.vue'
 import MdDropdown from './MdDropdown.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   columns: { type: Array, required: true }, // [{ key, label, sortable?, align?, sortValue?(row) }]
@@ -117,16 +120,17 @@ const props = defineProps({
   rowKey: { type: String, default: 'id' },
   loading: { type: Boolean, default: false },
   error: { type: String, default: '' },
-  entityLabel: { type: String, default: 'Data' },
-  emptyText: { type: String, default: 'Tambahkan data pertama.' },
+  entityLabel: { type: String, default: undefined },
+  emptyText: { type: String, default: undefined },
   emptyIcon: { type: String, default: 'inbox' },
-  addLabel: { type: String, default: 'Tambah' },
+  addLabel: { type: String, default: undefined },
   canAdd: { type: Boolean, default: false },
-  ariaLabel: { type: String, default: 'Daftar data' },
+  ariaLabel: { type: String, default: undefined },
   initialSort: { type: String, default: '' },
   initialDir: { type: Number, default: 1 }
 })
 defineEmits(['retry', 'clear-filters', 'add'])
+const entity = computed(() => props.entityLabel ?? t('mdui.defaultEntity'))
 
 const sortKey = ref(props.initialSort)
 const sortDir = ref(props.initialDir)

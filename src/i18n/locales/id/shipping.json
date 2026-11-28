@@ -1,0 +1,74 @@
+{
+  "shipping": {
+    "title": "Pengiriman dan Penerimaan Panen",
+    "description": "Pantau pengiriman hasil panen dan catat penerimaannya di tujuan.",
+    "harvestType": { "tbs": "TBS", "looseFruit": "Brondolan" },
+    "status": { "all": "Semua", "pending": "Belum diterima", "received": "Sudah diterima" },
+    "receiptStatus": { "cancelled": "Dibatalkan", "posted": "Berlaku" },
+    "errors": {
+      "loadList": "Gagal memuat data pengiriman dan penerimaan.",
+      "detailNotFound": "Detail pengiriman tidak ditemukan.",
+      "loadDetail": "Gagal memuat detail pengiriman.",
+      "requestFailed": "Permintaan gagal diproses.",
+      "reload": "Gagal memuat ulang data."
+    },
+    "messages": { "saved": "Penerimaan {no} tersimpan.", "cancelled": "Penerimaan {no} dibatalkan." },
+    "workers": { "title": "Pekerja", "workerId": "ID Pekerja {id}", "bunches": "{n} Janjang", "showing": "Menampilkan", "ofTotal": "dari {n} data" },
+    "fields": {
+      "receivedDate": "Tanggal Terima", "harvestType": "Jenis Panen", "receivedQuantity": "Jumlah Terima",
+      "unit": "Satuan", "notes": "Keterangan", "receiptNo": "No. Penerimaan", "origin": "Asal", "destination": "Tujuan"
+    },
+    "form": {
+      "title": "Form Penerimaan",
+      "autoNumber": "Nomor penerimaan dibuat otomatis saat disimpan.",
+      "replaces": "Penerimaan ini menggantikan penerimaan yang dibatalkan.",
+      "chooseHarvestType": "Pilih jenis panen",
+      "shippedPlaceholder": "Dikirim: {value}",
+      "quantityHint": "Dikirim: {value}. Paling banyak tiga angka di belakang koma.",
+      "notesPlaceholder": "Ketik di sini",
+      "saving": "Menyimpan…",
+      "submit": "Simpan Penerimaan",
+      "shipmentUnit": "Satuan pengiriman"
+    },
+    "validation": {
+      "dateRequired": "Tanggal terima wajib diisi.",
+      "quantityPositive": "Jumlah terima harus lebih besar dari 0.",
+      "quantityDecimals": "Jumlah terima paling banyak tiga angka di belakang koma.",
+      "harvestTypeRequired": "Jenis panen wajib dipilih.",
+      "unitRequired": "Satuan wajib dipilih.",
+      "reasonRequired": "Alasan pembatalan wajib diisi."
+    },
+    "receipt": {
+      "title": "Penerimaan",
+      "recordedAt": "Dicatat",
+      "cancel": "Batalkan Penerimaan",
+      "cancelReason": "Alasan pembatalan",
+      "cancelHint": "Penerimaan {no} tidak dihapus, hanya ditandai batal dan tidak dapat dipulihkan. Setelah itu pengiriman dapat diterima ulang dengan nomor baru.",
+      "cancelPlaceholder": "Contoh: salah timbang",
+      "keep": "Tidak jadi",
+      "cancelling": "Membatalkan…",
+      "confirmCancel": "Ya, batalkan penerimaan"
+    },
+    "summary": {
+      "title": "Ringkasan", "field": "Kolom", "shipment": "Pengiriman", "receipt": "Penerimaan", "difference": "Selisih",
+      "quantity": "Jumlah", "unitsDiffer": "Satuan berbeda, tidak dibandingkan", "same": "Sama",
+      "less": "Kurang {value}", "more": "Lebih {value}"
+    },
+    "trip": {
+      "title": "Trip Pengiriman", "id": "Trip {id}", "startDate": "Tanggal Mulai", "endDate": "Tanggal Selesai",
+      "volume": "Volume", "driver": "Pengemudi"
+    },
+    "detail": {
+      "title": "Detail",
+      "back": "Kembali ke halaman sebelumnya",
+      "noReceiptHint": "Pengiriman ini belum memiliki penerimaan. Pencatatan penerimaan hanya dapat dilakukan oleh Admin, Kepala Kebun, atau Owner.",
+      "cancelledHistory": "Riwayat Penerimaan yang Dibatalkan",
+      "reason": "Alasan"
+    },
+    "list": {
+      "loading": "Memuat data pengiriman…", "tripId": "ID Trip", "shippedDate": "Tanggal Kirim", "shipped": "Dikirim",
+      "status": "Status", "received": "Diterima", "action": "Aksi", "view": "Lihat", "empty": "Tidak ada data pengiriman ditemukan."
+    },
+    "overview": { "totalTrips": "Jumlah Trip", "tripUnit": "Trip", "totalShipped": "Total Dikirim", "totalReceived": "Total Diterima" }
+  }
+}

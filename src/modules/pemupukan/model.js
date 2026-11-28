@@ -1,6 +1,9 @@
 import { signedApiFetch } from '../../api/fetch'
 import { navigation as sharedNavigation } from '../shared/navigation'
 import { loadPaginatedAssignmentList } from '../shared/assignmentListLoader'
+import i18n, { currentIntlLocale } from '../../i18n'
+
+const t = (...args) => i18n.global.t(...args)
 
 function cloneNavigation(items) {
   return items.map((item) => ({
@@ -32,7 +35,7 @@ function formatDate(raw) {
   if (!raw) return ''
   const d = new Date(raw)
   if (Number.isNaN(d.getTime())) return raw
-  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+  return d.toLocaleDateString(currentIntlLocale(), { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 function formatDateRange(start, end) {
@@ -47,11 +50,11 @@ function normalizeBlockNames(rawBlocks) {
   const names = rawBlocks
     .map((block) => {
       if (typeof block === 'string') return block
-      if (typeof block === 'number' && Number.isFinite(block)) return `Blok ${block}`
+      if (typeof block === 'number' && Number.isFinite(block)) return t('activity.blockN', { n: block })
       if (!block || typeof block !== 'object') return ''
       if (block.name) return String(block.name)
       if (block.block_name) return String(block.block_name)
-      if (Number.isFinite(block.id)) return `Blok ${block.id}`
+      if (Number.isFinite(block.id)) return t('activity.blockN', { n: block.id })
       return ''
     })
     .filter(Boolean)
@@ -60,7 +63,7 @@ function normalizeBlockNames(rawBlocks) {
 
 function normalizeRowNumbers(rawRows) {
   if (!Array.isArray(rawRows)) return []
-  return [...new Set(rawRows.map((row) => row == null ? '' : `Petak ${row}`).filter(Boolean))]
+  return [...new Set(rawRows.map((row) => row == null ? '' : t('activity.plotN', { n: row })).filter(Boolean))]
 }
 
 function toIsoDateOrEmpty(value) {
@@ -122,7 +125,7 @@ function mapSensusDetailItem(sensus, detail) {
     detailId: detail?.id || null,
     sensusDetailId: detail?.id || null,
     sensusId: sensus?.id_sensus || '',
-    jobType: detail?.type_of_work?.name || detail?.description || 'Pemupukan',
+    jobType: detail?.type_of_work?.name || detail?.description || t('nav.pemupukan'),
     groupOfWork: detail?.type_of_work?.group_of_work_name || '',
     blocks: normalizeBlockNames(rawBlocks),
     rowsNo: Array.isArray(detail?.rows_no) ? detail.rows_no : [],
@@ -154,8 +157,8 @@ function mapSensusToListItems(sensus) {
         detailId: null,
         sensusDetailId: null,
         sensusId: sensus?.id_sensus || '',
-        jobType: 'Pemupukan',
-        groupOfWork: 'Pemupukan',
+        jobType: t('nav.pemupukan'),
+        groupOfWork: t('nav.pemupukan'),
         blocks: [],
         photo: '',
         startDate: toDateOnlyString(sensus?.sensus_date),
@@ -259,15 +262,15 @@ export function createPemupukanModel() {
 
     getHeader() {
       return {
-        title: 'Pemupukan',
+        title: t('nav.pemupukan'),
         notifications: 0
       }
     },
 
     getIntro() {
       return {
-        title: 'Penugasan Pemupukan',
-        description: 'Daftar sensus pemupukan kebun berdasarkan data lapangan.'
+        title: t('pemupukan.introTitle'),
+        description: t('pemupukan.introDescription')
       }
     }
   }

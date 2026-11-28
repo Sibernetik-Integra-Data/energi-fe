@@ -1,48 +1,48 @@
 <template>
   <MdModal
     :open="visible"
-    :title="isEdit ? `Ubah Tujuan ${location.name || ''}`.trim() : 'Tambah Tujuan'"
-    subtitle="Lengkapi data tujuan. Kolom bertanda * wajib diisi."
+    :title="isEdit ? t('destination.form.titleEdit', { name: location.name || '' }).trim() : t('destination.add')"
+    :subtitle="t('destination.form.subtitle')"
     as-form
     @close="onCancel"
     @submit="onSubmit">
-    <MdField label="Nama" for-id="loc-name" required :error="errors.name">
-      <input id="loc-name" v-model.trim="form.name" class="md-input" :class="{ 'is-invalid': errors.name }" type="text" placeholder="mis. PKS Utara" autocomplete="off" />
+    <MdField :label="t('destination.ui.name')" for-id="loc-name" required :error="errors.name">
+      <input id="loc-name" v-model.trim="form.name" class="md-input" :class="{ 'is-invalid': errors.name }" type="text" :placeholder="t('destination.form.namePlaceholder')" autocomplete="off" />
     </MdField>
 
-    <MdField label="Tipe tujuan" for-id="loc-type" required :hint="typeLoadError" :error="errors.tol_id">
+    <MdField :label="t('destination.form.type')" for-id="loc-type" required :hint="typeLoadError" :error="errors.tol_id">
       <MdDropdown
         id="loc-type"
         v-model="form.tol_id"
         field
         :invalid="!!errors.tol_id"
         :disabled="typeOfLocationsLoading"
-        :placeholder="typeOfLocationsLoading ? 'Memuat tipe…' : 'Pilih tipe tujuan'"
+        :placeholder="typeOfLocationsLoading ? t('destination.form.typeLoading') : t('destination.form.typePlaceholder')"
         :options="typeOfLocations.map((t) => ({ value: String(t.id), label: t.name }))" />
     </MdField>
 
-    <MdField label="Tujuan" for-id="loc-location" full hint="Opsional.">
-      <input id="loc-location" v-model.trim="form.location" class="md-input" type="text" placeholder="mis. Pabrik Utara" autocomplete="off" />
+    <MdField :label="t('destination.form.location')" for-id="loc-location" full :hint="t('destination.ui.optional')">
+      <input id="loc-location" v-model.trim="form.location" class="md-input" type="text" :placeholder="t('destination.form.locationPlaceholder')" autocomplete="off" />
     </MdField>
 
-    <MdField label="Latitude" for-id="loc-lat" hint="Opsional.">
-      <input id="loc-lat" v-model.trim="form.latitude" class="md-input" type="text" inputmode="decimal" placeholder="mis. -1.234567" autocomplete="off" />
+    <MdField label="Latitude" for-id="loc-lat" :hint="t('destination.ui.optional')">
+      <input id="loc-lat" v-model.trim="form.latitude" class="md-input" type="text" inputmode="decimal" :placeholder="t('destination.form.latPlaceholder')" autocomplete="off" />
     </MdField>
 
-    <MdField label="Longitude" for-id="loc-lng" hint="Opsional.">
-      <input id="loc-lng" v-model.trim="form.longitude" class="md-input" type="text" inputmode="decimal" placeholder="mis. 103.123456" autocomplete="off" />
+    <MdField label="Longitude" for-id="loc-lng" :hint="t('destination.ui.optional')">
+      <input id="loc-lng" v-model.trim="form.longitude" class="md-input" type="text" inputmode="decimal" :placeholder="t('destination.form.lngPlaceholder')" autocomplete="off" />
     </MdField>
 
-    <MdField label="Catatan" for-id="loc-notes" full>
-      <textarea id="loc-notes" v-model.trim="form.notes" class="md-input" rows="2" placeholder="Catatan tambahan" />
+    <MdField :label="t('destination.ui.notes')" for-id="loc-notes" full>
+      <textarea id="loc-notes" v-model.trim="form.notes" class="md-input" rows="2" :placeholder="t('destination.ui.notesExtra')" />
     </MdField>
 
     <div v-if="error" class="md-modal__error" role="alert">{{ error }}</div>
 
     <template #footer>
-      <button type="button" class="md-btn" :disabled="submitting" @click="onCancel">Batal</button>
+      <button type="button" class="md-btn" :disabled="submitting" @click="onCancel">{{ t('destination.ui.cancel') }}</button>
       <button type="submit" class="md-btn md-btn--primary" :disabled="submitting">
-        <MdIcon name="check" />{{ submitting ? 'Menyimpan…' : isEdit ? 'Simpan Perubahan' : 'Tambah Tujuan' }}
+        <MdIcon name="check" />{{ submitting ? t('destination.ui.saving') : isEdit ? t('destination.ui.saveChanges') : t('destination.add') }}
       </button>
     </template>
   </MdModal>
@@ -50,6 +50,7 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { listTypeOfLocations } from '../model'
 import { MdModal, MdField, MdDropdown, MdIcon } from '../../../shared/masterdata-ui'
 
@@ -60,6 +61,7 @@ const props = defineProps({
   error: { type: String, default: '' }
 })
 const emit = defineEmits(['submit', 'cancel'])
+const { t } = useI18n()
 
 const isEdit = computed(() => Boolean(props.location?.id))
 
@@ -78,7 +80,7 @@ async function loadTypeOfLocations() {
     typeOfLocations.value = await listTypeOfLocations()
   } catch (err) {
     console.error('[DestinationForm] Failed to load type_of_location:', err)
-    typeLoadError.value = err?.message || 'Gagal memuat tipe tujuan.'
+    typeLoadError.value = err?.message || t('destination.form.typeLoadFailed')
   } finally {
     typeOfLocationsLoading.value = false
   }
@@ -107,9 +109,9 @@ watch(
 
 function validate() {
   const errs = {}
-  if (!form.value.name) errs.name = 'Nama wajib diisi.'
+  if (!form.value.name) errs.name = t('destination.ui.nameRequired')
   // The database requires a type; without this check the server answered 500.
-  if (!form.value.tol_id) errs.tol_id = 'Pilih tipe tujuan.'
+  if (!form.value.tol_id) errs.tol_id = t('destination.form.typeRequired')
   errors.value = errs
   return Object.keys(errs).length === 0
 }

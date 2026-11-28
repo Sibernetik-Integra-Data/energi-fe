@@ -4,7 +4,7 @@
 
         <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
             <BaseHeader
-                eyebrow="Panen"
+                :eyebrow="t('nav.panen')"
                 :title="header.title"
                 :notifications="header.notifications"
                 :user="user"
@@ -61,6 +61,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import BaseHeader from "../shared/header";
 import BaseSidebar from "../shared/sidebar";
 import PanenList from "./components/PanenList.vue";
@@ -74,6 +75,7 @@ const props = defineProps({
     controller: { type: Object, required: true },
 });
 
+const { t } = useI18n();
 const appStore = useAppStore();
 const router = useRouter();
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser());
@@ -111,7 +113,7 @@ async function loadList() {
         totalItems.value = result.total || 0;
     } catch (err) {
         console.error("[Panen] Failed to load list:", err);
-        fetchError.value = err?.message || "Gagal memuat data panen.";
+        fetchError.value = err?.message || t("panen.loadFailed");
         items.value = [];
         totalItems.value = 0;
     } finally {
@@ -151,7 +153,7 @@ async function handleViewDetail(item) {
         if (detail) selectedPlan.value = detail;
     } catch (err) {
         console.error("[Panen] Failed to load detail:", err);
-        detailError.value = err?.message || "Gagal memuat detail penugasan.";
+        detailError.value = err?.message || t("activity.loadDetailFailed");
     } finally {
         detailLoading.value = false;
     }

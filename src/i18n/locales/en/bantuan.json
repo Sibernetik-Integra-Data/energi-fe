@@ -1,0 +1,19 @@
+{
+  "bantuan": {
+    "eyebrow": "Guides",
+    "title": "Help & SOP",
+    "subtitle": "Guides to using the app and estate work procedures.",
+    "searchLabel": "Search guides",
+    "searchPlaceholder": "Search guides…",
+    "loading": "Loading guides…",
+    "loadError": "Guides cannot be loaded right now. Please try again shortly.",
+    "noMatch": "No guides match the search.",
+    "empty": "No guides yet.",
+    "generalCategory": "General",
+    "guide": "Guide",
+    "allGuides": "All guides",
+    "notFound": "Guide not found or no longer published.",
+    "updated": "Updated {date}",
+    "download": "Download"
+  }
+}

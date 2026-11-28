@@ -1,38 +1,38 @@
 <template>
   <MdModal
     :open="visible"
-    :title="isEdit ? 'Ubah Kelompok Pekerjaan' : 'Tambah Kelompok Pekerjaan'"
-    subtitle="Lengkapi data kelompok. Kolom bertanda * wajib diisi."
+    :title="isEdit ? t('groupOfWork.form.titleEdit') : t('groupOfWork.form.titleAdd')"
+    :subtitle="t('groupOfWork.form.subtitle')"
     as-form
     @close="onCancel"
     @submit="onSubmit">
-    <MdField label="Nama" for-id="gow-name" required full hint="Maksimal 100 karakter." :error="errors.name">
+    <MdField :label="t('groupOfWork.ui.name')" for-id="gow-name" required full :hint="t('groupOfWork.form.nameHint')" :error="errors.name">
       <input
         id="gow-name"
         v-model.trim="form.name"
         class="md-input"
         :class="{ 'is-invalid': errors.name }"
         type="text"
-        placeholder="mis. Pembersihan"
+        :placeholder="t('groupOfWork.form.namePlaceholder')"
         maxlength="100"
         autocomplete="off"
         :aria-invalid="!!errors.name" />
     </MdField>
 
-    <MdField label="Jenis TPH" required full hint="Pekerjaan di kelompok ini hanya bisa memakai TPH berjenis ini.">
-      <MdSegmented v-model="form.tph_type" aria-label="Jenis TPH" :options="tphOptions" />
+    <MdField :label="t('groupOfWork.tphType')" required full :hint="t('groupOfWork.form.tphHint')">
+      <MdSegmented v-model="form.tph_type" :aria-label="t('groupOfWork.tphType')" :options="tphOptions" />
     </MdField>
 
-    <MdField label="Keterangan" for-id="gow-detail" full hint="Opsional.">
-      <textarea id="gow-detail" v-model="form.detail" class="md-input" rows="4" placeholder="Keterangan (opsional)" maxlength="2000" />
+    <MdField :label="t('groupOfWork.detail')" for-id="gow-detail" full :hint="t('groupOfWork.ui.optional')">
+      <textarea id="gow-detail" v-model="form.detail" class="md-input" rows="4" :placeholder="t('groupOfWork.form.detailPlaceholder')" maxlength="2000" />
     </MdField>
 
     <div v-if="error" class="md-modal__error" role="alert">{{ error }}</div>
 
     <template #footer>
-      <button type="button" class="md-btn" :disabled="submitting" @click="onCancel">Batal</button>
+      <button type="button" class="md-btn" :disabled="submitting" @click="onCancel">{{ t('groupOfWork.ui.cancel') }}</button>
       <button type="submit" class="md-btn md-btn--primary" :disabled="submitting">
-        <MdIcon name="check" />{{ submitting ? 'Menyimpan…' : isEdit ? 'Simpan Perubahan' : 'Tambah Kelompok' }}
+        <MdIcon name="check" />{{ submitting ? t('groupOfWork.ui.saving') : isEdit ? t('groupOfWork.ui.saveChanges') : t('groupOfWork.add') }}
       </button>
     </template>
   </MdModal>
@@ -40,6 +40,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { MdModal, MdField, MdSegmented, MdIcon } from '../../../shared/masterdata-ui'
 
 const props = defineProps({
@@ -49,12 +50,13 @@ const props = defineProps({
   error: { type: String, default: '' }
 })
 const emit = defineEmits(['submit', 'cancel'])
+const { t } = useI18n()
 
 const isEdit = computed(() => Boolean(props.group?.id))
-const tphOptions = [
-  { value: 'PERAWATAN', label: 'Perawatan' },
-  { value: 'PANEN', label: 'Panen' }
-]
+const tphOptions = computed(() => [
+  { value: 'PERAWATAN', label: t('groupOfWork.type.perawatan') },
+  { value: 'PANEN', label: t('groupOfWork.type.panen') }
+])
 
 const emptyForm = () => ({ name: '', detail: '', tph_type: 'PERAWATAN' })
 const form = ref(emptyForm())
@@ -72,8 +74,8 @@ watch(
 
 function validate() {
   const errs = {}
-  if (!form.value.name) errs.name = 'Nama wajib diisi.'
-  else if (form.value.name.length > 100) errs.name = 'Nama maksimal 100 karakter.'
+  if (!form.value.name) errs.name = t('groupOfWork.ui.nameRequired')
+  else if (form.value.name.length > 100) errs.name = t('groupOfWork.form.nameMax')
   errors.value = errs
   return Object.keys(errs).length === 0
 }

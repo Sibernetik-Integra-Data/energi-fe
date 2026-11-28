@@ -1,39 +1,39 @@
 <template>
   <MdModal
     :open="visible"
-    :title="isEdit ? `Ubah Parameter ${item.name || ''}`.trim() : 'Tambah Parameter Kebutuhan'"
-    subtitle="Lengkapi data parameter. Kolom bertanda * wajib diisi."
+    :title="isEdit ? t('fullfilParams.formEdit', { name: item.name || '' }).trim() : t('fullfilParams.formAdd')"
+    :subtitle="t('fullfilParams.formSubtitle')"
     as-form
     @close="emit('cancel')"
     @submit="submit">
-    <MdField label="Pemetaan kebutuhan" for-id="fp-map" required full :error="errors.fullfil_id">
-      <MdDropdown id="fp-map" v-model="form.fullfil_id" field :invalid="!!errors.fullfil_id" placeholder="Pilih pemetaan kebutuhan"
+    <MdField :label="t('fullfilParams.col.mapping')" for-id="fp-map" required full :error="errors.fullfil_id">
+      <MdDropdown id="fp-map" v-model="form.fullfil_id" field :invalid="!!errors.fullfil_id" :placeholder="t('fullfilParams.form.selectMapping')"
         :options="mappings.map((m) => ({ value: String(m.id), label: m.name || `#${m.id}` }))" />
     </MdField>
 
-    <MdField label="Nama" for-id="fp-name" required full :error="errors.name">
-      <input id="fp-name" v-model.trim="form.name" class="md-input" :class="{ 'is-invalid': errors.name }" maxlength="50" placeholder="Nama parameter" autocomplete="off" />
+    <MdField :label="t('fullfilParams.col.name')" for-id="fp-name" required full :error="errors.name">
+      <input id="fp-name" v-model.trim="form.name" class="md-input" :class="{ 'is-invalid': errors.name }" maxlength="50" :placeholder="t('fullfilParams.namePlaceholder')" autocomplete="off" />
     </MdField>
 
-    <MdField label="Nilai" for-id="fp-value" required :error="errors.value">
-      <input id="fp-value" v-model="form.value" class="md-input" :class="{ 'is-invalid': errors.value }" type="number" step="1" placeholder="Nilai" />
+    <MdField :label="t('fullfilParams.col.value')" for-id="fp-value" required :error="errors.value">
+      <input id="fp-value" v-model="form.value" class="md-input" :class="{ 'is-invalid': errors.value }" type="number" step="1" :placeholder="t('fullfilParams.col.value')" />
     </MdField>
 
-    <MdField label="Satuan" for-id="fp-unit" required :error="errors.unit_id">
-      <MdDropdown id="fp-unit" v-model="form.unit_id" field :invalid="!!errors.unit_id" placeholder="Pilih satuan"
+    <MdField :label="t('fullfilParams.col.unit')" for-id="fp-unit" required :error="errors.unit_id">
+      <MdDropdown id="fp-unit" v-model="form.unit_id" field :invalid="!!errors.unit_id" :placeholder="t('fullfilParams.form.selectUnit')"
         :options="units.map((u) => ({ value: String(u.id), label: u.name || `#${u.id}` }))" />
     </MdField>
 
-    <MdField label="Catatan" for-id="fp-notes" full hint="Opsional.">
-      <textarea id="fp-notes" v-model.trim="form.notes" class="md-input" rows="3" maxlength="500" placeholder="Catatan (opsional)" style="resize: none" />
+    <MdField :label="t('fullfilParams.col.notes')" for-id="fp-notes" full :hint="t('fullfilParams.form.optional')">
+      <textarea id="fp-notes" v-model.trim="form.notes" class="md-input" rows="3" maxlength="500" :placeholder="t('fullfilParams.form.notesPlaceholder')" style="resize: none" />
     </MdField>
 
     <div v-if="error" class="md-modal__error" role="alert">{{ error }}</div>
 
     <template #footer>
-      <button type="button" class="md-btn" :disabled="submitting" @click="emit('cancel')">Batal</button>
+      <button type="button" class="md-btn" :disabled="submitting" @click="emit('cancel')">{{ t('fullfilParams.form.cancel') }}</button>
       <button type="submit" class="md-btn md-btn--primary" :disabled="submitting">
-        <MdIcon name="check" />{{ submitting ? 'Menyimpan…' : (isEdit ? 'Simpan Perubahan' : 'Tambah Parameter') }}
+        <MdIcon name="check" />{{ submitting ? t('fullfilParams.form.saving') : (isEdit ? t('fullfilParams.form.saveChanges') : t('fullfilParams.add')) }}
       </button>
     </template>
   </MdModal>
@@ -41,10 +41,12 @@
 
 <script setup>
 import { computed, reactive, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { MdModal, MdField, MdDropdown, MdIcon } from '../../../shared/masterdata-ui'
 
 const props = defineProps({ visible: Boolean, item: Object, mappings: { type: Array, default: () => [] }, units: { type: Array, default: () => [] }, submitting: Boolean, error: { type: String, default: '' } })
 const emit = defineEmits(['submit', 'cancel'])
+const { t } = useI18n()
 const isEdit = computed(() => Boolean(props.item?.id))
 const form = reactive({ fullfil_id: '', name: '', value: '', unit_id: '', notes: '' })
 const errors = reactive({ fullfil_id: '', name: '', value: '', unit_id: '' })
@@ -56,10 +58,10 @@ watch(() => props.visible, (visible) => {
 }, { immediate: true })
 
 function submit() {
-  errors.fullfil_id = form.fullfil_id ? '' : 'Pemetaan Kebutuhan wajib diisi.'
-  errors.name = form.name ? '' : 'Nama wajib diisi.'
-  errors.value = form.value !== '' && form.value !== null ? '' : 'Nilai wajib diisi.'
-  errors.unit_id = form.unit_id ? '' : 'Satuan wajib diisi.'
+  errors.fullfil_id = form.fullfil_id ? '' : t('fullfilParams.form.mappingRequired')
+  errors.name = form.name ? '' : t('fullfilParams.form.nameRequired')
+  errors.value = form.value !== '' && form.value !== null ? '' : t('fullfilParams.form.valueRequired')
+  errors.unit_id = form.unit_id ? '' : t('fullfilParams.form.unitRequired')
   if (Object.values(errors).some(Boolean)) return
   emit('submit', { fullfil_id: Number(form.fullfil_id), name: form.name, value: Number(form.value), unit_id: Number(form.unit_id), notes: form.notes || null })
 }

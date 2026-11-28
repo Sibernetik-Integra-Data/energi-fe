@@ -1,31 +1,31 @@
 <template>
-  <MdPage title="Pekerja" description="Daftar pengguna beserta jabatan (akses) masing-masing. Klik kartu atau batang grafik untuk menyaring tabel.">
+  <MdPage :title="t('pekerja.title')" :description="t('pekerja.description')">
     <template #actions>
       <button v-if="isOwner" type="button" class="md-btn md-btn--primary" :disabled="openingAdd" @click="openAddUser">
-        <MdIcon name="plus" />{{ openingAdd ? 'Memuat…' : 'Tambah Pengguna' }}
+        <MdIcon name="plus" />{{ openingAdd ? t('pekerja.loading') : t('pekerja.addUser') }}
       </button>
     </template>
 
     <div class="md-kpis">
-      <MdKpi icon="users" tone="info" label="Total pekerja" :value="total" :sub="`${jabatanList.length} jabatan`" action hint="Tampilkan semua" @select="clearAll" />
+      <MdKpi icon="users" tone="info" :label="t('pekerja.kpi.total')" :value="total" :sub="t('pekerja.kpi.totalSub', { n: jabatanList.length })" action :hint="t('pekerja.showAll')" @select="clearAll" />
       <MdKpi
         icon="star"
         tone="brand"
-        label="Jabatan terbanyak"
+        :label="t('pekerja.kpi.top')"
         :value="topJabatan ? topJabatan.count : 0"
-        :sub="topJabatan ? topJabatan.label : 'Belum ada jabatan'"
+        :sub="topJabatan ? topJabatan.label : t('pekerja.kpi.noPositions')"
         :action="!!topJabatan"
         :pressed="!!topJabatan && onlyJabatan(topJabatan.value)"
         @select="topJabatan && quickJabatan(topJabatan.value)" />
-      <MdKpi icon="check" tone="success" label="Berjabatan" :value="total - noJabatanCount" :sub="`${pct(total - noJabatanCount)}% dari data`" action :pressed="hasOnly" @select="toggleHas" />
-      <MdKpi icon="alert" tone="warning" label="Tanpa jabatan" :value="noJabatanCount" :sub="`${pct(noJabatanCount)}% dari data`" action :pressed="onlyJabatan(NONE)" @select="quickJabatan(NONE)" />
+      <MdKpi icon="check" tone="success" :label="t('pekerja.kpi.withPosition')" :value="total - noJabatanCount" :sub="t('pekerja.pctOfData', { n: pct(total - noJabatanCount) })" action :pressed="hasOnly" @select="toggleHas" />
+      <MdKpi icon="alert" tone="warning" :label="t('pekerja.kpi.noPosition')" :value="noJabatanCount" :sub="t('pekerja.pctOfData', { n: pct(noJabatanCount) })" action :pressed="onlyJabatan(NONE)" @select="quickJabatan(NONE)" />
     </div>
 
     <MdBarChart
       v-if="jabatanList.length > 1"
-      title="Jumlah pekerja per jabatan"
-      :subtitle="`${rows.length} pekerja di ${jabatanList.length} jabatan`"
-      :legend="[{ label: 'Berjabatan', color: 'var(--success)' }, { label: 'Tanpa jabatan', color: 'var(--border-strong)' }]"
+      :title="t('pekerja.chartTitle')"
+      :subtitle="t('pekerja.chartSubtitle', { n: rows.length, g: jabatanList.length })"
+      :legend="[{ label: t('pekerja.withPosition'), color: 'var(--success)' }, { label: t('pekerja.noPosition'), color: 'var(--border-strong)' }]"
       :bars="bars"
       :selected="filterJabatan"
       @toggle="toggleJabatan" />
@@ -36,24 +36,24 @@
       :total-rows="rows.length"
       :loading="loading"
       :error="fetchError || ''"
-      entity-label="Pekerja"
+      :entity-label="t('pekerja.entity')"
       empty-icon="users"
-      empty-text="Belum ada pekerja."
+      :empty-text="t('pekerja.empty')"
       initial-sort="name"
-      aria-label="Daftar pekerja"
+      :aria-label="t('pekerja.tableAria')"
       @retry="loadData"
       @clear-filters="clearAll">
       <template #toolbar>
         <label class="md-search">
           <MdIcon name="search" />
-          <input v-model.trim="search" type="search" placeholder="Cari nama, email, atau ID…" aria-label="Cari pekerja" />
+          <input v-model.trim="search" type="search" :placeholder="t('pekerja.searchPlaceholder')" :aria-label="t('pekerja.searchAria')" />
         </label>
-        <MdDropdown v-model="filterJabatan" label="Jabatan" :options="jabatanOptions" multiple />
+        <MdDropdown v-model="filterJabatan" :label="t('pekerja.col.position')" :options="jabatanOptions" multiple />
         <div class="md-chips">
-          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="t('pekerja.removeFilter', { label: c.label })" @click="c.remove()">
             {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
           </button>
-          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">{{ t('pekerja.clearAll') }}</button>
         </div>
       </template>
 
@@ -67,11 +67,11 @@
         <span v-if="row.email">{{ row.email }}</span><span v-else class="md-muted">—</span>
       </template>
       <template #cell-jabatan="{ row }">
-        <MdBadge v-if="row.jabatan" tone="info">{{ row.jabatan }}</MdBadge><span v-else class="md-muted">Tanpa jabatan</span>
+        <MdBadge v-if="row.jabatan" tone="info">{{ row.jabatan }}</MdBadge><span v-else class="md-muted">{{ t('pekerja.noPosition') }}</span>
       </template>
 
       <template v-if="canViewProfiles" #actions="{ row }">
-        <button type="button" class="md-icon-btn" :aria-label="`Lihat profil ${fullName(row)}`" title="Lihat" @click="onView(row)"><MdIcon name="eye" /></button>
+        <button type="button" class="md-icon-btn" :aria-label="t('pekerja.viewProfileAria', { name: fullName(row) })" :title="t('pekerja.view')" @click="onView(row)"><MdIcon name="eye" /></button>
       </template>
 
       <template #card="{ row }">
@@ -80,8 +80,8 @@
           <div style="flex: 1"><b class="md-strong">{{ fullName(row) || '-' }}</b><div class="md-muted" style="font-size: 12px">ID {{ shortId(row.user_id) }}</div></div>
         </div>
         <div class="md-card__grid">
-          <div>Email<b>{{ row.email || '—' }}</b></div>
-          <div>Jabatan<b>{{ row.jabatan || 'Tanpa jabatan' }}</b></div>
+          <div>{{ t('pekerja.col.email') }}<b>{{ row.email || '—' }}</b></div>
+          <div>{{ t('pekerja.col.position') }}<b>{{ row.jabatan || t('pekerja.noPosition') }}</b></div>
         </div>
       </template>
     </MdDataTable>
@@ -99,6 +99,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { listPekerja } from '../model'
 import UserManagementModal from '../../../user-management/components/UserManagementModal.vue'
@@ -108,6 +109,7 @@ import { encryptPassword } from '../../../user-management/services/passwordEncry
 import { useToast } from '../../../../utils/toast'
 import { MdPage, MdKpi, MdBarChart, MdDataTable, MdDropdown, MdBadge, MdIcon } from '../../../shared/masterdata-ui'
 
+const { t } = useI18n()
 const router = useRouter()
 const { show: showToast } = useToast()
 
@@ -117,11 +119,11 @@ const shortId = (id) => (id ? `${id.substring(0, 8)}…` : '-')
 const initial = (n) => String(n || '#').trim().charAt(0).toUpperCase() || '#'
 const jabKey = (r) => r.jabatan || NONE
 
-const columns = [
-  { key: 'name', label: 'Nama', sortValue: (r) => fullName(r).toLowerCase() },
-  { key: 'email', label: 'Email', sortValue: (r) => (r.email || '').toLowerCase() },
-  { key: 'jabatan', label: 'Jabatan', sortValue: (r) => (r.jabatan || '').toLowerCase() }
-]
+const columns = computed(() => [
+  { key: 'name', label: t('pekerja.col.name'), sortValue: (r) => fullName(r).toLowerCase() },
+  { key: 'email', label: t('pekerja.col.email'), sortValue: (r) => (r.email || '').toLowerCase() },
+  { key: 'jabatan', label: t('pekerja.col.position'), sortValue: (r) => (r.jabatan || '').toLowerCase() }
+])
 
 const rows = ref([])
 const total = ref(0)
@@ -147,13 +149,13 @@ const jabatanList = computed(() => {
 const topJabatan = computed(() => jabatanList.value[0] || null)
 const jabatanOptions = computed(() => [
   ...jabatanList.value,
-  ...(noJabatanCount.value ? [{ value: NONE, label: 'Tanpa jabatan', count: noJabatanCount.value }] : [])
+  ...(noJabatanCount.value ? [{ value: NONE, label: t('pekerja.noPosition'), count: noJabatanCount.value }] : [])
 ])
-const labelOf = (v) => (v === NONE ? 'Tanpa jabatan' : v)
+const labelOf = (v) => (v === NONE ? t('pekerja.noPosition') : v)
 const bars = computed(() => jabatanOptions.value.map((o) => ({
   key: o.value,
   label: o.label,
-  ariaLabel: `${o.label}: ${o.count} pekerja`,
+  ariaLabel: t('pekerja.barAria', { label: o.label, n: o.count }),
   segments: [{ value: o.count, color: o.value === NONE ? 'var(--border-strong)' : 'var(--success)' }]
 })))
 
@@ -207,7 +209,7 @@ async function loadData() {
     total.value = result.total
   } catch (err) {
     console.error('[Pekerja] Failed to load:', err)
-    fetchError.value = err?.message || 'Gagal memuat data pekerja.'
+    fetchError.value = err?.message || t('pekerja.loadFailed')
   } finally {
     loading.value = false
   }
@@ -220,7 +222,7 @@ async function openAddUser() {
     configuration.value = await userManagementService.getConfiguration()
     addModalOpen.value = true
   } catch (err) {
-    showToast(userManagementErrorMessage(err, 'Gagal memuat konfigurasi pengguna.'), 'error')
+    showToast(userManagementErrorMessage(err, t('pekerja.configFailed')), 'error')
   } finally {
     openingAdd.value = false
   }
@@ -247,10 +249,10 @@ async function createUser(form) {
       encryptedPassword
     })
     addModalOpen.value = false
-    showToast('Pengguna berhasil dibuat.')
+    showToast(t('pekerja.userCreated'))
     await loadData()
   } catch (err) {
-    modalError.value = userManagementErrorMessage(err, 'Gagal membuat pengguna.')
+    modalError.value = userManagementErrorMessage(err, t('pekerja.createFailed'))
   } finally {
     savingAdd.value = false
   }

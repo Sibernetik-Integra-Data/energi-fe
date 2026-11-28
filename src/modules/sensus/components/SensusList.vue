@@ -10,36 +10,36 @@
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Cari ID sensus, reporter, blok, atau jenis pekerjaan..."
+          :placeholder="t('sensus.list.searchPlaceholder')"
           class="md:col-span-2 w-full border border-(--border) bg-(--surface) rounded-lg px-3 py-2 text-sm text-(--text) outline-none focus:ring-2 focus:ring-green-200"
         />
 
         <select
           v-model="sortOrder"
           class="w-full border border-(--border) bg-(--surface) rounded-lg px-3 py-2 text-sm text-(--text) outline-none focus:ring-2 focus:ring-green-200 cursor-pointer"
-          aria-label="Urutkan data"
+          :aria-label="t('sensus.list.sort')"
         >
-          <option value="newest">Terbaru</option>
-          <option value="oldest">Terlama</option>
+          <option value="newest">{{ t('sensus.list.newest') }}</option>
+          <option value="oldest">{{ t('sensus.list.oldest') }}</option>
         </select>
 
         <select
           v-model="activeStatus"
           class="w-full border border-(--border) bg-(--surface) rounded-lg px-3 py-2 text-sm text-(--text) outline-none focus:ring-2 focus:ring-green-200 cursor-pointer"
-          aria-label="Filter status"
+          :aria-label="t('sensus.list.filterStatus')"
         >
-          <option value="all">Semua Status ({{ rows.length }})</option>
-          <option value="draft">Draft ({{ statusCount.draft }})</option>
-          <option value="wip">WIP ({{ statusCount.wip }})</option>
-          <option value="done">Done ({{ statusCount.done }})</option>
-          <option value="submitted">Submitted ({{ statusCount.submitted }})</option>
+          <option value="all">{{ t('sensus.list.allStatus', { n: rows.length }) }}</option>
+          <option value="draft">{{ t('sensus.status.draft') }} ({{ statusCount.draft }})</option>
+          <option value="wip">{{ t('sensus.status.wip') }} ({{ statusCount.wip }})</option>
+          <option value="done">{{ t('sensus.status.done') }} ({{ statusCount.done }})</option>
+          <option value="submitted">{{ t('sensus.status.submitted') }} ({{ statusCount.submitted }})</option>
         </select>
       </div>
     </div>
 
     <!-- Loading state -->
     <div v-if="loading" class="flex justify-center items-center py-16 text-sm text-(--text-muted)">
-      Memuat data&hellip;
+      {{ t('common.loading') }}
     </div>
 
     <!-- Error state -->
@@ -50,18 +50,18 @@
     <!-- Table desktop -->
     <template v-else>
     <!-- Floating open badge (right side) -->
-    <div v-if="wipCount > 0" class="sensus-open-badge">{{ wipCount }} WIP</div>
+    <div v-if="wipCount > 0" class="sensus-open-badge">{{ wipCount }} {{ t('sensus.status.wip') }}</div>
     <div class="bg-(--surface) rounded-xl overflow-hidden border border-(--border) shadow-sm max-[920px]:hidden">
       <table class="w-full border-collapse">
         <thead>
           <tr class="border-b border-(--border) bg-(--surface-muted)">
-            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">SENSUS ID</th>
-            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">REPORTER</th>
-            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">TANGGAL</th>
-            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">BLOK</th>
-            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">JENIS PEKERJAAN</th>
-            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">STATUS</th>
-            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">AKSI</th>
+            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">{{ t('sensus.list.colId') }}</th>
+            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">{{ t('sensus.record.reporter') }}</th>
+            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">{{ t('sensus.list.colDate') }}</th>
+            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">{{ t('sensus.list.colBlock') }}</th>
+            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">{{ t('sensus.list.colWorkType') }}</th>
+            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">{{ t('sensus.record.colStatus') }}</th>
+            <th class="text-left text-xs font-extrabold text-(--text-muted) py-4 px-6 uppercase tracking-widest">{{ t('sensus.record.colAction') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -98,8 +98,8 @@
             </td>
             <td class="py-5 px-6 align-middle">
               <div class="flex gap-2.5 items-center">
-                <button @click="navigateToDetail(row)" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border border-gray-300 hover:bg-(--surface-muted) transition-colors cursor-pointer">View</button>
-                <button class="text-sm py-1.5 px-4 rounded-lg border-0 bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors cursor-pointer">Verify</button>
+                <button @click="navigateToDetail(row)" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) bg-transparent border border-gray-300 hover:bg-(--surface-muted) transition-colors cursor-pointer">{{ t('sensus.record.view') }}</button>
+                <button class="text-sm py-1.5 px-4 rounded-lg border-0 bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors cursor-pointer">{{ t('sensus.list.verify') }}</button>
               </div>
             </td>
           </tr>
@@ -140,8 +140,8 @@
           <span v-if="!row.jobTypes || row.jobTypes.length === 0" class="text-xs text-(--text-muted)">—</span>
         </div>
         <div class="flex justify-end gap-2">
-          <button @click="navigateToDetail(row)" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-gray-300 bg-(--surface) hover:bg-(--surface-muted) transition-colors cursor-pointer">View</button>
-          <button class="text-sm py-1.5 px-4 rounded-lg border-0 bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors cursor-pointer">Verify</button>
+          <button @click="navigateToDetail(row)" class="text-sm py-1.5 px-3 rounded-lg font-semibold text-(--text) border border-gray-300 bg-(--surface) hover:bg-(--surface-muted) transition-colors cursor-pointer">{{ t('sensus.record.view') }}</button>
+          <button class="text-sm py-1.5 px-4 rounded-lg border-0 bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors cursor-pointer">{{ t('sensus.list.verify') }}</button>
         </div>
       </div>
     </div>
@@ -149,15 +149,15 @@
     <!-- Pagination -->
     <div class="flex items-center justify-between mt-5 gap-4 flex-wrap">
       <p class="text-xs text-(--text-muted) font-medium">
-        Showing {{ processedRows.length === 0 ? 0 : (currentPage - 1) * pageSize + 1 }}–{{ Math.min(currentPage * pageSize, processedRows.length) }} of {{ processedRows.length }} records
+        {{ t('sensus.list.showing', { from: processedRows.length === 0 ? 0 : (currentPage - 1) * pageSize + 1, to: Math.min(currentPage * pageSize, processedRows.length), total: processedRows.length }) }}
       </p>
       <div class="flex items-center gap-2">
-        <label class="text-xs text-(--text-muted) font-medium" for="page-size">Rows:</label>
+        <label class="text-xs text-(--text-muted) font-medium" for="page-size">{{ t('sensus.list.rows') }}</label>
         <select
           id="page-size"
           v-model.number="pageSize"
           class="border border-(--border) bg-(--surface) rounded-lg px-2.5 py-1.5 text-xs text-(--text) outline-none focus:ring-2 focus:ring-green-200 cursor-pointer"
-          aria-label="Jumlah data per halaman"
+          :aria-label="t('sensus.list.pageSize')"
         >
           <option :value="5">5</option>
           <option :value="10">10</option>
@@ -167,13 +167,13 @@
     </div>
 
     <div v-if="totalPages > 1" class="flex items-center justify-end mt-3 gap-4 flex-wrap">
-      <nav class="flex items-center gap-1" aria-label="Pagination">
+      <nav class="flex items-center gap-1" :aria-label="t('sensus.list.pagination')">
         <!-- Prev -->
         <button
           @click="currentPage--"
           :disabled="currentPage === 1"
           class="flex items-center justify-center w-9 h-9 rounded-lg border border-(--border) bg-(--surface) text-(--text) hover:bg-(--surface-muted) disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 cursor-pointer"
-          aria-label="Previous page"
+          :aria-label="t('sensus.list.prevPage')"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
         </button>
@@ -197,7 +197,7 @@
           @click="currentPage++"
           :disabled="currentPage === totalPages"
           class="flex items-center justify-center w-9 h-9 rounded-lg border border-(--border) bg-(--surface) text-(--text) hover:bg-(--surface-muted) disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 cursor-pointer"
-          aria-label="Next page"
+          :aria-label="t('sensus.list.nextPage')"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
         </button>
@@ -210,6 +210,9 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const router = useRouter()
 
@@ -318,17 +321,12 @@ function navigateToDetail(row) {
   }
 }
 
-const STATUS_LABEL = {
-  done:      'Done',
-  wip:       'WIP',
-  draft:     'Draft',
-  submitted: 'Submitted',
-  verified:  'Verified',
-  open:      'Open'
-}
+const STATUS_KEYS = ['done', 'wip', 'draft', 'submitted', 'verified', 'open']
 
 function statusLabel(status) {
-  return STATUS_LABEL[(status || '').toLowerCase()] || status || 'Draft'
+  const s = (status || '').toLowerCase()
+  if (STATUS_KEYS.includes(s)) return t(`sensus.status.${s}`)
+  return status || t('sensus.status.draft')
 }
 
 function statusChipClass(status) {

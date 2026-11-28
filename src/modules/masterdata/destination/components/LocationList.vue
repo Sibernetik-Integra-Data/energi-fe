@@ -1,21 +1,21 @@
 <template>
-  <MdPage title="Tujuan" description="Lokasi tujuan pengiriman hasil kebun beserta tipe dan koordinatnya. Klik kartu atau batang grafik untuk menyaring tabel.">
+  <MdPage :title="t('destination.title')" :description="t('destination.description')">
     <template #actions>
-      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah Tujuan</button>
+      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />{{ t('destination.add') }}</button>
     </template>
 
     <div class="md-kpis">
-      <MdKpi icon="truck" tone="info" label="Total tujuan" :value="rows.length" :sub="`${typeKeys.length} tipe`" action hint="Tampilkan semua" :pressed="false" @select="clearAll" />
-      <MdKpi icon="pin" tone="success" label="Berkoordinat" :value="countCoord('yes')" :sub="`${pct(countCoord('yes'))}% dari tujuan`" action :pressed="onlyCoord('yes')" @select="quickCoord('yes')" />
-      <MdKpi icon="alert" tone="warning" label="Tanpa koordinat" :value="countCoord('no')" sub="Lengkapi latitude & longitude" action :pressed="onlyCoord('no')" @select="quickCoord('no')" />
-      <MdKpi icon="layers" tone="brand" label="Tipe terbanyak" :value="topType ? topType.label : '—'" :sub="topType ? `${topType.count} tujuan` : 'Belum ada data'" action :pressed="!!topType && filterType.length === 1 && filterType[0] === topType.key" @select="topType && toggleType(topType.key)" />
+      <MdKpi icon="truck" tone="info" :label="t('destination.kpi.total')" :value="rows.length" :sub="t('destination.kpi.totalSub', { n: typeKeys.length })" action :hint="t('destination.ui.showAll')" :pressed="false" @select="clearAll" />
+      <MdKpi icon="pin" tone="success" :label="t('destination.hasCoord')" :value="countCoord('yes')" :sub="t('destination.kpi.pctSub', { n: pct(countCoord('yes')) })" action :pressed="onlyCoord('yes')" @select="quickCoord('yes')" />
+      <MdKpi icon="alert" tone="warning" :label="t('destination.noCoord')" :value="countCoord('no')" :sub="t('destination.kpi.noCoordSub')" action :pressed="onlyCoord('no')" @select="quickCoord('no')" />
+      <MdKpi icon="layers" tone="brand" :label="t('destination.kpi.top')" :value="topType ? topType.label : '—'" :sub="topType ? t('destination.kpi.topSub', { n: topType.count }) : t('destination.kpi.noData')" action :pressed="!!topType && filterType.length === 1 && filterType[0] === topType.key" @select="topType && toggleType(topType.key)" />
     </div>
 
     <MdBarChart
       v-if="typeKeys.length"
-      title="Jumlah tujuan per tipe"
-      :subtitle="`${rows.length} tujuan di ${typeKeys.length} tipe`"
-      :legend="[{ label: 'Berkoordinat', color: 'var(--success)' }, { label: 'Tanpa koordinat', color: 'var(--border-strong)' }]"
+      :title="t('destination.chart.title')"
+      :subtitle="t('destination.chart.subtitle', { n: rows.length, t: typeKeys.length })"
+      :legend="[{ label: t('destination.hasCoord'), color: 'var(--success)' }, { label: t('destination.noCoord'), color: 'var(--border-strong)' }]"
       :bars="bars"
       :selected="filterType"
       @toggle="toggleType" />
@@ -27,35 +27,35 @@
       :total-rows="rows.length"
       :loading="loading"
       :error="fetchError || ''"
-      entity-label="Tujuan"
+      :entity-label="t('destination.entity')"
       empty-icon="truck"
-      empty-text="Tambahkan tujuan pertama agar bisa dipakai saat pengiriman hasil panen."
-      add-label="Tambah Tujuan"
+      :empty-text="t('destination.empty')"
+      :add-label="t('destination.add')"
       :can-add="canWrite"
       initial-sort="name"
-      aria-label="Daftar tujuan"
+      :aria-label="t('destination.aria')"
       @retry="loadData"
       @add="openCreate"
       @clear-filters="clearAll">
       <template #toolbar>
         <label class="md-search">
           <MdIcon name="search" />
-          <input v-model.trim="search" type="search" placeholder="Cari nama, tujuan, atau catatan…" aria-label="Cari tujuan" />
+          <input v-model.trim="search" type="search" :placeholder="t('destination.searchPlaceholder')" :aria-label="t('destination.searchAria')" />
         </label>
-        <MdDropdown v-model="filterType" label="Tipe" :options="typeFilterOptions" multiple />
-        <MdDropdown v-model="filterCoord" label="Koordinat" :options="coordFilterOptions" multiple />
+        <MdDropdown v-model="filterType" :label="t('destination.type')" :options="typeFilterOptions" multiple />
+        <MdDropdown v-model="filterCoord" :label="t('destination.coord')" :options="coordFilterOptions" multiple />
         <div class="md-chips">
-          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="t('destination.ui.removeFilter', { label: c.label })" @click="c.remove()">
             {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
           </button>
-          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">{{ t('destination.ui.clearAll') }}</button>
         </div>
       </template>
 
       <template #cell-name="{ row }">
         <div class="md-ident">
           <span class="md-avatar">{{ initial(row.name) }}</span>
-          <div><b>{{ row.name }}</b><small>{{ row.location || 'Tanpa keterangan tujuan' }}</small></div>
+          <div><b>{{ row.name }}</b><small>{{ row.location || t('destination.noLocation') }}</small></div>
         </div>
       </template>
       <template #cell-type="{ row }">
@@ -72,34 +72,39 @@
       </template>
 
       <template v-if="canWrite" #actions="{ row }">
-        <button type="button" class="md-icon-btn" :aria-label="`Ubah tujuan ${row.name}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
-        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus tujuan ${row.name}`" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+        <button type="button" class="md-icon-btn" :aria-label="t('destination.editAria', { name: row.name })" @click="openEdit(row)"><MdIcon name="edit" /></button>
+        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="t('destination.deleteAria', { name: row.name })" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
       </template>
 
       <template #card="{ row }">
         <div class="md-card__top">
           <span class="md-avatar">{{ initial(row.name) }}</span>
-          <div style="flex: 1"><b class="md-strong">{{ row.name }}</b><div class="md-muted" style="font-size: 12px">{{ row.location || 'Tanpa keterangan tujuan' }}</div></div>
+          <div style="flex: 1"><b class="md-strong">{{ row.name }}</b><div class="md-muted" style="font-size: 12px">{{ row.location || t('destination.noLocation') }}</div></div>
           <MdBadge :tone="typeKey(row) === '-' ? 'neutral' : 'info'">{{ typeLabel(typeKey(row)) }}</MdBadge>
         </div>
         <div class="md-card__grid">
           <div>Latitude<b>{{ row.latitude || '—' }}</b></div>
           <div>Longitude<b>{{ row.longitude || '—' }}</b></div>
-          <div style="grid-column: 1 / -1">Catatan<b>{{ row.notes || '—' }}</b></div>
+          <div style="grid-column: 1 / -1">{{ t('destination.ui.notes') }}<b>{{ row.notes || '—' }}</b></div>
         </div>
       </template>
     </MdDataTable>
 
     <LocationForm :visible="showForm" :location="editingLocation" :submitting="submitting" :error="actionError || ''" @submit="onFormSubmit" @cancel="closeForm" />
 
-    <MdConfirm :open="!!deletingLocation" title="Hapus tujuan?" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
-      <template v-if="deletingLocation">Tujuan <b>{{ deletingLocation.name }}</b> akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.</template>
+    <MdConfirm :open="!!deletingLocation" :title="t('destination.confirm.title')" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
+      <template v-if="deletingLocation">
+        <i18n-t keypath="destination.confirm.body" scope="global">
+          <template #name><b>{{ deletingLocation.name }}</b></template>
+        </i18n-t>
+      </template>
     </MdConfirm>
   </MdPage>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import LocationForm from './LocationForm.vue'
 import { listLocations, createLocation, updateLocation, deleteLocation, listTypeOfLocations } from '../model'
 import { useToast } from '../../../../utils/toast'
@@ -108,6 +113,7 @@ import { MdPage, MdKpi, MdBarChart, MdDataTable, MdDropdown, MdBadge, MdConfirm,
 
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
 const canWrite = useCanManageMasterData()
+const { t } = useI18n()
 const { show: showToast } = useToast()
 
 const table = ref(null)
@@ -138,21 +144,21 @@ function typeKey(r) {
   return '-'
 }
 function typeLabel(key) {
-  if (key === '-') return 'Tanpa tipe'
+  if (key === '-') return t('destination.noType')
   if (key.startsWith('n:')) return key.slice(2)
   const t = types.value.find((x) => String(x.id) === key)
   if (t) return t.name
   const r = rows.value.find((x) => typeKey(x) === key)
-  return r?.location_type?.name || r?.type_of_location || `Tipe ${key}`
+  return r?.location_type?.name || r?.type_of_location || t('destination.typeN', { key })
 }
 
-const columns = [
-  { key: 'name', label: 'Nama' },
-  { key: 'type', label: 'Tipe', sortValue: (r) => (typeKey(r) === '-' ? '' : typeLabel(typeKey(r))) },
+const columns = computed(() => [
+  { key: 'name', label: t('destination.ui.name') },
+  { key: 'type', label: t('destination.type'), sortValue: (r) => (typeKey(r) === '-' ? '' : typeLabel(typeKey(r))) },
   { key: 'latitude', label: 'Latitude', sortValue: (r) => (r.latitude ? Number(r.latitude) : null) },
   { key: 'longitude', label: 'Longitude', sortValue: (r) => (r.longitude ? Number(r.longitude) : null) },
-  { key: 'notes', label: 'Catatan' }
-]
+  { key: 'notes', label: t('destination.ui.notes') }
+])
 
 const countCoord = (k) => rows.value.filter((r) => coordKey(r) === k).length
 const pct = (n) => (rows.value.length ? Math.round((n / rows.value.length) * 100) : 0)
@@ -162,8 +168,8 @@ const typeFilterOptions = computed(() =>
   typeKeys.value.map((k) => ({ value: k, label: typeLabel(k), count: rows.value.filter((r) => typeKey(r) === k).length }))
 )
 const coordFilterOptions = computed(() => [
-  { value: 'yes', label: 'Berkoordinat', count: countCoord('yes') },
-  { value: 'no', label: 'Tanpa koordinat', count: countCoord('no') }
+  { value: 'yes', label: t('destination.hasCoord'), count: countCoord('yes') },
+  { value: 'no', label: t('destination.noCoord'), count: countCoord('no') }
 ])
 const topType = computed(() => {
   const best = typeFilterOptions.value.filter((o) => o.value !== '-').sort((a, b) => b.count - a.count)[0]
@@ -177,7 +183,7 @@ const bars = computed(() =>
     return {
       key: k,
       label: typeLabel(k),
-      ariaLabel: `${typeLabel(k)}: ${rs.length} tujuan, ${yes} berkoordinat`,
+      ariaLabel: t('destination.chart.barAria', { label: typeLabel(k), n: rs.length, c: yes }),
       segments: [
         { value: yes, color: 'var(--success)' },
         { value: rs.length - yes, color: 'var(--border-strong)' }
@@ -199,7 +205,7 @@ const chips = computed(() => {
   const c = []
   if (search.value) c.push({ key: 'q', label: `“${search.value}”`, remove: () => (search.value = '') })
   filterType.value.forEach((k) => c.push({ key: `t-${k}`, label: typeLabel(k), remove: () => (filterType.value = filterType.value.filter((x) => x !== k)) }))
-  filterCoord.value.forEach((k) => c.push({ key: `c-${k}`, label: k === 'yes' ? 'Berkoordinat' : 'Tanpa koordinat', remove: () => (filterCoord.value = filterCoord.value.filter((x) => x !== k)) }))
+  filterCoord.value.forEach((k) => c.push({ key: `c-${k}`, label: k === 'yes' ? t('destination.hasCoord') : t('destination.noCoord'), remove: () => (filterCoord.value = filterCoord.value.filter((x) => x !== k)) }))
   return c
 })
 
@@ -223,7 +229,7 @@ async function loadData() {
     rows.value = await listLocations()
   } catch (err) {
     console.error('[Destination] Failed to load:', err)
-    fetchError.value = err?.message || 'Gagal memuat tujuan.'
+    fetchError.value = err?.message || t('destination.error.load')
   } finally {
     loading.value = false
   }
@@ -258,16 +264,16 @@ async function onFormSubmit(formData) {
       const updated = await updateLocation(editingLocation.value.id, formData)
       const idx = rows.value.findIndex((r) => r.id === editingLocation.value.id)
       if (idx !== -1) rows.value[idx] = updated || { ...rows.value[idx], ...formData }
-      showToast('Tujuan berhasil diubah.')
+      showToast(t('destination.toast.updated'))
     } else {
       const created = await createLocation(formData)
       if (created) rows.value.unshift(created)
-      showToast('Tujuan berhasil ditambahkan.')
+      showToast(t('destination.toast.created'))
     }
     closeForm()
   } catch (err) {
     console.error('[Destination] Save failed:', err)
-    actionError.value = err?.message || 'Gagal menyimpan data.'
+    actionError.value = err?.message || t('destination.ui.saveFailed')
   } finally {
     submitting.value = false
   }
@@ -289,12 +295,12 @@ async function onDeleteConfirm() {
     await deleteLocation(deletingLocation.value.id)
     rows.value = rows.value.filter((r) => r.id !== deletingLocation.value.id)
     deletingLocation.value = null
-    showToast('Tujuan berhasil dihapus.')
+    showToast(t('destination.toast.deleted'))
   } catch (err) {
     console.error('[Destination] Delete failed:', err)
     deleteError.value = /dirujuk|409/i.test(err?.message || '')
-      ? 'Tujuan masih dipakai data lain, jadi tidak bisa dihapus.'
-      : err?.message || 'Gagal menghapus tujuan.'
+      ? t('destination.error.inUse')
+      : err?.message || t('destination.error.delete')
   } finally {
     submitting.value = false
   }

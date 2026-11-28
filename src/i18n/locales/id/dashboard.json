@@ -1,0 +1,135 @@
+{
+  "dashboard": {
+    "title": "Dasbor",
+    "introDescription": "Ringkasan aktivitas kebun, progres pekerjaan, dan daftar tindak lanjut yang sedang berjalan.",
+    "toolbar": "Kendali dasbor",
+    "loadingData": "Memuat data…",
+    "lastUpdated": "Pembaruan terakhir {time}",
+    "reload": "Muat ulang",
+    "period": "Periode",
+    "days": "{n} hari",
+    "quickLinks": "Tautan cepat",
+    "summary": "Ringkasan",
+    "kpi": {
+      "sensusGroup": "Sensus {group}",
+      "failed": "Gagal dimuat",
+      "reports": "laporan",
+      "vs": "vs {label}: {value}",
+      "receivedVolume": "Volume diterima {n} hari",
+      "noShipments": "Belum ada pengiriman",
+      "diff": " · selisih {pct}%",
+      "receivedShare": "Diterima {pct}% dari volume dikirim",
+      "latePlans": "Rencana terlambat",
+      "ofTotal": "dari {n}",
+      "clickLatePlans": "Klik untuk lihat daftar rencana",
+      "noComparison": "Tidak ada pembanding",
+      "up": "naik ",
+      "down": "turun "
+    },
+    "sensus": {
+      "title": "Sensus harian per kelompok",
+      "subtitle": "jumlah sensus per hari",
+      "filterGroup": "Saring kelompok",
+      "findNone": "Belum ada sensus tercatat dalam {days} hari terakhir.",
+      "findAllSame": "Semua kelompok sama: masing-masing {n} sensus dalam {days} hari.",
+      "findTied": "{groups} paling banyak dicatat: masing-masing {n} sensus dalam {days} hari.",
+      "findTop": "{group} paling banyak dicatat: {n} sensus dalam {days} hari.",
+      "and": " dan ",
+      "chartLabel": "Grafik garis sensus harian per kelompok, {days} hari. Total: {totals}. Gunakan panah kiri dan kanan untuk membaca per hari."
+    },
+    "feed": {
+      "title": "Perlu tindak lanjut",
+      "count": "{n} butir",
+      "filterLevel": "Saring tingkat",
+      "partialError": "Sebagian sumber gagal dimuat: {sources}.",
+      "empty": "Tidak ada butir tindak lanjut.",
+      "emptyFiltered": "Tidak ada butir tindak lanjut untuk saringan ini.",
+      "planLate": "Rencana {job} di {block} terlambat {days} hari (tenggat {due}).",
+      "sensusWaiting": "Sensus {code} ({block}) menunggu verifikasi {wait}.",
+      "weighDiff": "Selisih timbang {pct}% pada pengiriman {date} (kirim {shipped} {unit}, terima {received} {unit})."
+    },
+    "level": {
+      "kritis": "Kritis",
+      "serius": "Serius",
+      "peringatan": "Peringatan",
+      "kritisTag": "KRITIS",
+      "seriusTag": "SERIUS",
+      "peringatanTag": "PERINGATAN"
+    },
+    "kind": {
+      "telat": "Rencana terlambat",
+      "tunggu": "Menunggu > 24 jam",
+      "timbang": "Selisih timbang"
+    },
+    "ship": {
+      "title": "Pengiriman 7 hari",
+      "subtitle": "kirim vs terima per tanggal kirim",
+      "shipped": "Kirim",
+      "received": "Terima",
+      "receivedLower": "terima",
+      "perDay": "Kirim dan terima per hari",
+      "none": "tidak ada",
+      "notReceived": "belum diterima",
+      "overLimit": "{pct}% lewat batas",
+      "diff": "selisih {pct}%",
+      "pending": " · {n} belum diterima",
+      "note": "Selisih dihitung hanya dari pengiriman yang sudah diterima dengan satuan yang sama. Batas {limit}%.",
+      "findNoneWindow": "Belum ada pengiriman dalam {days} hari terakhir.",
+      "findNone7": "Tidak ada pengiriman dalam 7 hari terakhir.",
+      "findOver": "Selisih lebih dari {limit}% pada {dates}.",
+      "findOk": "Selisih semua hari dalam batas {limit}%.",
+      "noUnit": "tanpa satuan"
+    },
+    "pending": {
+      "title": "Menunggu verifikasi",
+      "count": "{n} menunggu",
+      "waiting": "menunggu {wait}",
+      "check": "Periksa sensus {code}",
+      "empty": "Tidak ada sensus yang menunggu verifikasi.",
+      "emptyGroup": "Tidak ada sensus yang menunggu verifikasi untuk kelompok ini.",
+      "seeAll": "Lihat semua di Sensus"
+    },
+    "plan": {
+      "title": "Rencana kerja aktif",
+      "onlyLate": "hanya terlambat",
+      "clearFilters": "hapus saringan",
+      "hint": "klik seri grafik untuk saring",
+      "emptyFiltered": "Tidak ada rencana untuk saringan ini.",
+      "empty": "Belum ada rencana kerja aktif.",
+      "late": "Terlambat {n} hari",
+      "findNone": "Tidak ada rencana yang sedang berjalan atau direncanakan.",
+      "findAllOnTime": "{n} rencana aktif, semuanya masih dalam tenggat.",
+      "findLate": "{n} rencana lewat tenggat; terlama {job} di {block} ({days} hari).",
+      "col": {
+        "group": "Kelompok",
+        "job": "Pekerjaan",
+        "block": "Blok",
+        "start": "Mulai",
+        "end": "Selesai",
+        "status": "Status"
+      },
+      "status": {
+        "planned": "Direncanakan",
+        "in_progress": "Berjalan",
+        "done": "Selesai",
+        "cancelled": "Dibatalkan"
+      }
+    },
+    "error": {
+      "sensus": "Data sensus gagal dimuat.",
+      "plans": "Data rencana kerja gagal dimuat.",
+      "ships": "Data pengiriman gagal dimuat."
+    },
+    "source": {
+      "sensus": "sensus",
+      "plans": "rencana kerja",
+      "ships": "pengiriman"
+    },
+    "wait": {
+      "lessThanHour": "kurang dari 1 jam",
+      "hours": "{n} jam",
+      "days": "{n} hari"
+    },
+    "block": "Blok {id}"
+  }
+}

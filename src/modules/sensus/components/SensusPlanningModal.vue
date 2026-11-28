@@ -17,11 +17,11 @@
         >
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-5 border-b border-(--border)">
-            <h3 id="plan-panel-title" class="text-base font-bold text-(--text) m-0">Rencana Baru</h3>
+            <h3 id="plan-panel-title" class="text-base font-bold text-(--text) m-0">{{ t('sensus.planning.newPlan') }}</h3>
             <button
               @click="close"
               class="w-8 h-8 flex items-center justify-center rounded-lg text-(--text-muted) hover:text-(--text) hover:bg-(--surface-muted) transition-colors cursor-pointer border-0 bg-transparent"
-              aria-label="Tutup"
+              :aria-label="t('common.close')"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -37,7 +37,7 @@
 
               <!-- ID Sensus -->
               <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">ID Sensus</label>
+                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">{{ t('sensus.planning.sensusId') }}</label>
                 <div class="w-full bg-(--surface-muted) border border-(--border) rounded-xl px-4 py-2.5 text-sm text-(--text) flex items-center justify-between">
                   <span>{{ sensusId || '—' }}</span>
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-(--text-muted) shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -48,7 +48,7 @@
 
               <!-- Aktivitas (Sensus Detail) -->
               <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Aktivitas Kebun</label>
+                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">{{ t('sensus.planning.estateActivity') }}</label>
                 <div class="relative">
                   <select
                     :value="form.sensusDetailId"
@@ -56,20 +56,20 @@
                     required
                     class="w-full bg-(--surface-muted) border border-(--border) rounded-xl px-4 py-2.5 text-sm text-(--text) outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all cursor-pointer appearance-none pr-10"
                   >
-                    <option :value="null" disabled>Pilih aktivitas...</option>
+                    <option :value="null" disabled>{{ t('sensus.planning.selectActivity') }}</option>
                     <option v-for="opt in detailOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                   </select>
                   <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--text-muted)" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
-                <p v-if="items.length === 0" class="text-xs text-(--text-muted) italic">Tidak ada aktivitas tersedia untuk sensus ini.</p>
+                <p v-if="items.length === 0" class="text-xs text-(--text-muted) italic">{{ t('sensus.planning.noActivities') }}</p>
               </div>
 
               <!-- Date range -->
               <div class="grid grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Start Date</label>
+                  <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">{{ t('sensus.planning.startDate') }}</label>
                   <input
                     v-model="form.startDate"
                     type="date"
@@ -78,7 +78,7 @@
                   />
                 </div>
                 <div class="flex flex-col gap-1.5">
-                  <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">End Date</label>
+                  <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">{{ t('sensus.planning.endDate') }}</label>
                   <input
                     v-model="form.endDate"
                     type="date"
@@ -112,17 +112,17 @@
 
               <!-- Catatan -->
               <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Catatan</label>
+                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">{{ t('sensus.planning.notes') }}</label>
                 <textarea
                   v-model="form.notes"
                   rows="3"
-                  placeholder="Opsional..."
+                  :placeholder="t('sensus.planning.optional')"
                   class="bg-(--surface-muted) border border-(--border) rounded-xl px-4 py-2.5 text-sm text-(--text) outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all resize-none"
                 ></textarea>
               </div>
 
               <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Block Terkait</label>
+                <label class="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">{{ t('sensus.planning.relatedBlocks') }}</label>
                 <div
                   v-if="selectedDetailBlocks.length"
                   class="flex flex-wrap gap-1.5 rounded-xl border border-(--border) bg-(--surface-muted) p-2"
@@ -135,7 +135,7 @@
                     {{ block }}
                   </span>
                 </div>
-                <p v-else class="text-xs text-(--text-muted)">Pilih aktivitas kebun untuk melihat daftar block.</p>
+                <p v-else class="text-xs text-(--text-muted)">{{ t('sensus.planning.selectActivityHint') }}</p>
               </div>
 
               <!-- Save error -->
@@ -149,7 +149,7 @@
                 type="submit"
                 :disabled="saving"
                 class="w-full py-3 rounded-2xl border-0 bg-(--text) text-(--surface) text-sm font-semibold hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >{{ saving ? 'Menyimpan...' : 'Simpan' }}</button>
+              >{{ saving ? t('sensus.planning.saving') : t('sensus.planning.save') }}</button>
             </div>
           </form>
         </div>
@@ -160,6 +160,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -173,7 +176,7 @@ const emit = defineEmits(['update:modelValue', 'save'])
 // Build select options from sensus detail items
 const detailOptions = computed(() => props.items.map(item => ({
   value: item.id,
-  label: item.jobType || `Detail #${item.id}`
+  label: item.jobType || t('sensus.planning.detailFallback', { id: item.id })
 })))
 
 const selectedDetailBlocks = computed(() => {
@@ -246,13 +249,13 @@ function validate() {
   
   // Check sensus detail is selected
   if (form.value.sensusDetailId === null || form.value.sensusDetailId === undefined) {
-    saveError.value = 'Pilih aktivitas kebun terlebih dahulu.'
+    saveError.value = t('sensus.planning.selectActivityFirst')
     return false
   }
   
   // Check dates
   if (form.value.endDate && form.value.startDate && form.value.endDate < form.value.startDate) {
-    dateError.value = 'Tanggal akhir harus sama dengan atau setelah tanggal mulai.'
+    dateError.value = t('sensus.planning.endBeforeStart')
     return false
   }
   return true
@@ -273,7 +276,7 @@ async function submit() {
     await emit('save', payload)
     close()
   } catch (err) {
-    saveError.value = err?.message || 'Gagal menyimpan rencana.'
+    saveError.value = err?.message || t('sensus.planning.saveFailed')
   } finally {
     saving.value = false
   }

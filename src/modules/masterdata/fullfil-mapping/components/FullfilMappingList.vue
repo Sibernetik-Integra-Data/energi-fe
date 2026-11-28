@@ -1,21 +1,21 @@
 <template>
-  <MdPage title="Pemetaan Kebutuhan" description="Hubungan jenis pekerjaan dengan jenis kebutuhan, siapa yang mengaksesnya, dan apakah ditampilkan. Klik kartu atau batang grafik untuk menyaring tabel.">
+  <MdPage :title="t('fullfilMapping.title')" :description="t('fullfilMapping.description')">
     <template #actions>
-      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah Pemetaan</button>
+      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />{{ t('fullfilMapping.add') }}</button>
     </template>
 
     <div class="md-kpis">
-      <MdKpi icon="layers" tone="info" label="Total pemetaan" :value="rows.length" :sub="`${workOptions.length} jenis pekerjaan`" action hint="Tampilkan semua" @select="clearAll" />
-      <MdKpi icon="eye" tone="success" label="Ditampilkan" :value="countView('1')" :sub="`${countView('0')} disembunyikan`" action :pressed="only('view', '1')" @select="quick('view', '1')" />
-      <MdKpi icon="user" tone="brand" label="Akses admin" :value="countAccess('admin')" :sub="`${countAccess('-')} tanpa akses`" action :pressed="only('access', 'admin')" @select="quick('access', 'admin')" />
-      <MdKpi icon="users" tone="warning" label="Akses pekerja" :value="countAccess('pekerja')" :sub="`${needOptions.length} jenis kebutuhan dipakai`" action :pressed="only('access', 'pekerja')" @select="quick('access', 'pekerja')" />
+      <MdKpi icon="layers" tone="info" :label="t('fullfilMapping.kpi.total')" :value="rows.length" :sub="t('fullfilMapping.kpi.totalSub', { n: workOptions.length })" action :hint="t('fullfilMapping.showAll')" @select="clearAll" />
+      <MdKpi icon="eye" tone="success" :label="t('fullfilMapping.kpi.shown')" :value="countView('1')" :sub="t('fullfilMapping.kpi.shownSub', { n: countView('0') })" action :pressed="only('view', '1')" @select="quick('view', '1')" />
+      <MdKpi icon="user" tone="brand" :label="t('fullfilMapping.kpi.admin')" :value="countAccess('admin')" :sub="t('fullfilMapping.kpi.adminSub', { n: countAccess('-') })" action :pressed="only('access', 'admin')" @select="quick('access', 'admin')" />
+      <MdKpi icon="users" tone="warning" :label="t('fullfilMapping.kpi.worker')" :value="countAccess('pekerja')" :sub="t('fullfilMapping.kpi.workerSub', { n: needOptions.length })" action :pressed="only('access', 'pekerja')" @select="quick('access', 'pekerja')" />
     </div>
 
     <MdBarChart
       v-if="bars.length"
-      title="Pemetaan per jenis pekerjaan"
-      :subtitle="`${rows.length} pemetaan di ${workOptions.length} jenis pekerjaan`"
-      :legend="[{ label: 'Ditampilkan', color: 'var(--success)' }, { label: 'Disembunyikan', color: 'var(--border-strong)' }]"
+      :title="t('fullfilMapping.chartTitle')"
+      :subtitle="t('fullfilMapping.chartSubtitle', { n: rows.length, g: workOptions.length })"
+      :legend="[{ label: t('fullfilMapping.shown'), color: 'var(--success)' }, { label: t('fullfilMapping.hidden'), color: 'var(--border-strong)' }]"
       :bars="bars"
       :selected="filterWork"
       @toggle="toggleWork" />
@@ -27,30 +27,30 @@
       :total-rows="rows.length"
       :loading="loading"
       :error="error || ''"
-      entity-label="Pemetaan"
+      :entity-label="t('fullfilMapping.entity')"
       empty-icon="layers"
-      empty-text="Tambahkan pemetaan pertama untuk menghubungkan jenis pekerjaan dengan kebutuhannya."
-      add-label="Tambah Pemetaan"
+      :empty-text="t('fullfilMapping.empty')"
+      :add-label="t('fullfilMapping.add')"
       :can-add="canWrite"
       initial-sort="name"
-      aria-label="Daftar pemetaan kebutuhan"
+      :aria-label="t('fullfilMapping.tableAria')"
       @retry="load"
       @add="openCreate"
       @clear-filters="clearAll">
       <template #toolbar>
         <label class="md-search">
           <MdIcon name="search" />
-          <input v-model.trim="search" type="search" placeholder="Cari nama, pekerjaan, kebutuhan…" aria-label="Cari pemetaan" />
+          <input v-model.trim="search" type="search" :placeholder="t('fullfilMapping.searchPlaceholder')" :aria-label="t('fullfilMapping.searchAria')" />
         </label>
-        <MdDropdown v-model="filterWork" label="Jenis pekerjaan" :options="workFilterOptions" multiple />
-        <MdDropdown v-model="filterNeed" label="Jenis kebutuhan" :options="needFilterOptions" multiple />
-        <MdDropdown v-model="filterAccess" label="Akses" :options="accessFilterOptions" multiple />
-        <MdDropdown v-model="filterView" label="Tampil" :options="viewFilterOptions" multiple />
+        <MdDropdown v-model="filterWork" :label="t('fullfilMapping.workType')" :options="workFilterOptions" multiple />
+        <MdDropdown v-model="filterNeed" :label="t('fullfilMapping.needType')" :options="needFilterOptions" multiple />
+        <MdDropdown v-model="filterAccess" :label="t('fullfilMapping.access')" :options="accessFilterOptions" multiple />
+        <MdDropdown v-model="filterView" :label="t('fullfilMapping.view')" :options="viewFilterOptions" multiple />
         <div class="md-chips">
-          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="t('fullfilMapping.removeFilter', { label: c.label })" @click="c.remove()">
             {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
           </button>
-          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">{{ t('fullfilMapping.clearAll') }}</button>
         </div>
       </template>
 
@@ -67,7 +67,7 @@
         <span v-else class="md-muted">—</span>
       </template>
       <template #cell-is_view="{ row }">
-        <MdBadge :tone="row.is_view === 0 ? 'neutral' : 'success'">{{ row.is_view === 0 ? 'Tidak' : 'Ya' }}</MdBadge>
+        <MdBadge :tone="row.is_view === 0 ? 'neutral' : 'success'">{{ row.is_view === 0 ? t('fullfilMapping.no') : t('fullfilMapping.yes') }}</MdBadge>
       </template>
       <template #cell-notes="{ row }"><span class="md-muted">{{ row.notes || '—' }}</span></template>
       <template #cell-updated_at="{ row }">
@@ -75,30 +75,30 @@
       </template>
 
       <template v-if="canWrite" #actions="{ row }">
-        <button type="button" class="md-icon-btn" :aria-label="`Ubah pemetaan ${row.name || row.id}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
-        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus pemetaan ${row.name || row.id}`" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+        <button type="button" class="md-icon-btn" :aria-label="t('fullfilMapping.editAria', { name: row.name || row.id })" @click="openEdit(row)"><MdIcon name="edit" /></button>
+        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="t('fullfilMapping.deleteAria', { name: row.name || row.id })" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
       </template>
 
       <template #card="{ row }">
         <div class="md-card__top">
           <span class="md-avatar">{{ initial(row.name) }}</span>
           <div style="flex: 1"><b class="md-strong">{{ row.name || `${workName(row.tow_id)} → ${needName(row.ton_id)}` }}</b><div class="md-muted" style="font-size: 12px">ID {{ row.id }}</div></div>
-          <MdBadge :tone="row.is_view === 0 ? 'neutral' : 'success'">{{ row.is_view === 0 ? 'Disembunyikan' : 'Ditampilkan' }}</MdBadge>
+          <MdBadge :tone="row.is_view === 0 ? 'neutral' : 'success'">{{ row.is_view === 0 ? t('fullfilMapping.hidden') : t('fullfilMapping.shown') }}</MdBadge>
         </div>
         <div class="md-card__grid">
-          <div>Jenis pekerjaan<b>{{ workName(row.tow_id) }}</b></div>
-          <div>Jenis kebutuhan<b>{{ needName(row.ton_id) }}</b></div>
-          <div>Akses<b>{{ accessLabel(row.access) }}</b></div>
-          <div>Catatan<b>{{ row.notes || '—' }}</b></div>
+          <div>{{ t('fullfilMapping.workType') }}<b>{{ workName(row.tow_id) }}</b></div>
+          <div>{{ t('fullfilMapping.needType') }}<b>{{ needName(row.ton_id) }}</b></div>
+          <div>{{ t('fullfilMapping.access') }}<b>{{ accessLabel(row.access) }}</b></div>
+          <div>{{ t('fullfilMapping.col.notes') }}<b>{{ row.notes || '—' }}</b></div>
         </div>
       </template>
     </MdDataTable>
 
     <FullfilMappingForm :visible="showForm" :fullfil="editing" :type-of-works="typeOfWorks" :type-of-needs="typeOfNeeds" :submitting="submitting" :error="actionError || ''" @submit="save" @cancel="closeForm" />
 
-    <MdConfirm :open="!!deleteTarget" title="Hapus pemetaan kebutuhan?" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="remove">
+    <MdConfirm :open="!!deleteTarget" :title="t('fullfilMapping.confirmTitle')" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="remove">
       <template v-if="deleteTarget">
-        Pemetaan <b>{{ deleteTarget.name || `${workName(deleteTarget.tow_id)} → ${needName(deleteTarget.ton_id)}` }}</b> akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.
+        {{ t('fullfilMapping.confirmBefore') }} <b>{{ deleteTarget.name || `${workName(deleteTarget.tow_id)} → ${needName(deleteTarget.ton_id)}` }}</b> {{ t('fullfilMapping.confirmAfter') }}
       </template>
     </MdConfirm>
   </MdPage>
@@ -106,6 +106,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import FullfilMappingForm from './FullfilMappingForm.vue'
 import { createFullfil, deleteFullfil, listFullfil, listTypeOfNeed, listTypeOfWork, updateFullfil } from '../model'
 import { useToast } from '../../../../utils/toast'
@@ -114,19 +115,20 @@ import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
 import { MdPage, MdKpi, MdBarChart, MdDataTable, MdDropdown, MdBadge, MdConfirm, MdIcon } from '../../../shared/masterdata-ui'
 
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
+const { t } = useI18n()
 const canWrite = useCanManageMasterData()
 const { userName } = useUserNames()
 const { show: showToast } = useToast()
 
-const columns = [
-  { key: 'name', label: 'Nama' },
-  { key: 'tow_id', label: 'Jenis pekerjaan', sortValue: (r) => workName(r.tow_id) },
-  { key: 'ton_id', label: 'Jenis kebutuhan', sortValue: (r) => needName(r.ton_id) },
-  { key: 'access', label: 'Akses' },
-  { key: 'is_view', label: 'Tampil', sortValue: (r) => (r.is_view === 0 ? 0 : 1) },
-  { key: 'notes', label: 'Catatan', sortable: false },
-  { key: 'updated_at', label: 'Diubah' }
-]
+const columns = computed(() => [
+  { key: 'name', label: t('fullfilMapping.col.name') },
+  { key: 'tow_id', label: t('fullfilMapping.workType'), sortValue: (r) => workName(r.tow_id) },
+  { key: 'ton_id', label: t('fullfilMapping.needType'), sortValue: (r) => needName(r.ton_id) },
+  { key: 'access', label: t('fullfilMapping.access') },
+  { key: 'is_view', label: t('fullfilMapping.view'), sortValue: (r) => (r.is_view === 0 ? 0 : 1) },
+  { key: 'notes', label: t('fullfilMapping.col.notes'), sortable: false },
+  { key: 'updated_at', label: t('fullfilMapping.col.updatedAt') }
+])
 
 const table = ref(null)
 const rows = ref([]); const typeOfWorks = ref([]); const typeOfNeeds = ref([])
@@ -139,7 +141,7 @@ function workName(id) { return typeOfWorks.value.find((item) => Number(item.id) 
 function needName(id) { return typeOfNeeds.value.find((item) => Number(item.id) === Number(id))?.name || `#${id}` }
 function formatDate(value) { return value ? String(value).replace(/\.\d+/, '').replace('T', ' ').replace('Z', '') : '-' }
 const initial = (name) => String(name || '#').trim().charAt(0).toUpperCase() || '#'
-const accessLabel = (a) => (a === 'admin' ? 'Admin' : a === 'pekerja' ? 'Pekerja' : a || '—')
+const accessLabel = (a) => (a === 'admin' ? t('fullfilMapping.admin') : a === 'pekerja' ? t('fullfilMapping.worker') : a || '—')
 const accessKey = (r) => r.access || '-'
 const viewKey = (r) => (r.is_view === 0 ? '0' : '1')
 const countAccess = (a) => rows.value.filter((r) => accessKey(r) === a).length
@@ -151,13 +153,13 @@ const needOptions = computed(() => [...new Set(rows.value.map((r) => String(r.to
 const workFilterOptions = computed(() => workOptions.value.map((id) => ({ value: id, label: workName(id), count: rows.value.filter((r) => String(r.tow_id) === id).length })))
 const needFilterOptions = computed(() => needOptions.value.map((id) => ({ value: id, label: needName(id), count: rows.value.filter((r) => String(r.ton_id) === id).length })))
 const accessFilterOptions = computed(() => [
-  { value: 'admin', label: 'Admin', count: countAccess('admin') },
-  { value: 'pekerja', label: 'Pekerja', count: countAccess('pekerja') },
-  { value: '-', label: 'Tanpa akses', count: countAccess('-') }
+  { value: 'admin', label: t('fullfilMapping.admin'), count: countAccess('admin') },
+  { value: 'pekerja', label: t('fullfilMapping.worker'), count: countAccess('pekerja') },
+  { value: '-', label: t('fullfilMapping.noAccess'), count: countAccess('-') }
 ])
 const viewFilterOptions = computed(() => [
-  { value: '1', label: 'Ditampilkan', count: countView('1') },
-  { value: '0', label: 'Disembunyikan', count: countView('0') }
+  { value: '1', label: t('fullfilMapping.shown'), count: countView('1') },
+  { value: '0', label: t('fullfilMapping.hidden'), count: countView('0') }
 ])
 
 const bars = computed(() => workOptions.value.map((id) => {
@@ -166,7 +168,7 @@ const bars = computed(() => workOptions.value.map((id) => {
   return {
     key: id,
     label: workName(id),
-    ariaLabel: `${workName(id)}: ${rs.length} pemetaan, ${shown} ditampilkan`,
+    ariaLabel: t('fullfilMapping.barAria', { label: workName(id), total: rs.length, n: shown }),
     segments: [{ value: shown, color: 'var(--success)' }, { value: rs.length - shown, color: 'var(--border-strong)' }]
   }
 }))
@@ -188,8 +190,8 @@ const chips = computed(() => {
   if (search.value) c.push({ key: 'q', label: `“${search.value}”`, remove: () => (search.value = '') })
   filterWork.value.forEach((v) => c.push({ key: `w-${v}`, label: workName(v), remove: drop(filterWork, v) }))
   filterNeed.value.forEach((v) => c.push({ key: `n-${v}`, label: needName(v), remove: drop(filterNeed, v) }))
-  filterAccess.value.forEach((v) => c.push({ key: `a-${v}`, label: v === '-' ? 'Tanpa akses' : accessLabel(v), remove: drop(filterAccess, v) }))
-  filterView.value.forEach((v) => c.push({ key: `v-${v}`, label: v === '1' ? 'Ditampilkan' : 'Disembunyikan', remove: drop(filterView, v) }))
+  filterAccess.value.forEach((v) => c.push({ key: `a-${v}`, label: v === '-' ? t('fullfilMapping.noAccess') : accessLabel(v), remove: drop(filterAccess, v) }))
+  filterView.value.forEach((v) => c.push({ key: `v-${v}`, label: v === '1' ? t('fullfilMapping.shown') : t('fullfilMapping.hidden'), remove: drop(filterView, v) }))
   return c
 })
 
@@ -206,7 +208,7 @@ async function load() {
     const result = await Promise.all([listFullfil(), listTypeOfWork(), listTypeOfNeed()])
     rows.value = result[0].data; typeOfWorks.value = result[1]; typeOfNeeds.value = result[2]
   } catch (err) {
-    error.value = err?.message || 'Gagal memuat data.'
+    error.value = err?.message || t('fullfilMapping.loadFailed')
   } finally {
     loading.value = false
   }
@@ -217,11 +219,11 @@ function closeForm() { showForm.value = false; editing.value = null }
 async function save(payload) {
   submitting.value = true; actionError.value = null
   try {
-    if (editing.value?.id) { await updateFullfil(editing.value.id, payload); showToast('Pemetaan Kebutuhan berhasil diubah.') }
-    else { await createFullfil(payload); showToast('Pemetaan Kebutuhan berhasil ditambahkan.') }
+    if (editing.value?.id) { await updateFullfil(editing.value.id, payload); showToast(t('fullfilMapping.toastUpdated')) }
+    else { await createFullfil(payload); showToast(t('fullfilMapping.toastCreated')) }
     closeForm(); await load()
   } catch (err) {
-    actionError.value = err?.message || 'Gagal menyimpan data.'
+    actionError.value = err?.message || t('fullfilMapping.saveFailed')
   } finally {
     submitting.value = false
   }
@@ -234,10 +236,10 @@ async function remove() {
   try {
     await deleteFullfil(deleteTarget.value.id)
     deleteTarget.value = null
-    showToast('Pemetaan Kebutuhan berhasil dihapus.')
+    showToast(t('fullfilMapping.toastDeleted'))
     await load()
   } catch (err) {
-    deleteError.value = err?.message || 'Gagal menghapus data.'
+    deleteError.value = err?.message || t('fullfilMapping.deleteFailed')
   } finally {
     submitting.value = false
   }

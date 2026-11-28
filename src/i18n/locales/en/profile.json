@@ -1,0 +1,39 @@
+{
+  "profile": {
+    "navLabel": "Profile navigation",
+    "detailsLabel": "Profile details",
+    "profileTab": "Profile",
+    "changePassword": "Change password",
+    "photo": "Profile photo",
+    "photoHint": "The profile photo is managed separately and cannot be changed on this page.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "birthDate": "Date of birth",
+    "maritalStatus": "Marital status",
+    "marital": { "single": "Single", "married": "Married", "divorced": "Divorced", "widowed": "Widowed" },
+    "email": "Email",
+    "userAccess": "User access",
+    "gender": "Gender",
+    "genderMale": "Male",
+    "genderFemale": "Female",
+    "address1": "Address 1",
+    "address2": "Address 2",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "edit": "Edit profile",
+    "newPassword": "New password",
+    "newPasswordPlaceholder": "At least 8 characters",
+    "confirmPassword": "Confirm new password",
+    "confirmPasswordPlaceholder": "Repeat the new password",
+    "savePassword": "Save password",
+    "messages": {
+      "profileUpdated": "Profile updated.",
+      "profileFailed": "Failed to update profile.",
+      "passwordMin": "Password must be at least 8 characters.",
+      "passwordMismatch": "Password confirmation does not match.",
+      "passwordUpdated": "Password updated.",
+      "passwordFailed": "Failed to update password."
+    }
+  }
+}

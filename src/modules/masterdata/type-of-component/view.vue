@@ -3,8 +3,8 @@
     <BaseSidebar :items="navigation" :user="user" />
     <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
       <BaseHeader
-        eyebrow="Data Master"
-        title="Jenis Komponen"
+        :eyebrow="t('nav.masterData')"
+        :title="t('nav.typeOfComponent')"
         :notifications="0"
         :user="user"
         :on-logout="logoutFromKeycloak" />
@@ -17,6 +17,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseHeader from '../../shared/header'
 import BaseSidebar from '../../shared/sidebar'
 import TypeOfComponentList from './components/TypeOfComponentList.vue'
@@ -24,6 +25,7 @@ import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../.
 import { useAppStore } from '../../../stores'
 import { navigation as sharedNavigation } from '../../shared/navigation'
 
+const { t } = useI18n()
 const appStore = useAppStore()
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 const navigation = sharedNavigation

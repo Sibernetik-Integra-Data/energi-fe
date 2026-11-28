@@ -1,53 +1,53 @@
 <template>
     <MdModal
         :open="visible"
-        :title="isEdit ? `Ubah Pengemudi ${driver.name}` : 'Tambah Pengemudi'"
-        subtitle="Lengkapi data pengemudi. Kolom bertanda * wajib diisi."
+        :title="isEdit ? t('driver.form.titleEdit', { name: driver.name }) : t('driver.add')"
+        :subtitle="t('driver.form.subtitle')"
         as-form
         @close="onCancel"
         @submit="onSubmit">
-        <MdField label="Nama" for-id="driver-name" required full :error="errors.name">
-            <input id="driver-name" v-model.trim="form.name" class="md-input" :class="{ 'is-invalid': errors.name }" placeholder="mis. Budi" autocomplete="off" />
+        <MdField :label="t('driver.ui.name')" for-id="driver-name" required full :error="errors.name">
+            <input id="driver-name" v-model.trim="form.name" class="md-input" :class="{ 'is-invalid': errors.name }" :placeholder="t('driver.form.namePlaceholder')" autocomplete="off" />
         </MdField>
 
-        <MdField label="Alamat" for-id="driver-address" full hint="Opsional.">
-            <textarea id="driver-address" v-model.trim="form.address" class="md-input" rows="2" placeholder="Alamat jalan" style="resize: vertical; height: auto" />
+        <MdField :label="t('driver.address')" for-id="driver-address" full :hint="t('driver.ui.optional')">
+            <textarea id="driver-address" v-model.trim="form.address" class="md-input" rows="2" :placeholder="t('driver.form.addressPlaceholder')" style="resize: vertical; height: auto" />
         </MdField>
 
-        <MdField label="Lokasi" for-id="driver-location" full :hint="locationLoadError || 'Sumber: Data Master → Tujuan'">
+        <MdField :label="t('driver.location')" for-id="driver-location" full :hint="locationLoadError || t('driver.form.locationHint')">
             <MdDropdown
                 id="driver-location"
                 v-model="form.location"
                 field
                 :disabled="locationsLoading"
-                :placeholder="locationsLoading ? 'Memuat lokasi…' : '— Tidak ada —'"
+                :placeholder="locationsLoading ? t('driver.form.locationLoading') : t('driver.ui.none')"
                 :options="locationDropdown" />
         </MdField>
 
-        <MdField label="Kendaraan" for-id="driver-vehicle" :hint="vehicleLoadError || 'Sumber: Data Master → Kendaraan'">
+        <MdField :label="t('driver.vehicle')" for-id="driver-vehicle" :hint="vehicleLoadError || t('driver.form.vehicleHint')">
             <MdDropdown
                 id="driver-vehicle"
                 v-model="form.vehicle_id"
                 field
                 :disabled="vehiclesLoading"
-                :placeholder="vehiclesLoading ? 'Memuat kendaraan…' : '— Tidak ada —'"
+                :placeholder="vehiclesLoading ? t('driver.form.vehicleLoading') : t('driver.ui.none')"
                 :options="vehicleDropdown" />
         </MdField>
 
-        <MdField label="Nomor polisi" for-id="driver-vehicle-number" hint="Otomatis dari kendaraan.">
-            <input id="driver-vehicle-number" :value="form.vehicle_number" class="md-input" placeholder="Pilih kendaraan dulu" readonly aria-readonly="true" style="cursor: not-allowed" />
+        <MdField :label="t('driver.plate')" for-id="driver-vehicle-number" :hint="t('driver.form.plateHint')">
+            <input id="driver-vehicle-number" :value="form.vehicle_number" class="md-input" :placeholder="t('driver.form.platePlaceholder')" readonly aria-readonly="true" style="cursor: not-allowed" />
         </MdField>
 
-        <MdField label="Catatan" for-id="driver-notes" full hint="Opsional.">
-            <textarea id="driver-notes" v-model.trim="form.notes" class="md-input" rows="2" placeholder="Catatan tambahan" style="resize: vertical; height: auto" />
+        <MdField :label="t('driver.ui.notes')" for-id="driver-notes" full :hint="t('driver.ui.optional')">
+            <textarea id="driver-notes" v-model.trim="form.notes" class="md-input" rows="2" :placeholder="t('driver.ui.notesExtra')" style="resize: vertical; height: auto" />
         </MdField>
 
         <div v-if="error" class="md-modal__error" role="alert">{{ error }}</div>
 
         <template #footer>
-            <button type="button" class="md-btn" :disabled="submitting" @click="onCancel">Batal</button>
+            <button type="button" class="md-btn" :disabled="submitting" @click="onCancel">{{ t('driver.ui.cancel') }}</button>
             <button type="submit" class="md-btn md-btn--primary" :disabled="submitting">
-                <MdIcon name="check" />{{ submitting ? 'Menyimpan…' : 'Simpan' }}
+                <MdIcon name="check" />{{ submitting ? t('driver.ui.saving') : t('driver.ui.save') }}
             </button>
         </template>
     </MdModal>
@@ -55,6 +55,7 @@
 
 <script setup>
 import { ref, watch, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { listVehicles } from "../model";
 import { listLocations } from "../../destination/model";
 import { MdModal, MdField, MdDropdown, MdIcon } from "../../../shared/masterdata-ui";
@@ -67,6 +68,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["submit", "cancel"]);
+const { t } = useI18n();
 
 const isEdit = computed(() => Boolean(props.driver?.id));
 
@@ -117,12 +119,12 @@ const legacyLocation = computed(() => {
 
 // Opsi dropdown; nilai kosong = tidak ada.
 const locationDropdown = computed(() => [
-    { value: "", label: "— Tidak ada —" },
-    ...(legacyLocation.value ? [{ value: legacyLocation.value, label: `${legacyLocation.value} (nilai lama, belum ada di Destination)` }] : []),
+    { value: "", label: t("driver.ui.none") },
+    ...(legacyLocation.value ? [{ value: legacyLocation.value, label: t("driver.form.legacyLocation", { name: legacyLocation.value }) }] : []),
     ...locationOptions.value.map((l) => ({ value: l.name, label: l.label })),
 ]);
 const vehicleDropdown = computed(() => [
-    { value: null, label: "— Tidak ada —" },
+    { value: null, label: t("driver.ui.none") },
     ...vehicles.value.map((v) => ({ value: v.id, label: vehicleLabel(v) })),
 ]);
 
@@ -134,7 +136,7 @@ async function loadLocations() {
         locations.value = await listLocations();
     } catch (err) {
         console.error("[DriverForm] Failed to load locations:", err);
-        locationLoadError.value = err?.message || "Gagal memuat lokasi.";
+        locationLoadError.value = err?.message || t("driver.form.locationLoadFailed");
     } finally {
         locationsLoading.value = false;
     }
@@ -148,7 +150,7 @@ async function loadVehicles() {
         vehicles.value = await listVehicles();
     } catch (err) {
         console.error("[DriverForm] Failed to load vehicles:", err);
-        vehicleLoadError.value = err?.message || "Gagal memuat kendaraan.";
+        vehicleLoadError.value = err?.message || t("driver.form.vehicleLoadFailed");
     } finally {
         vehiclesLoading.value = false;
     }
@@ -188,7 +190,7 @@ watch(
 
 function validate() {
     const errs = {};
-    if (!form.value.name) errs.name = "Nama wajib diisi.";
+    if (!form.value.name) errs.name = t("driver.ui.nameRequired");
     errors.value = errs;
     return Object.keys(errs).length === 0;
 }

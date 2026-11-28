@@ -1,0 +1,74 @@
+{
+  "shipping": {
+    "title": "Harvest shipping and receiving",
+    "description": "Track harvest shipments and record their receipt at the destination.",
+    "harvestType": { "tbs": "FFB (TBS)", "looseFruit": "Loose fruit" },
+    "status": { "all": "All", "pending": "Not received", "received": "Received" },
+    "receiptStatus": { "cancelled": "Cancelled", "posted": "Valid" },
+    "errors": {
+      "loadList": "Failed to load shipping and receiving data.",
+      "detailNotFound": "Shipment details not found.",
+      "loadDetail": "Failed to load shipment details.",
+      "requestFailed": "The request could not be processed.",
+      "reload": "Failed to reload data."
+    },
+    "messages": { "saved": "Receipt {no} saved.", "cancelled": "Receipt {no} cancelled." },
+    "workers": { "title": "Workers", "workerId": "Worker ID {id}", "bunches": "{n} bunches", "showing": "Showing", "ofTotal": "of {n} records" },
+    "fields": {
+      "receivedDate": "Received date", "harvestType": "Harvest type", "receivedQuantity": "Received quantity",
+      "unit": "Unit", "notes": "Notes", "receiptNo": "Receipt no.", "origin": "Origin", "destination": "Destination"
+    },
+    "form": {
+      "title": "Receipt form",
+      "autoNumber": "The receipt number is generated automatically when saved.",
+      "replaces": "This receipt replaces the cancelled one.",
+      "chooseHarvestType": "Choose harvest type",
+      "shippedPlaceholder": "Shipped: {value}",
+      "quantityHint": "Shipped: {value}. At most three decimal places.",
+      "notesPlaceholder": "Type here",
+      "saving": "Saving…",
+      "submit": "Save receipt",
+      "shipmentUnit": "Shipment unit"
+    },
+    "validation": {
+      "dateRequired": "Received date is required.",
+      "quantityPositive": "Received quantity must be greater than 0.",
+      "quantityDecimals": "Received quantity can have at most three decimal places.",
+      "harvestTypeRequired": "Please choose a harvest type.",
+      "unitRequired": "Please choose a unit.",
+      "reasonRequired": "A cancellation reason is required."
+    },
+    "receipt": {
+      "title": "Receipt",
+      "recordedAt": "Recorded",
+      "cancel": "Cancel receipt",
+      "cancelReason": "Cancellation reason",
+      "cancelHint": "Receipt {no} is not deleted, only marked as cancelled, and cannot be restored. The shipment can then be received again with a new number.",
+      "cancelPlaceholder": "E.g. wrong weighing",
+      "keep": "Keep it",
+      "cancelling": "Cancelling…",
+      "confirmCancel": "Yes, cancel receipt"
+    },
+    "summary": {
+      "title": "Summary", "field": "Field", "shipment": "Shipment", "receipt": "Receipt", "difference": "Difference",
+      "quantity": "Quantity", "unitsDiffer": "Different units, not compared", "same": "Same",
+      "less": "{value} short", "more": "{value} over"
+    },
+    "trip": {
+      "title": "Shipping trip", "id": "Trip {id}", "startDate": "Start date", "endDate": "End date",
+      "volume": "Volume", "driver": "Driver"
+    },
+    "detail": {
+      "title": "Details",
+      "back": "Back to previous page",
+      "noReceiptHint": "This shipment has no receipt yet. Only an Admin, Estate Manager or Owner can record a receipt.",
+      "cancelledHistory": "Cancelled receipt history",
+      "reason": "Reason"
+    },
+    "list": {
+      "loading": "Loading shipments…", "tripId": "Trip ID", "shippedDate": "Shipped date", "shipped": "Shipped",
+      "status": "Status", "received": "Received", "action": "Action", "view": "View", "empty": "No shipments found."
+    },
+    "overview": { "totalTrips": "Number of trips", "tripUnit": "trips", "totalShipped": "Total shipped", "totalReceived": "Total received" }
+  }
+}

@@ -1,8 +1,8 @@
 <template>
   <div class="md-page">
     <section class="md-hero">
-      <nav class="md-crumb" aria-label="Breadcrumb">
-        <span>Data Master</span><span aria-hidden="true">/</span><b>{{ title }}</b>
+      <nav class="md-crumb" :aria-label="t('mdui.breadcrumb')">
+        <span>{{ t('mdui.masterData') }}</span><span aria-hidden="true">/</span><b>{{ title }}</b>
       </nav>
       <div class="md-head">
         <div>
@@ -22,6 +22,9 @@
 <script setup>
 // Kerangka halaman Data Master gaya "Dasbor KPI": kepala bergradasi + isi yang menumpuk ke atasnya.
 import './md.css'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 defineProps({
   title: { type: String, required: true },

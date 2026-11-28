@@ -1,7 +1,7 @@
 <template>
     <div class="flex min-h-full flex-col">
         <div v-if="loading" class="flex justify-center items-center py-20 text-sm text-(--text-muted)">
-            <span class="animate-pulse">Memuat data pengiriman&hellip;</span>
+            <span class="animate-pulse">{{ t('shipping.list.loading') }}</span>
         </div>
 
         <div v-else class="flex flex-1 flex-col">
@@ -10,16 +10,16 @@
                     <table class="min-w-[1000px] w-full divide-y divide-(--border)">
                         <thead>
                             <tr class="text-left text-xs font-medium uppercase tracking-wide text-(--text-muted) bg-(--surface-muted)">
-                                <th class="px-4 py-4">ID Trip</th>
-                                <th class="px-4 py-4">Tanggal Kirim</th>
-                                <th class="px-4 py-4">Asal</th>
-                                <th class="px-4 py-4">Tujuan</th>
-                                <th class="px-4 py-4">Dikirim</th>
-                                <th class="px-4 py-4">Status</th>
-                                <th class="px-4 py-4">No. Penerimaan</th>
-                                <th class="px-4 py-4">Tanggal Terima</th>
-                                <th class="px-4 py-4">Diterima</th>
-                                <th class="px-4 py-4 text-right">Action</th>
+                                <th class="px-4 py-4">{{ t('shipping.list.tripId') }}</th>
+                                <th class="px-4 py-4">{{ t('shipping.list.shippedDate') }}</th>
+                                <th class="px-4 py-4">{{ t('shipping.fields.origin') }}</th>
+                                <th class="px-4 py-4">{{ t('shipping.fields.destination') }}</th>
+                                <th class="px-4 py-4">{{ t('shipping.list.shipped') }}</th>
+                                <th class="px-4 py-4">{{ t('shipping.list.status') }}</th>
+                                <th class="px-4 py-4">{{ t('shipping.fields.receiptNo') }}</th>
+                                <th class="px-4 py-4">{{ t('shipping.fields.receivedDate') }}</th>
+                                <th class="px-4 py-4">{{ t('shipping.list.received') }}</th>
+                                <th class="px-4 py-4 text-right">{{ t('shipping.list.action') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-(--border)">
@@ -43,14 +43,14 @@
                                         <button type="button"
                                             class="rounded-md border border-(--border) px-3.5 py-1.5 text-sm font-medium text-(--text) hover:bg-(--surface-muted) hover:cursor-pointer"
                                             @click="$emit('view', item)">
-                                            View
+                                            {{ t('shipping.list.view') }}
                                         </button>
                                     </div>
                                 </td>
                             </tr>
                             <tr v-if="items.length === 0">
                                 <td colspan="10" class="px-6 py-10 text-center text-sm text-(--text-muted)">
-                                    Tidak ada data pengiriman ditemukan.
+                                    {{ t('shipping.list.empty') }}
                                 </td>
                             </tr>
                         </tbody>
@@ -72,7 +72,10 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { ListPagination } from '../../shared/pagination'
+
+const { t } = useI18n()
 
 defineProps({
     items: { type: Array, default: () => [] },

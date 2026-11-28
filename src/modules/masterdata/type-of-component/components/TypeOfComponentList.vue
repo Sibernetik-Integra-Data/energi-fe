@@ -1,14 +1,14 @@
 <template>
-  <MdPage title="Jenis Komponen" description="Daftar jenis komponen biaya dan kelengkapan keterangannya. Klik kartu untuk menyaring tabel.">
+  <MdPage :title="t('typeOfComponent.title')" :description="t('typeOfComponent.description')">
     <template #actions>
-      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah Jenis Komponen</button>
+      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />{{ t('typeOfComponent.add') }}</button>
     </template>
 
     <div class="md-kpis">
-      <MdKpi icon="layers" tone="info" label="Total jenis komponen" :value="rows.length" :sub="`${count('detail')} berketerangan`" action hint="Tampilkan semua" @select="clearAll" />
-      <MdKpi icon="info" tone="warning" label="Tanpa keterangan" :value="count('nodetail')" :sub="`${pct(count('nodetail'))}% dari data`" action :pressed="only('nodetail')" @select="quick('nodetail')" />
-      <MdKpi icon="bookmark" tone="success" label="Ada catatan" :value="count('notes')" :sub="`${pct(count('notes'))}% dari data`" action :pressed="only('notes')" @select="quick('notes')" />
-      <MdKpi icon="clock" tone="brand" label="Diubah 30 hari" :value="count('recent')" sub="Dibuat atau diubah baru-baru ini" action :pressed="only('recent')" @select="quick('recent')" />
+      <MdKpi icon="layers" tone="info" :label="t('typeOfComponent.kpi.total')" :value="rows.length" :sub="t('typeOfComponent.withDetailSub', { n: count('detail') })" action :hint="t('typeOfComponent.showAll')" @select="clearAll" />
+      <MdKpi icon="info" tone="warning" :label="t('typeOfComponent.kpi.noDetail')" :value="count('nodetail')" :sub="t('typeOfComponent.pctOfData', { n: pct(count('nodetail')) })" action :pressed="only('nodetail')" @select="quick('nodetail')" />
+      <MdKpi icon="bookmark" tone="success" :label="t('typeOfComponent.kpi.notes')" :value="count('notes')" :sub="t('typeOfComponent.pctOfData', { n: pct(count('notes')) })" action :pressed="only('notes')" @select="quick('notes')" />
+      <MdKpi icon="clock" tone="brand" :label="t('typeOfComponent.kpi.recent')" :value="count('recent')" :sub="t('typeOfComponent.kpi.recentSub')" action :pressed="only('recent')" @select="quick('recent')" />
     </div>
 
     <MdDataTable
@@ -18,27 +18,27 @@
       :total-rows="rows.length"
       :loading="loading"
       :error="fetchError || ''"
-      entity-label="Jenis Komponen"
+      :entity-label="t('typeOfComponent.entity')"
       empty-icon="layers"
-      empty-text="Tambahkan jenis komponen pertama."
-      add-label="Tambah Jenis Komponen"
+      :empty-text="t('typeOfComponent.empty')"
+      :add-label="t('typeOfComponent.add')"
       :can-add="canWrite"
       initial-sort="name"
-      aria-label="Daftar jenis komponen"
+      :aria-label="t('typeOfComponent.tableAria')"
       @retry="loadData"
       @add="openCreate"
       @clear-filters="clearAll">
       <template #toolbar>
         <label class="md-search">
           <MdIcon name="search" />
-          <input v-model.trim="search" type="search" placeholder="Cari nama, keterangan, atau catatan…" aria-label="Cari jenis komponen" />
+          <input v-model.trim="search" type="search" :placeholder="t('typeOfComponent.searchPlaceholder')" :aria-label="t('typeOfComponent.searchAria')" />
         </label>
-        <MdDropdown v-model="filterInfo" label="Kelengkapan" :options="infoOptions" multiple />
+        <MdDropdown v-model="filterInfo" :label="t('typeOfComponent.info.label')" :options="infoOptions" multiple />
         <div class="md-chips">
-          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="t('typeOfComponent.removeFilter', { label: c.label })" @click="c.remove()">
             {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
           </button>
-          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">{{ t('typeOfComponent.clearAll') }}</button>
         </div>
       </template>
 
@@ -62,8 +62,8 @@
       </template>
 
       <template v-if="canWrite" #actions="{ row }">
-        <button type="button" class="md-icon-btn" :aria-label="`Ubah jenis komponen ${row.name}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
-        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus jenis komponen ${row.name}`" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+        <button type="button" class="md-icon-btn" :aria-label="t('typeOfComponent.editAria', { name: row.name })" @click="openEdit(row)"><MdIcon name="edit" /></button>
+        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="t('typeOfComponent.deleteAria', { name: row.name })" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
       </template>
 
       <template #card="{ row }">
@@ -72,19 +72,19 @@
           <div style="flex: 1"><b class="md-strong">{{ row.name || '-' }}</b><div class="md-muted" style="font-size: 12px">ID {{ row.id }}</div></div>
         </div>
         <div class="md-card__grid">
-          <div>Keterangan<b>{{ row.detail || '—' }}</b></div>
-          <div>Catatan<b>{{ row.notes || '—' }}</b></div>
-          <div>Dibuat<b>{{ fmtDate(row.created_at) }} · {{ userName(row.created_by) }}</b></div>
-          <div>Diubah<b>{{ fmtDate(row.updated_at) }} · {{ userName(row.updated_by) }}</b></div>
+          <div>{{ t('typeOfComponent.col.detail') }}<b>{{ row.detail || '—' }}</b></div>
+          <div>{{ t('typeOfComponent.col.notes') }}<b>{{ row.notes || '—' }}</b></div>
+          <div>{{ t('typeOfComponent.col.createdAt') }}<b>{{ fmtDate(row.created_at) }} · {{ userName(row.created_by) }}</b></div>
+          <div>{{ t('typeOfComponent.col.updatedAt') }}<b>{{ fmtDate(row.updated_at) }} · {{ userName(row.updated_by) }}</b></div>
         </div>
       </template>
     </MdDataTable>
 
     <TypeOfComponentForm :visible="showForm" :type-of-component="editing" :rows="rows" :submitting="submitting" :error="actionError || ''" @submit="onFormSubmit" @cancel="closeForm" />
 
-    <MdConfirm :open="!!deleting" title="Hapus jenis komponen?" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
+    <MdConfirm :open="!!deleting" :title="t('typeOfComponent.confirmTitle')" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
       <template v-if="deleting">
-        Jenis komponen <b>{{ deleting.name }}</b> akan dihapus permanen. Penghapusan ditolak bila masih dipakai data lain.
+        {{ t('typeOfComponent.confirmBefore') }} <b>{{ deleting.name }}</b> {{ t('typeOfComponent.confirmAfter') }}
       </template>
     </MdConfirm>
   </MdPage>
@@ -92,6 +92,8 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { currentIntlLocale } from '../../../../i18n'
 import TypeOfComponentForm from './TypeOfComponentForm.vue'
 import { createTypeOfComponent, deleteTypeOfComponent, listTypeOfComponent, updateTypeOfComponent } from '../model'
 import { useToast } from '../../../../utils/toast'
@@ -99,18 +101,19 @@ import { useUserNames } from '../../../../auth/useUserNames'
 import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
 import { MdPage, MdKpi, MdDataTable, MdDropdown, MdConfirm, MdIcon } from '../../../shared/masterdata-ui'
 
+const { t } = useI18n()
 const { userName } = useUserNames()
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
 const canWrite = useCanManageMasterData()
 const { show: showToast } = useToast()
 
-const columns = [
-  { key: 'name', label: 'Nama' },
-  { key: 'detail', label: 'Keterangan', sortValue: (r) => r.detail || '' },
-  { key: 'notes', label: 'Catatan', sortValue: (r) => r.notes || '' },
-  { key: 'created_at', label: 'Dibuat', sortValue: (r) => r.created_at || '' },
-  { key: 'updated_at', label: 'Diubah', sortValue: (r) => r.updated_at || '' }
-]
+const columns = computed(() => [
+  { key: 'name', label: t('typeOfComponent.col.name') },
+  { key: 'detail', label: t('typeOfComponent.col.detail'), sortValue: (r) => r.detail || '' },
+  { key: 'notes', label: t('typeOfComponent.col.notes'), sortValue: (r) => r.notes || '' },
+  { key: 'created_at', label: t('typeOfComponent.col.createdAt'), sortValue: (r) => r.created_at || '' },
+  { key: 'updated_at', label: t('typeOfComponent.col.updatedAt'), sortValue: (r) => r.updated_at || '' }
+])
 
 const table = ref(null)
 const rows = ref([])
@@ -130,17 +133,17 @@ const initial = (n) => String(n || '#').trim().charAt(0).toUpperCase() || '#'
 const fmtDate = (v) => {
   if (!v) return '-'
   const d = new Date(v)
-  return isNaN(d) ? String(v) : d.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
+  return isNaN(d) ? String(v) : d.toLocaleString(currentIntlLocale(), { dateStyle: 'medium', timeStyle: 'short' })
 }
 const INFO = {
-  detail: { label: 'Ada keterangan', test: (r) => !!r.detail },
-  nodetail: { label: 'Tanpa keterangan', test: (r) => !r.detail },
-  notes: { label: 'Ada catatan', test: (r) => !!r.notes },
-  recent: { label: 'Diubah 30 hari', test: (r) => Date.now() - new Date(r.updated_at || r.created_at || 0).getTime() <= 30 * DAY }
+  detail: { label: () => t('typeOfComponent.info.detail'), test: (r) => !!r.detail },
+  nodetail: { label: () => t('typeOfComponent.info.nodetail'), test: (r) => !r.detail },
+  notes: { label: () => t('typeOfComponent.info.notes'), test: (r) => !!r.notes },
+  recent: { label: () => t('typeOfComponent.info.recent'), test: (r) => Date.now() - new Date(r.updated_at || r.created_at || 0).getTime() <= 30 * DAY }
 }
 const count = (k) => rows.value.filter(INFO[k].test).length
 const pct = (n) => (rows.value.length ? Math.round((n / rows.value.length) * 100) : 0)
-const infoOptions = computed(() => Object.entries(INFO).map(([value, o]) => ({ value, label: o.label, count: count(value) })))
+const infoOptions = computed(() => Object.entries(INFO).map(([value, o]) => ({ value, label: o.label(), count: count(value) })))
 
 const filteredRows = computed(() => {
   const q = search.value.toLowerCase()
@@ -153,7 +156,7 @@ const filteredRows = computed(() => {
 const chips = computed(() => {
   const c = []
   if (search.value) c.push({ key: 'q', label: `“${search.value}”`, remove: () => (search.value = '') })
-  filterInfo.value.forEach((k) => c.push({ key: `i-${k}`, label: INFO[k].label, remove: () => (filterInfo.value = filterInfo.value.filter((x) => x !== k)) }))
+  filterInfo.value.forEach((k) => c.push({ key: `i-${k}`, label: INFO[k].label(), remove: () => (filterInfo.value = filterInfo.value.filter((x) => x !== k)) }))
   return c
 })
 
@@ -173,7 +176,7 @@ async function loadData() {
     rows.value = await listTypeOfComponent()
   } catch (err) {
     console.error('[TypeOfComponent] Failed to load:', err)
-    fetchError.value = err?.message || 'Gagal memuat data.'
+    fetchError.value = err?.message || t('typeOfComponent.loadFailed')
   } finally {
     loading.value = false
   }
@@ -200,18 +203,18 @@ async function onFormSubmit(formData) {
   try {
     if (editing.value?.id) {
       await updateTypeOfComponent(editing.value.id, formData)
-      showToast('Jenis Komponen berhasil diubah.')
+      showToast(t('typeOfComponent.toastUpdated'))
     } else {
       await createTypeOfComponent(formData)
-      showToast('Jenis Komponen berhasil ditambahkan.')
+      showToast(t('typeOfComponent.toastCreated'))
     }
     closeForm()
     await loadData()
   } catch (err) {
     console.error('[TypeOfComponent] Save failed:', err)
     actionError.value = /409/.test(err?.message || '')
-      ? `Nama ${formData.name} sudah dipakai. Gunakan nama lain.`
-      : err?.message || 'Gagal menyimpan data.'
+      ? t('typeOfComponent.nameTaken', { name: formData.name })
+      : err?.message || t('typeOfComponent.saveFailed')
   } finally {
     submitting.value = false
   }
@@ -232,13 +235,13 @@ async function onDeleteConfirm() {
   try {
     await deleteTypeOfComponent(deleting.value.id)
     deleting.value = null
-    showToast('Jenis Komponen berhasil dihapus.')
+    showToast(t('typeOfComponent.toastDeleted'))
     await loadData()
   } catch (err) {
     console.error('[TypeOfComponent] Delete failed:', err)
     deleteError.value = /dirujuk|409/i.test(err?.message || '')
-      ? 'Jenis komponen masih dipakai data lain, jadi tidak bisa dihapus.'
-      : err?.message || 'Gagal menghapus data.'
+      ? t('typeOfComponent.inUse')
+      : err?.message || t('typeOfComponent.deleteFailed')
   } finally {
     submitting.value = false
   }

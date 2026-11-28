@@ -2,20 +2,20 @@
   <div class="flex h-screen bg-(--bg) text-(--text)">
     <BaseSidebar :items="navigation" :user="currentUser" />
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <BaseHeader eyebrow="Administrasi" title="Manajemen Pengguna" :user="currentUser" :on-logout="logoutFromKeycloak" />
+      <BaseHeader :eyebrow="t('userManagement.eyebrow')" :title="t('header.userManagement')" :user="currentUser" :on-logout="logoutFromKeycloak" />
       <main class="flex-1 overflow-y-auto p-7 max-[720px]:p-4">
         <section class="mx-auto flex max-w-400 flex-col gap-5">
           <header class="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 class="m-0 text-2xl font-extrabold">Manajemen Pengguna</h1>
-              <p class="m-0 mt-1 text-sm text-(--text-muted)">Kelola user Keycloak, akses akun, dan role client mobile.</p>
+              <h1 class="m-0 text-2xl font-extrabold">{{ t('header.userManagement') }}</h1>
+              <p class="m-0 mt-1 text-sm text-(--text-muted)">{{ t('userManagement.subtitle') }}</p>
             </div>
             <div class="flex flex-wrap gap-3">
               <label class="flex h-10 min-w-70 items-center gap-2 rounded-xl border border-(--border) bg-(--surface) px-3 text-(--text-muted) max-[640px]:min-w-full">
                 <BaseIcon name="search" :size="17" />
-                <input v-model="search" type="search" class="min-w-0 flex-1 border-0 bg-transparent text-sm text-(--text) outline-none" placeholder="Cari nama, username, email, akses…" />
+                <input v-model="search" type="search" class="min-w-0 flex-1 border-0 bg-transparent text-sm text-(--text) outline-none" :placeholder="t('userManagement.searchPlaceholder')" />
               </label>
-              <button type="button" class="primary-button" @click="openAdd"><BaseIcon name="plus" :size="17" /> Tambah User</button>
+              <button type="button" class="primary-button" @click="openAdd"><BaseIcon name="plus" :size="17" /> {{ t('userManagement.addUser') }}</button>
             </div>
           </header>
 
@@ -24,7 +24,7 @@
           </div>
 
           <div v-if="pageError" class="flex items-center justify-between gap-4 rounded-xl bg-(--danger-soft) px-4 py-3 text-sm text-(--danger)" role="alert">
-            <span>{{ pageError }}</span><button type="button" class="underline" @click="load">Coba lagi</button>
+            <span>{{ pageError }}</span><button type="button" class="underline" @click="load">{{ t('common.retry') }}</button>
           </div>
 
           <section class="overflow-hidden rounded-2xl border border-(--border) bg-(--surface) shadow-sm">
@@ -32,36 +32,36 @@
               <table class="w-full min-w-260 border-collapse text-left">
                 <thead><tr class="border-b border-(--border) bg-(--surface-muted) text-[11px] uppercase tracking-wider text-(--text-muted)"><th v-for="column in columns" :key="column" class="px-4 py-3">{{ column }}</th></tr></thead>
                 <tbody>
-                  <tr v-if="loading"><td colspan="8" class="p-12 text-center text-sm text-(--text-muted)">Memuat user…</td></tr>
-                  <tr v-else-if="!paginatedUsers.length"><td colspan="8" class="p-12 text-center text-sm text-(--text-muted)">User tidak ditemukan.</td></tr>
+                  <tr v-if="loading"><td colspan="8" class="p-12 text-center text-sm text-(--text-muted)">{{ t('userManagement.loading') }}</td></tr>
+                  <tr v-else-if="!paginatedUsers.length"><td colspan="8" class="p-12 text-center text-sm text-(--text-muted)">{{ t('userManagement.empty') }}</td></tr>
                   <tr v-for="user in paginatedUsers" v-else :key="user.id" class="border-b border-(--border) last:border-0 hover:bg-(--surface-muted)">
-                    <td class="px-4 py-3"><strong class="block text-sm">{{ displayName(user) }}</strong><span v-if="user.permissions?.isSelf" class="text-[11px] text-(--brand)">Akun Anda</span></td>
+                    <td class="px-4 py-3"><strong class="block text-sm">{{ displayName(user) }}</strong><span v-if="user.permissions?.isSelf" class="text-[11px] text-(--brand)">{{ t('userManagement.yourAccount') }}</span></td>
                     <td class="px-4 py-3 text-sm">{{ user.username }}</td>
                     <td class="px-4 py-3 text-sm">{{ user.email }}</td>
                     <td class="px-4 py-3"><span class="badge">{{ user.access || '—' }}</span></td>
                     <td class="px-4 py-3"><div class="flex max-w-65 flex-wrap gap-1"><span v-for="role in user.effectiveClientRoles" :key="role" class="badge" :class="{ inherited: user.inheritedClientRoles.includes(role) }">{{ role }}</span><span v-if="!user.effectiveClientRoles.length">—</span></div></td>
                     <td class="px-4 py-3 text-xs text-(--text-muted)">{{ formatDate(user.createdTimestamp) }}</td>
-                    <td class="px-4 py-3"><button type="button" class="status-button" :class="{ enabled: user.enabled }" role="switch" :aria-checked="user.enabled" :aria-label="`Ubah status ${displayName(user)}`" :disabled="!user.permissions?.changeStatus || busyId === user.id" :title="user.permissions?.changeStatus ? '' : 'Akun sendiri tidak dapat dinonaktifkan'" @click="toggleStatus(user)"><span></span>{{ user.enabled ? 'Aktif' : 'Nonaktif' }}</button></td>
-                    <td class="px-4 py-3"><div class="flex gap-2"><button type="button" class="icon-action" :disabled="busyId === user.id" :aria-label="`Edit ${displayName(user)}`" @click="openEdit(user)"><BaseIcon name="edit" :size="16" /></button><button type="button" class="icon-action danger" :disabled="!user.permissions?.delete || busyId === user.id" :title="user.permissions?.delete ? '' : 'Akun sendiri tidak dapat dihapus'" :aria-label="`Hapus ${displayName(user)}`" @click="deleteTarget = user">×</button></div></td>
+                    <td class="px-4 py-3"><button type="button" class="status-button" :class="{ enabled: user.enabled }" role="switch" :aria-checked="user.enabled" :aria-label="t('userManagement.changeStatusOf', { name: displayName(user) })" :disabled="!user.permissions?.changeStatus || busyId === user.id" :title="user.permissions?.changeStatus ? '' : t('userManagement.cannotDisableSelf')" @click="toggleStatus(user)"><span></span>{{ user.enabled ? t('userManagement.active') : t('userManagement.inactive') }}</button></td>
+                    <td class="px-4 py-3"><div class="flex gap-2"><button type="button" class="icon-action" :disabled="busyId === user.id" :aria-label="t('userManagement.editOf', { name: displayName(user) })" @click="openEdit(user)"><BaseIcon name="edit" :size="16" /></button><button type="button" class="icon-action danger" :disabled="!user.permissions?.delete || busyId === user.id" :title="user.permissions?.delete ? '' : t('userManagement.cannotDeleteSelf')" :aria-label="t('userManagement.deleteOf', { name: displayName(user) })" @click="deleteTarget = user">×</button></div></td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
             <div class="hidden flex-col gap-3 p-3 max-[980px]:flex">
-              <p v-if="loading" class="p-8 text-center text-sm text-(--text-muted)">Memuat user…</p>
-              <p v-else-if="!paginatedUsers.length" class="p-8 text-center text-sm text-(--text-muted)">User tidak ditemukan.</p>
+              <p v-if="loading" class="p-8 text-center text-sm text-(--text-muted)">{{ t('userManagement.loading') }}</p>
+              <p v-else-if="!paginatedUsers.length" class="p-8 text-center text-sm text-(--text-muted)">{{ t('userManagement.empty') }}</p>
               <article v-for="user in paginatedUsers" v-else :key="user.id" class="rounded-xl border border-(--border) bg-(--surface-muted) p-4">
                 <div class="flex justify-between gap-3"><div><strong>{{ displayName(user) }}</strong><p class="m-0 mt-1 text-xs text-(--text-muted)">{{ user.username }} · {{ user.email }}</p></div><span class="badge self-start">{{ user.access || '—' }}</span></div>
                 <div class="mt-3 flex flex-wrap gap-1"><span v-for="role in user.effectiveClientRoles" :key="role" class="badge">{{ role }}</span></div>
-                <div class="mt-4 flex items-center justify-between"><button type="button" class="status-button" :class="{ enabled: user.enabled }" role="switch" :aria-checked="user.enabled" :aria-label="`Ubah status ${displayName(user)}`" :disabled="!user.permissions?.changeStatus" @click="toggleStatus(user)"><span></span>{{ user.enabled ? 'Aktif' : 'Nonaktif' }}</button><div class="flex gap-2"><button class="icon-action" type="button" :aria-label="`Edit ${displayName(user)}`" @click="openEdit(user)"><BaseIcon name="edit" :size="16" /></button><button class="icon-action danger" type="button" :aria-label="`Hapus ${displayName(user)}`" :disabled="!user.permissions?.delete" @click="deleteTarget = user">×</button></div></div>
+                <div class="mt-4 flex items-center justify-between"><button type="button" class="status-button" :class="{ enabled: user.enabled }" role="switch" :aria-checked="user.enabled" :aria-label="t('userManagement.changeStatusOf', { name: displayName(user) })" :disabled="!user.permissions?.changeStatus" @click="toggleStatus(user)"><span></span>{{ user.enabled ? t('userManagement.active') : t('userManagement.inactive') }}</button><div class="flex gap-2"><button class="icon-action" type="button" :aria-label="t('userManagement.editOf', { name: displayName(user) })" @click="openEdit(user)"><BaseIcon name="edit" :size="16" /></button><button class="icon-action danger" type="button" :aria-label="t('userManagement.deleteOf', { name: displayName(user) })" :disabled="!user.permissions?.delete" @click="deleteTarget = user">×</button></div></div>
               </article>
             </div>
 
             <footer class="flex flex-wrap items-center justify-between gap-3 border-t border-(--border) px-4 py-3 text-xs text-(--text-muted)">
-              <span>{{ filteredUsers.length }} hasil</span>
-              <div class="flex items-center gap-2"><button class="page-button" :disabled="page === 1" @click="page--">Sebelumnya</button><span>Halaman {{ page }} / {{ totalPages }}</span><button class="page-button" :disabled="page === totalPages" @click="page++">Berikutnya</button></div>
-              <label>Per halaman <select v-model="pageSize" class="ml-1 rounded-lg border border-(--border) bg-(--surface-muted) p-1 text-(--text)"><option :value="10">10</option><option :value="25">25</option><option :value="50">50</option></select></label>
+              <span>{{ t('userManagement.results', { n: filteredUsers.length }) }}</span>
+              <div class="flex items-center gap-2"><button class="page-button" :disabled="page === 1" @click="page--">{{ t('userManagement.previous') }}</button><span>{{ t('userManagement.pageOf', { page, total: totalPages }) }}</span><button class="page-button" :disabled="page === totalPages" @click="page++">{{ t('userManagement.next') }}</button></div>
+              <label>{{ t('userManagement.perPage') }} <select v-model="pageSize" class="ml-1 rounded-lg border border-(--border) bg-(--surface-muted) p-1 text-(--text)"><option :value="10">10</option><option :value="25">25</option><option :value="50">50</option></select></label>
             </footer>
           </section>
         </section>
@@ -72,8 +72,8 @@
     <Teleport to="body">
       <div v-if="deleteTarget" class="fixed inset-0 z-70 grid place-items-center bg-black/55 p-4" @click.self="deleteTarget = null">
         <div class="w-full max-w-sm rounded-2xl border border-(--border) bg-(--surface) p-6 text-(--text) shadow-2xl" role="dialog" aria-modal="true">
-          <h2 class="m-0 text-lg font-bold">Hapus user?</h2><p class="my-4 text-sm text-(--text-muted)">Akun <strong>{{ displayName(deleteTarget) }}</strong> akan dihapus permanen dari Keycloak. Data bisnis tidak ikut dihapus.</p>
-          <div class="flex justify-end gap-3"><button class="secondary-button" type="button" :disabled="deleting" @click="deleteTarget = null">Batal</button><button class="danger-button" type="button" :disabled="deleting" @click="deleteUser">{{ deleting ? 'Menghapus…' : 'Hapus' }}</button></div>
+          <h2 class="m-0 text-lg font-bold">{{ t('userManagement.deleteTitle') }}</h2><p class="my-4 text-sm text-(--text-muted)">{{ t('userManagement.deleteBefore') }} <strong>{{ displayName(deleteTarget) }}</strong> {{ t('userManagement.deleteAfter') }}</p>
+          <div class="flex justify-end gap-3"><button class="secondary-button" type="button" :disabled="deleting" @click="deleteTarget = null">{{ t('userManagement.cancel') }}</button><button class="danger-button" type="button" :disabled="deleting" @click="deleteUser">{{ deleting ? t('userManagement.deleting') : t('userManagement.delete') }}</button></div>
         </div>
       </div>
     </Teleport>
@@ -83,6 +83,8 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { currentIntlLocale } from '../../i18n'
 import BaseHeader from '../shared/header'
 import BaseSidebar from '../shared/sidebar'
 import BaseIcon from '../shared/icon'
@@ -95,7 +97,8 @@ import UserManagementModal from './components/UserManagementModal.vue'
 import userManagementService, { userManagementErrorMessage } from './services/userManagementService'
 import { encryptPassword } from './services/passwordEncryption'
 
-const columns = ['Nama', 'Username', 'Email', 'User Access', 'Mobile Roles', 'Dibuat', 'Status', 'Aksi']
+const { t, locale } = useI18n()
+const columns = computed(() => ['name', 'username', 'email', 'userAccess', 'mobileRoles', 'created', 'status', 'actions'].map((key) => t(`userManagement.columns.${key}`)))
 const appStore = useAppStore()
 const router = useRouter()
 const { show: showToast } = useToast()
@@ -119,9 +122,9 @@ const deleting = ref(false)
 
 const displayName = (user) => [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.username || '—'
 const tabs = computed(() => [
-  { id: 'all', label: 'Semua', count: users.value.length },
-  { id: 'active', label: 'Aktif', count: users.value.filter((user) => user.enabled).length },
-  { id: 'inactive', label: 'Nonaktif', count: users.value.filter((user) => !user.enabled).length }
+  { id: 'all', label: t('userManagement.tabs.all'), count: users.value.length },
+  { id: 'active', label: t('userManagement.active'), count: users.value.filter((user) => user.enabled).length },
+  { id: 'inactive', label: t('userManagement.inactive'), count: users.value.filter((user) => !user.enabled).length }
 ])
 const filteredUsers = computed(() => {
   const query = search.value.trim().toLowerCase()
@@ -136,7 +139,7 @@ const paginatedUsers = computed(() => filteredUsers.value.slice((page.value - 1)
 watch([search, activeTab, pageSize], () => { page.value = 1 })
 watch(totalPages, (value) => { if (page.value > value) page.value = value })
 
-function formatDate(value) { return value ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium' }).format(new Date(value)) : '—' }
+function formatDate(value) { void locale.value; return value ? new Intl.DateTimeFormat(currentIntlLocale(), { dateStyle: 'medium' }).format(new Date(value)) : '—' }
 async function load() {
   loading.value = true; pageError.value = ''
   try {
@@ -144,7 +147,7 @@ async function load() {
     users.value = result.users || []; configuration.value = config
   } catch (error) {
     if (error?.code === 403) { await router.replace('/dashboard'); return }
-    pageError.value = userManagementErrorMessage(error, 'Gagal memuat user Keycloak.')
+    pageError.value = userManagementErrorMessage(error, t('userManagement.errors.load'))
   } finally { loading.value = false }
 }
 function openAdd() { selectedUser.value = null; modalMode.value = 'add'; formError.value = ''; modalOpen.value = true }
@@ -164,29 +167,29 @@ async function saveUser(form) {
     }
     if (modalMode.value === 'add') {
       await userManagementService.createUser({ ...payload, directClientRoles: form.directClientRoles, encryptedPassword })
-      showToast('User berhasil dibuat.')
+      showToast(t('userManagement.messages.created'))
     } else {
       const id = selectedUser.value.id
       await userManagementService.updateUser(id, payload)
       if (encryptedPassword) await userManagementService.resetPassword(id, encryptedPassword)
-      showToast('User berhasil diperbarui.')
+      showToast(t('userManagement.messages.updated'))
     }
     modalOpen.value = false; await load()
-  } catch (error) { formError.value = userManagementErrorMessage(error, 'Gagal menyimpan user.') }
+  } catch (error) { formError.value = userManagementErrorMessage(error, t('userManagement.errors.save')) }
   finally { saving.value = false }
 }
 async function toggleStatus(user) {
   if (!user.permissions?.changeStatus) return
   busyId.value = user.id
-  try { await userManagementService.updateStatus(user.id, !user.enabled); user.enabled = !user.enabled; showToast('Status user berhasil diperbarui.') }
-  catch (error) { showToast(userManagementErrorMessage(error, 'Gagal mengubah status user.'), 'error') }
+  try { await userManagementService.updateStatus(user.id, !user.enabled); user.enabled = !user.enabled; showToast(t('userManagement.messages.statusUpdated')) }
+  catch (error) { showToast(userManagementErrorMessage(error, t('userManagement.errors.status')), 'error') }
   finally { busyId.value = '' }
 }
 async function deleteUser() {
   if (!deleteTarget.value) return
   deleting.value = true
-  try { await userManagementService.deleteUser(deleteTarget.value.id); showToast('User berhasil dihapus.'); deleteTarget.value = null; await load() }
-  catch (error) { showToast(userManagementErrorMessage(error, 'Gagal menghapus user.'), 'error') }
+  try { await userManagementService.deleteUser(deleteTarget.value.id); showToast(t('userManagement.messages.deleted')); deleteTarget.value = null; await load() }
+  catch (error) { showToast(userManagementErrorMessage(error, t('userManagement.errors.delete')), 'error') }
   finally { deleting.value = false }
 }
 onMounted(load)

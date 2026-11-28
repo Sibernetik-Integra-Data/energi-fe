@@ -14,6 +14,10 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { currentIntlLocale } from '../../../i18n'
+
+const { locale } = useI18n()
 
 const props = defineProps({
     label: { type: String, required: true },
@@ -24,7 +28,8 @@ const props = defineProps({
 
 const formattedValue = computed(() => {
     if (typeof props.value === 'number') {
-        return props.value.toLocaleString('id-ID')
+        void locale.value
+        return props.value.toLocaleString(currentIntlLocale())
     }
     return props.value
 })

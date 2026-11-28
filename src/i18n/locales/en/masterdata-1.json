@@ -1,0 +1,737 @@
+{
+  "petak": {
+    "ui": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "clearAll": "Clear all",
+      "removeFilter": "Remove filter {label}",
+      "createdBy": "Created by",
+      "updatedBy": "Updated by",
+      "showAll": "Show all",
+      "sort": "Sort",
+      "name": "Name",
+      "notes": "Notes",
+      "optional": "Optional.",
+      "loading": "Loading…",
+      "nameRequired": "Name is required.",
+      "saveFailed": "Failed to save data.",
+      "status": "Status",
+      "none": "— None —",
+      "notesExtra": "Additional notes",
+      "yes": "Yes",
+      "no": "No",
+      "int": "Whole number ≥ 0."
+    },
+    "title": "Plots",
+    "description": "Summary of plots per block, planting status and tree count. Click a card or chart bar to filter the table.",
+    "add": "Add plot",
+    "kpi": {
+      "total": "Total plots",
+      "totalSub": "{n} blocks",
+      "tm": "Mature (TM)",
+      "tmSub": "{n}% of plots",
+      "tbm": "Immature (TBM)",
+      "tbmSub": "{n} not set",
+      "tph": "TPH · trees",
+      "tphSub": "{n} trees recorded"
+    },
+    "chart": {
+      "title": "Plots per block",
+      "subtitle": "{petak} plots in {blok} blocks",
+      "barAria": "Block {b}: {n} plots, {tm} TM, {tbm} TBM"
+    },
+    "entity": "Plot",
+    "empty": "Add the first plot so it can be used in census and work planning.",
+    "aria": "Plot list",
+    "searchPlaceholder": "Search plot or block…",
+    "searchAria": "Search plots",
+    "filter": {
+      "blok": "Block",
+      "year": "Planting year",
+      "from": "From",
+      "to": "To",
+      "clearRange": "Clear range",
+      "all": "All",
+      "yearChip": "Year {range}"
+    },
+    "blokLabel": "Block {name}",
+    "noBlok": "No block",
+    "status": {
+      "auto": "{s} · automatic",
+      "autoTitle": "Automatically TM: has an active harvest TPH",
+      "notSet": "Not set",
+      "tmOpt": "TM · Mature",
+      "tbmOpt": "TBM · Immature"
+    },
+    "yearsAbbr": "{n} yrs",
+    "tphTitle": "Maintenance {p} · Harvest {h}",
+    "editAria": "Edit plot {name}",
+    "deleteAria": "Delete plot {name}",
+    "col": {
+      "name": "Plot",
+      "status": "Planting status",
+      "year": "Planting year",
+      "wide": "Area",
+      "tph": "TPH",
+      "trees": "Trees"
+    },
+    "confirm": {
+      "title": "Delete plot?",
+      "body": "Plot {name}{blok} will be permanently deleted.",
+      "blokSuffix": " (Block {b})",
+      "hasTph": " This plot still has {n}; deletion will be refused until its TPHs are deleted or moved.",
+      "tphCount": "{n} TPH"
+    },
+    "toast": {
+      "updated": "Plot {name} updated.",
+      "created": "Plot {name} added.",
+      "deleted": "Plot {name} deleted."
+    },
+    "error": {
+      "load": "There is a problem connecting to the server. Check your network, then try again.",
+      "save": "Failed to save plot.",
+      "delete": "Failed to delete plot.",
+      "inUse": "The plot is still used by TPHs or other data, so it cannot be deleted."
+    },
+    "form": {
+      "titleEdit": "Edit plot {name}",
+      "subtitle": "Complete the plot details. Fields marked * are required.",
+      "name": "Plot number",
+      "nameHint": "A trailing letter marks the part of the block, e.g. 113a.",
+      "namePlaceholder": "e.g. 113a",
+      "blokHint": "Chosen automatically from the leading digits of the plot number.",
+      "blokPlaceholder": "Select block",
+      "blokLoadFailed": "Failed to load blocks.",
+      "statusHint": "Automatically TM when the plot has an active harvest TPH.",
+      "yearHint": "1950 to {max}.",
+      "yearPlaceholder": "e.g. 2015",
+      "wide": "Area (ha)",
+      "widePlaceholder": "e.g. 12.5",
+      "trees": "Tree count",
+      "treesPlaceholder": "e.g. 1500",
+      "nameRequired": "Plot number is required.",
+      "nameDuplicate": "Plot {name} already exists.",
+      "blokRequired": "Select a block.",
+      "yearRange": "Year must be 1950–{max}.",
+      "num": "Number ≥ 0."
+    }
+  },
+  "blocks": {
+    "ui": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "clearAll": "Clear all",
+      "removeFilter": "Remove filter {label}",
+      "createdBy": "Created by",
+      "updatedBy": "Updated by",
+      "showAll": "Show all",
+      "sort": "Sort",
+      "name": "Name",
+      "notes": "Notes",
+      "optional": "Optional.",
+      "loading": "Loading…",
+      "nameRequired": "Name is required.",
+      "saveFailed": "Failed to save data.",
+      "status": "Status",
+      "none": "— None —",
+      "notesExtra": "Additional notes",
+      "yes": "Yes",
+      "no": "No",
+      "int": "Whole number ≥ 0."
+    },
+    "title": "Blocks",
+    "description": "Estate blocks; each block contains several plots (Master Data → Plots). Click a card or chart bar to filter the table.",
+    "add": "Add block",
+    "kpi": {
+      "total": "Total blocks",
+      "totalSub": "{n} plots",
+      "hasTm": "Blocks with TM",
+      "hasTmSub": "{n}% of blocks",
+      "tbm": "TBM blocks",
+      "tbmSub": "{n} blocks without plots",
+      "tph": "TPH · harvest trees",
+      "tphSub": "{n} harvest trees"
+    },
+    "chart": {
+      "title": "Plots per block",
+      "subtitle": "{petak} plots in {blok} blocks",
+      "barAria": "Block {name}: {n} plots, {status}",
+      "barTm": "has TM"
+    },
+    "hasTm": "Has TM",
+    "entity": "Block",
+    "empty": "Add the first block, then fill in its plots under Plots.",
+    "aria": "Block list",
+    "searchPlaceholder": "Search block or notes…",
+    "searchAria": "Search blocks",
+    "filter": {
+      "petak": "Plots",
+      "hasPetak": "Has plots",
+      "noPetak": "No plots"
+    },
+    "blokLabel": "Block {name}",
+    "petakCount": "{n} plots",
+    "deleteBlocked": "Still contains plots",
+    "editAria": "Edit block {name}",
+    "deleteAria": "Delete block {name}",
+    "updatedByName": "Updated by {name}",
+    "col": {
+      "name": "Block",
+      "petak": "Plots",
+      "tph": "TPH",
+      "treeCare": "Maintenance trees",
+      "treeHarvest": "Harvest trees"
+    },
+    "confirm": {
+      "title": "Delete block?",
+      "body": "{name} will be permanently deleted. This cannot be undone.",
+      "hasPetak": " This block still contains {n}; move or delete its plots first."
+    },
+    "toast": {
+      "updated": "Block updated.",
+      "created": "Block added.",
+      "deleted": "Block deleted."
+    },
+    "error": {
+      "load": "Failed to load blocks.",
+      "save": "Failed to save block.",
+      "delete": "Failed to delete block.",
+      "duplicate": "Block number already exists.",
+      "inUse": "The block still contains plots, so it cannot be deleted."
+    },
+    "form": {
+      "titleEdit": "Edit block {name}",
+      "subtitle": "Complete the block details. Fields marked * are required.",
+      "name": "Block number",
+      "nameHint": "Plots in this block (e.g. 113a, 113b) are managed under Plots.",
+      "namePlaceholder": "e.g. 113",
+      "notesPlaceholder": "Optional",
+      "nameRequired": "Block number is required."
+    }
+  },
+  "tph": {
+    "ui": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "clearAll": "Clear all",
+      "removeFilter": "Remove filter {label}",
+      "createdBy": "Created by",
+      "updatedBy": "Updated by",
+      "showAll": "Show all",
+      "sort": "Sort",
+      "name": "Name",
+      "notes": "Notes",
+      "optional": "Optional.",
+      "loading": "Loading…",
+      "nameRequired": "Name is required.",
+      "saveFailed": "Failed to save data.",
+      "status": "Status",
+      "none": "— None —",
+      "notesExtra": "Additional notes",
+      "yes": "Yes",
+      "no": "No",
+      "int": "Whole number ≥ 0."
+    },
+    "title": "Collection points (TPH)",
+    "description": "Collection points per plot: type, side, line number and tree count. Click a card or chart bar to filter the table.",
+    "add": "Add TPH",
+    "kpi": {
+      "total": "Total TPH",
+      "totalSub": "{active} active · {inactive} inactive",
+      "panen": "Harvest TPH",
+      "panenSub": "{n} maintenance TPH",
+      "missing": "Tree count not set",
+      "missingSub": "{n}% of TPH",
+      "trees": "Total trees",
+      "treesSub": "{n} in filtered results"
+    },
+    "chart": {
+      "title": "TPH per block",
+      "subtitle": "{n} TPH in {blok} blocks",
+      "barAria": "Block {b}: {n} TPH, {h} harvest, {m} maintenance"
+    },
+    "type": {
+      "panen": "Harvest",
+      "perawatan": "Maintenance"
+    },
+    "entity": "TPH",
+    "empty": "Add the first TPH so it can be used in census and assignments.",
+    "aria": "TPH list",
+    "searchPlaceholder": "Search code, e.g. U01…",
+    "searchAria": "Search TPH",
+    "filter": {
+      "blok": "Block",
+      "petak": "Plot",
+      "type": "Type",
+      "allActive": "Active & inactive",
+      "missing": "Tree count empty"
+    },
+    "active": "Active",
+    "inactive": "Inactive",
+    "notSet": "Not set",
+    "noPetak": "No plot",
+    "noPetakLower": "no plot",
+    "line": "Line {n}",
+    "blokLabel": "Block {name}",
+    "petakLabel": "Plot {name}",
+    "editAria": "Edit TPH {name}",
+    "deleteAria": "Delete TPH {name}",
+    "col": {
+      "code": "Code",
+      "petak": "Plot",
+      "blok": "Block",
+      "type": "Type",
+      "side": "Side",
+      "line": "Line",
+      "trees": "Trees"
+    },
+    "confirm": {
+      "title": "Delete TPH?",
+      "body": "TPH {code} in {petak} will be permanently deleted. A TPH already used in census or assignments cannot be deleted; deactivate it via Edit."
+    },
+    "toast": {
+      "updated": "TPH updated.",
+      "created": "TPH added.",
+      "deleted": "TPH deleted."
+    },
+    "error": {
+      "load": "Failed to load TPH.",
+      "save": "Failed to save TPH.",
+      "delete": "Failed to delete TPH.",
+      "duplicate": "This plot already has a TPH with the same type, side and line number.",
+      "inUse": "The TPH is already used in census or assignments. Deactivate it via Edit (turn off Active)."
+    },
+    "form": {
+      "titleEdit": "Edit TPH {name}",
+      "subtitle": "Complete the TPH details. Fields marked * are required.",
+      "petakHint": "Source: Master Data → Plots",
+      "petakPlaceholder": "Select plot",
+      "petakLoadFailed": "Failed to load plots.",
+      "typeAria": "TPH type",
+      "sideU": "U (north)",
+      "sideS": "S (south)",
+      "sideUS": "US (north-south)",
+      "line": "Line number",
+      "lineHint": "TPH code: {code} (automatic from side + line number)",
+      "trees": "Tree count",
+      "treesPlaceholder": "e.g. 40",
+      "latPlaceholder": "e.g. -0.5123",
+      "lngPlaceholder": "e.g. 117.1234",
+      "notesPlaceholder": "Optional",
+      "activeDesc": "Inactive TPHs are not used in new census or assignments.",
+      "petakRequired": "Select a plot.",
+      "typeRequired": "Select a type.",
+      "sideRequired": "Select a side.",
+      "lat": "Number from -90 to 90.",
+      "lng": "Number from -180 to 180."
+    }
+  },
+  "vehicle": {
+    "ui": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "clearAll": "Clear all",
+      "removeFilter": "Remove filter {label}",
+      "createdBy": "Created by",
+      "updatedBy": "Updated by",
+      "showAll": "Show all",
+      "sort": "Sort",
+      "name": "Name",
+      "notes": "Notes",
+      "optional": "Optional.",
+      "loading": "Loading…",
+      "nameRequired": "Name is required.",
+      "saveFailed": "Failed to save data.",
+      "status": "Status",
+      "none": "— None —",
+      "notesExtra": "Additional notes",
+      "yes": "Yes",
+      "no": "No",
+      "int": "Whole number ≥ 0."
+    },
+    "title": "Vehicles",
+    "description": "Manage estate transport vehicles: name, type and licence plate. Click a card or chart bar to filter the table.",
+    "add": "Add vehicle",
+    "kpi": {
+      "total": "Total vehicles",
+      "totalSub": "{n} types",
+      "top": "Most common type",
+      "topNone": "No types yet",
+      "noTypeSub": "{n}% of vehicles"
+    },
+    "noType": "No type",
+    "chart": {
+      "title": "Vehicles per type",
+      "subtitle": "{n} vehicles in {t} types",
+      "barAria": "{label}: {n} vehicles"
+    },
+    "entity": "Vehicle",
+    "empty": "Add the first vehicle so it can be used for harvest transport.",
+    "aria": "Vehicle list",
+    "searchPlaceholder": "Search name, type or licence plate…",
+    "searchAria": "Search vehicles",
+    "type": "Type",
+    "plate": "Licence plate",
+    "titleField": "Title",
+    "editAria": "Edit vehicle {name}",
+    "deleteAria": "Delete vehicle {name}",
+    "confirm": {
+      "title": "Delete vehicle?",
+      "body": "Vehicle {name}{plate} will be permanently deleted. This cannot be undone."
+    },
+    "toast": {
+      "updated": "Vehicle updated.",
+      "created": "Vehicle added.",
+      "deleted": "Vehicle deleted."
+    },
+    "error": {
+      "load": "Failed to load vehicles.",
+      "delete": "Failed to delete vehicle."
+    },
+    "form": {
+      "titleEdit": "Edit vehicle {name}",
+      "subtitle": "Complete the vehicle details. Fields marked * are required.",
+      "namePlaceholder": "e.g. Truck A",
+      "plateHint": "Converted to capitals, e.g. KT 1234 AB.",
+      "platePlaceholder": "e.g. KT 1234 AB",
+      "titlePlaceholder": "e.g. Heavy Truck",
+      "typePlaceholder": "e.g. Dump Truck",
+      "plateRequired": "Licence plate is required."
+    }
+  },
+  "driver": {
+    "ui": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "clearAll": "Clear all",
+      "removeFilter": "Remove filter {label}",
+      "createdBy": "Created by",
+      "updatedBy": "Updated by",
+      "showAll": "Show all",
+      "sort": "Sort",
+      "name": "Name",
+      "notes": "Notes",
+      "optional": "Optional.",
+      "loading": "Loading…",
+      "nameRequired": "Name is required.",
+      "saveFailed": "Failed to save data.",
+      "status": "Status",
+      "none": "— None —",
+      "notesExtra": "Additional notes",
+      "yes": "Yes",
+      "no": "No",
+      "int": "Whole number ≥ 0."
+    },
+    "title": "Drivers",
+    "description": "Manage harvest transport drivers with their location and vehicle. Click a card or chart bar to filter the table.",
+    "add": "Add driver",
+    "kpi": {
+      "total": "Total drivers",
+      "totalSub": "{n} locations",
+      "pctSub": "{n}% of drivers"
+    },
+    "hasVehicle": "Has vehicle",
+    "noVehicle": "No vehicle",
+    "noLocation": "No location",
+    "chart": {
+      "title": "Drivers per location",
+      "subtitle": "{n} drivers in {l} locations",
+      "barAria": "{label}: {n} drivers, {v} with a vehicle"
+    },
+    "entity": "Driver",
+    "empty": "Add the first driver so they can be used for harvest transport.",
+    "aria": "Driver list",
+    "searchPlaceholder": "Search driver name…",
+    "searchAria": "Search drivers",
+    "location": "Location",
+    "vehicle": "Vehicle",
+    "plate": "Licence plate",
+    "address": "Address",
+    "editAria": "Edit driver {name}",
+    "deleteAria": "Delete driver {name}",
+    "confirm": {
+      "title": "Delete driver?",
+      "body": "Driver {name} will be permanently deleted. This cannot be undone."
+    },
+    "toast": {
+      "updated": "Driver updated.",
+      "created": "Driver added.",
+      "deleted": "Driver deleted."
+    },
+    "error": {
+      "load": "Failed to load drivers.",
+      "delete": "Failed to delete driver."
+    },
+    "form": {
+      "titleEdit": "Edit driver {name}",
+      "subtitle": "Complete the driver details. Fields marked * are required.",
+      "namePlaceholder": "e.g. Budi",
+      "addressPlaceholder": "Street address",
+      "locationHint": "Source: Master Data → Destination",
+      "locationLoading": "Loading locations…",
+      "vehicleHint": "Source: Master Data → Vehicles",
+      "vehicleLoading": "Loading vehicles…",
+      "plateHint": "Taken from the vehicle.",
+      "platePlaceholder": "Select a vehicle first",
+      "legacyLocation": "{name} (old value, not in Destination)",
+      "locationLoadFailed": "Failed to load locations.",
+      "vehicleLoadFailed": "Failed to load vehicles."
+    }
+  },
+  "destination": {
+    "ui": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "clearAll": "Clear all",
+      "removeFilter": "Remove filter {label}",
+      "createdBy": "Created by",
+      "updatedBy": "Updated by",
+      "showAll": "Show all",
+      "sort": "Sort",
+      "name": "Name",
+      "notes": "Notes",
+      "optional": "Optional.",
+      "loading": "Loading…",
+      "nameRequired": "Name is required.",
+      "saveFailed": "Failed to save data.",
+      "status": "Status",
+      "none": "— None —",
+      "notesExtra": "Additional notes",
+      "yes": "Yes",
+      "no": "No",
+      "int": "Whole number ≥ 0."
+    },
+    "title": "Destinations",
+    "description": "Shipping destinations for estate produce with their type and coordinates. Click a card or chart bar to filter the table.",
+    "add": "Add destination",
+    "kpi": {
+      "total": "Total destinations",
+      "totalSub": "{n} types",
+      "pctSub": "{n}% of destinations",
+      "noCoordSub": "Fill in latitude & longitude",
+      "top": "Most common type",
+      "topSub": "{n} destinations",
+      "noData": "No data yet"
+    },
+    "hasCoord": "Has coordinates",
+    "noCoord": "No coordinates",
+    "chart": {
+      "title": "Destinations per type",
+      "subtitle": "{n} destinations in {t} types",
+      "barAria": "{label}: {n} destinations, {c} with coordinates"
+    },
+    "entity": "Destination",
+    "empty": "Add the first destination so it can be used when shipping the harvest.",
+    "aria": "Destination list",
+    "searchPlaceholder": "Search name, destination or notes…",
+    "searchAria": "Search destinations",
+    "type": "Type",
+    "coord": "Coordinates",
+    "noType": "No type",
+    "typeN": "Type {key}",
+    "noLocation": "No destination details",
+    "editAria": "Edit destination {name}",
+    "deleteAria": "Delete destination {name}",
+    "confirm": {
+      "title": "Delete destination?",
+      "body": "Destination {name} will be permanently deleted. This cannot be undone."
+    },
+    "toast": {
+      "updated": "Destination updated.",
+      "created": "Destination added.",
+      "deleted": "Destination deleted."
+    },
+    "error": {
+      "load": "Failed to load destinations.",
+      "delete": "Failed to delete destination.",
+      "inUse": "The destination is still used by other data, so it cannot be deleted."
+    },
+    "form": {
+      "titleEdit": "Edit destination {name}",
+      "subtitle": "Complete the destination details. Fields marked * are required.",
+      "namePlaceholder": "e.g. PKS Utara",
+      "type": "Destination type",
+      "typeLoading": "Loading types…",
+      "typePlaceholder": "Select destination type",
+      "typeLoadFailed": "Failed to load destination types.",
+      "typeRequired": "Select a destination type.",
+      "location": "Destination",
+      "locationPlaceholder": "e.g. Pabrik Utara",
+      "latPlaceholder": "e.g. -1.234567",
+      "lngPlaceholder": "e.g. 103.123456"
+    }
+  },
+  "aktifitasKebun": {
+    "ui": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "clearAll": "Clear all",
+      "removeFilter": "Remove filter {label}",
+      "createdBy": "Created by",
+      "updatedBy": "Updated by",
+      "showAll": "Show all",
+      "sort": "Sort",
+      "name": "Name",
+      "notes": "Notes",
+      "optional": "Optional.",
+      "loading": "Loading…",
+      "nameRequired": "Name is required.",
+      "saveFailed": "Failed to save data.",
+      "status": "Status",
+      "none": "— None —",
+      "notesExtra": "Additional notes",
+      "yes": "Yes",
+      "no": "No",
+      "int": "Whole number ≥ 0."
+    },
+    "title": "Estate activities",
+    "description": "Estate work types per work group and whether they need photo evidence. Click a card or chart bar to filter the table.",
+    "add": "Add activity",
+    "kpi": {
+      "total": "Total activities",
+      "totalSub": "{n} groups in use",
+      "pctSub": "{n}% of activities",
+      "noFotoSub": "No photo evidence needed",
+      "groups": "Work groups",
+      "emptyGroups": "{n} without activities",
+      "allFilled": "All have activities"
+    },
+    "needFoto": "Photo needed",
+    "noFoto": "No photo",
+    "chart": {
+      "title": "Activities per group",
+      "subtitle": "{n} activities in {g} groups",
+      "barAria": "{label}: {n} activities, {f} need a photo"
+    },
+    "entity": "Activity",
+    "empty": "Add the first activity so it can be used in work planning.",
+    "aria": "Estate activity list",
+    "searchPlaceholder": "Search activity name or description…",
+    "searchAria": "Search activities",
+    "group": "Group",
+    "foto": "Photo",
+    "detail": "Description",
+    "noGroup": "No group",
+    "groupN": "Group {key}",
+    "editAria": "Edit activity {name}",
+    "deleteAria": "Delete activity {name}",
+    "confirm": {
+      "title": "Delete activity?",
+      "body": "Activity {name} will be permanently deleted. This cannot be undone."
+    },
+    "toast": {
+      "updated": "Activity updated.",
+      "created": "Activity added.",
+      "deleted": "Activity deleted."
+    },
+    "error": {
+      "load": "Failed to load data.",
+      "delete": "Failed to delete activity.",
+      "inUse": "The activity is still used by a work plan or other data, so it cannot be deleted."
+    },
+    "form": {
+      "titleEdit": "Edit activity {name}",
+      "subtitle": "Complete the activity details. Fields marked * are required.",
+      "namePlaceholder": "e.g. Basic fertilising",
+      "group": "Work group",
+      "groupLoading": "Loading groups…",
+      "groupPlaceholder": "Select group…",
+      "groupLoadFailed": "Failed to load work groups.",
+      "groupRequired": "Work group is required.",
+      "detailPlaceholder": "Activity description",
+      "upload": "Photo upload required",
+      "uploadDesc": "Marks that this work needs photo evidence. The mobile app does not enforce it yet."
+    }
+  },
+  "groupOfWork": {
+    "ui": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "clearAll": "Clear all",
+      "removeFilter": "Remove filter {label}",
+      "createdBy": "Created by",
+      "updatedBy": "Updated by",
+      "showAll": "Show all",
+      "sort": "Sort",
+      "name": "Name",
+      "notes": "Notes",
+      "optional": "Optional.",
+      "loading": "Loading…",
+      "nameRequired": "Name is required.",
+      "saveFailed": "Failed to save data.",
+      "status": "Status",
+      "none": "— None —",
+      "notesExtra": "Additional notes",
+      "yes": "Yes",
+      "no": "No",
+      "int": "Whole number ≥ 0."
+    },
+    "title": "Work groups",
+    "description": "Groups of estate work and the TPH type allowed in census and assignments. Click a card to filter the table.",
+    "add": "Add group",
+    "kpi": {
+      "total": "Total groups",
+      "totalSub": "All TPH types",
+      "pctSub": "{n}% of groups",
+      "perawatan": "Maintenance TPH",
+      "panen": "Harvest TPH",
+      "needsFill": "Needs completing",
+      "allFilled": "All have a description"
+    },
+    "noDetail": "No description",
+    "type": {
+      "panen": "Harvest",
+      "perawatan": "Maintenance",
+      "notSet": "Not set"
+    },
+    "entity": "Group",
+    "empty": "Add the first work group so estate activities can be grouped.",
+    "aria": "Work group list",
+    "searchPlaceholder": "Search group name or description…",
+    "searchAria": "Search work groups",
+    "tphType": "TPH type",
+    "detail": "Description",
+    "editAria": "Edit group {name}",
+    "deleteAria": "Delete group {name}",
+    "confirm": {
+      "title": "Delete work group?",
+      "body": "Group {name} will be permanently deleted. This cannot be undone."
+    },
+    "toast": {
+      "updated": "Work group updated.",
+      "created": "Work group added.",
+      "deleted": "Work group deleted."
+    },
+    "error": {
+      "load": "Failed to load data.",
+      "delete": "Failed to delete.",
+      "inUse": "The group is still used by estate activities or other data, so it cannot be deleted."
+    },
+    "form": {
+      "titleEdit": "Edit work group",
+      "titleAdd": "Add work group",
+      "subtitle": "Complete the group details. Fields marked * are required.",
+      "nameHint": "Maximum 100 characters.",
+      "namePlaceholder": "e.g. Weeding",
+      "tphHint": "Work in this group can only use TPHs of this type.",
+      "detailPlaceholder": "Description (optional)",
+      "nameMax": "Name must be at most 100 characters."
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "bantuan": {
+    "eyebrow": "Panduan",
+    "title": "Bantuan & SOP",
+    "subtitle": "Panduan pemakaian aplikasi dan prosedur kerja kebun.",
+    "searchLabel": "Cari panduan",
+    "searchPlaceholder": "Cari panduan…",
+    "loading": "Memuat panduan…",
+    "loadError": "Panduan tidak dapat dimuat saat ini. Coba lagi beberapa saat lagi.",
+    "noMatch": "Tidak ada panduan yang cocok dengan pencarian.",
+    "empty": "Belum ada panduan.",
+    "generalCategory": "Umum",
+    "guide": "Panduan",
+    "allGuides": "Semua panduan",
+    "notFound": "Panduan tidak ditemukan atau sudah tidak diterbitkan.",
+    "updated": "Diperbarui {date}",
+    "download": "Unduh"
+  }
+}

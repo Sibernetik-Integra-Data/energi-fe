@@ -1,0 +1,25 @@
+{
+  "performance": {
+    "eyebrow": "Management",
+    "subtitle": "Monitor your estate operations and activities",
+    "totalWorkers": "Total workers",
+    "totalWorkDays": "Total work days",
+    "loading": "Loading performance data…",
+    "loadError": "Failed to load performance data.",
+    "action": "Action",
+    "view": "View",
+    "filters": { "month": "Month", "year": "Year" },
+    "table": {
+      "title": "Worker list",
+      "subtitle": "Summary of worker activity in the selected period.",
+      "name": "Name", "position": "Position", "workDays": "Work days", "cleaning": "Weeding",
+      "fertilizing": "Fertilising", "harvest": "Harvest", "totalWorkDays": "Total work days",
+      "days": "1 day | {n} days", "empty": "No data for this period."
+    },
+    "worker": {
+      "loading": "Loading work reports…", "loadError": "Failed to load work reports.",
+      "date": "Date", "work": "Work", "workGroup": "Work group", "sensusId": "Census ID",
+      "empty": "No reports for this period."
+    }
+  }
+}

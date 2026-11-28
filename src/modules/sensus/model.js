@@ -3,6 +3,9 @@ import { navigation as sharedNavigation } from '../shared/navigation'
 import { apiFetch, signedApiFetch } from '../../api/fetch'
 import { resolveUsernames } from '../../utils/userCache'
 import { loadPanenDetail } from '../panen/model'
+import i18n, { currentIntlLocale } from '../../i18n'
+
+const t = (...args) => i18n.global.t(...args)
 
 // ─── signed GET helper ────────────────────────────────────────────────────────
 async function signedGet(path) {
@@ -54,11 +57,11 @@ function normalizeBlockNames(rawBlocks) {
   const names = rawBlocks
     .map((block) => {
       if (typeof block === 'string') return block
-      if (typeof block === 'number' && Number.isFinite(block)) return `Blok ${block}`
+      if (typeof block === 'number' && Number.isFinite(block)) return t('sensus.blockFallback', { id: block })
       if (!block || typeof block !== 'object') return ''
       if (block.name) return String(block.name)
       if (block.block_name) return String(block.block_name)
-      if (Number.isFinite(block.id)) return `Blok ${block.id}`
+      if (Number.isFinite(block.id)) return t('sensus.blockFallback', { id: block.id })
       return ''
     })
     .filter(Boolean)
@@ -71,7 +74,7 @@ function formatDate(raw) {
   if (!raw) return ''
   const d = new Date(raw)
   if (Number.isNaN(d.getTime())) return raw
-  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+  return d.toLocaleDateString(currentIntlLocale(), { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 // ─── Map a progress_status value to a normalised UI status ───────────────────
@@ -93,8 +96,8 @@ function mapDetailItem(d, parentSensus = {}) {
     groupOfWork:     d.type_of_work?.group_of_work_name || '',
     date:            toDateOnlyString(parentSensus.sensus_date || ''),
     blocks:          (d.blocks || []).map(b => {
-      const name = b.name || `Blok ${b.id}`
-      return String(name).replace(/^Block\b/i, 'Blok')
+      if (!b.name) return t('sensus.blockFallback', { id: b.id })
+      return String(b.name).replace(/^Block\b/i, 'Blok')
     }),
     blocksRaw:       d.blocks || [],
     photo:           d.photo1 || '',
@@ -116,7 +119,7 @@ function mapRow(r) {
   if (r.created_at) {
     const d = new Date(r.created_at)
     if (!Number.isNaN(d.getTime())) {
-      time = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
+      time = d.toLocaleTimeString(currentIntlLocale(), { hour: '2-digit', minute: '2-digit', hour12: false })
     }
   }
 
@@ -134,7 +137,7 @@ function mapRow(r) {
   // Collect all unique block names across every detail
   const blockNames = [
     ...new Set(
-      details.flatMap(d => (d.blocks || []).map(b => b.name || `Block ${b.id}`))
+      details.flatMap(d => (d.blocks || []).map(b => b.name || t('sensus.blockFallback', { id: b.id })))
     )
   ]
 
@@ -197,12 +200,9 @@ async function saveSensusPlanning(payload) {
 export function createSensusModel() {
   const navigation = cloneNavigation(sharedNavigation)
 
-  const header = { title: 'Sensus', notifications: 0 }
+  const header = { notifications: 0 }
 
-  const list = {
-    title: 'Sensus',
-    subtitle: 'Meninjau dan memverifikasi laporan lapangan pekerja'
-  }
+
 
   async function loadSensusRecord(numericId) {
     const resp = await signedGet(`/sensus/${numericId}`)
@@ -366,8 +366,8 @@ export function createSensusModel() {
 
   return {
     getNavigation()  { return cloneNavigation(navigation) },
-    getHeader()      { return { ...header, user: { ...getAuthenticatedUser() } } },
-    getList()        { return { ...list } },
+    getHeader()      { return { ...header, title: t('sensus.title'), user: { ...getAuthenticatedUser() } } },
+    getList()        { return { title: t('sensus.title'), subtitle: t('sensus.subtitle') } },
     getStats()       { return { ...stats } },
     loadRows,
     loadSensusDetail,

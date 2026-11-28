@@ -5,7 +5,7 @@
       <div class="mt-4 grid grid-cols-4 gap-4 max-[920px]:grid-cols-2 max-[560px]:grid-cols-1">
         <div class="performance-stat">
           <div>
-            <p>Total hari kerja</p>
+            <p>{{ t('performance.totalWorkDays') }}</p>
             <strong>{{ totalWorkDays }}</strong>
           </div>
           <span><BaseIcon name="calendar" :size="30" /></span>
@@ -14,31 +14,31 @@
     </section>
 
     <section class="overflow-hidden rounded-2xl border border-(--border) bg-(--surface)">
-      <div v-if="loading" class="px-4 py-12 text-center text-sm text-(--text-muted)">Memuat laporan pekerjaan…</div>
+      <div v-if="loading" class="px-4 py-12 text-center text-sm text-(--text-muted)">{{ t('performance.worker.loading') }}</div>
       <div v-else-if="error" class="px-4 py-8 text-center text-sm text-red-600">{{ error }}</div>
       <div v-else class="overflow-x-auto">
         <table class="worker-performance-table">
           <thead>
             <tr>
-              <th>Tanggal</th>
-              <th>Pekerjaan</th>
-              <th>Tipe Pekerjaan</th>
-              <th>ID Sensus</th>
-              <th class="text-center">Action</th>
+              <th>{{ t('performance.worker.date') }}</th>
+              <th>{{ t('performance.worker.work') }}</th>
+              <th>{{ t('performance.worker.workGroup') }}</th>
+              <th>{{ t('performance.worker.sensusId') }}</th>
+              <th class="text-center">{{ t('performance.action') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="row in rows" :key="`${row.id}-${row.date}`">
-              <td>{{ formatPerformanceDate(row.date) }}</td>
+              <td>{{ (locale, formatPerformanceDate(row.date)) }}</td>
               <td>{{ row.workName }}</td>
               <td>{{ row.groupOfWork }}</td>
               <td>{{ row.sensusId }}</td>
               <td class="text-center">
-                <button type="button" class="worker-report-view" @click="selectedReport = row">View</button>
+                <button type="button" class="worker-report-view" @click="selectedReport = row">{{ t('performance.view') }}</button>
               </td>
             </tr>
             <tr v-if="!rows.length">
-              <td colspan="5" class="empty-cell">Tidak ada laporan pada periode ini.</td>
+              <td colspan="5" class="empty-cell">{{ t('performance.worker.empty') }}</td>
             </tr>
           </tbody>
         </table>
@@ -57,6 +57,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseIcon from '../../shared/icon'
 import LaborActionPopup from '../../pembersihan/components/LaborActionPopup.vue'
 import PerformanceFilters from './PerformanceFilters.vue'
@@ -68,6 +69,7 @@ import {
   loadWorkerPerformance
 } from '../model'
 
+const { t, locale } = useI18n()
 const props = defineProps({ userId: { type: String, default: '' } })
 const initialPeriod = getDefaultPerformancePeriod()
 const month = ref(initialPeriod.month)
@@ -90,7 +92,7 @@ async function loadReports() {
   try {
     reports.value = await loadWorkerPerformance(props.userId)
   } catch (loadError) {
-    error.value = loadError?.message || 'Gagal memuat laporan pekerjaan.'
+    error.value = loadError?.message || t('performance.worker.loadError')
   } finally {
     loading.value = false
   }

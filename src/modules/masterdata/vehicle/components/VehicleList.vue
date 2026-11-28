@@ -1,19 +1,19 @@
 <template>
-    <MdPage title="Kendaraan" description="Kelola kendaraan angkut kebun: nama, tipe, dan nomor polisi. Klik kartu atau batang grafik untuk menyaring tabel.">
+    <MdPage :title="t('vehicle.title')" :description="t('vehicle.description')">
         <template #actions>
-            <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah Kendaraan</button>
+            <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />{{ t('vehicle.add') }}</button>
         </template>
 
         <div class="md-kpis">
-            <MdKpi icon="truck" tone="info" label="Total kendaraan" :value="rows.length" :sub="`${typeOptions.length} tipe`" action hint="Tampilkan semua" @select="clearAll" />
-            <MdKpi icon="layers" tone="success" label="Tipe terbanyak" :value="topType ? topType.count : 0" :sub="topType ? topType.label : 'Belum ada tipe'" action :pressed="!!topType && onlyType(topType.value)" @select="topType && quickType(topType.value)" />
-            <MdKpi icon="alert" tone="warning" label="Tanpa tipe" :value="countByType(NO_TYPE)" :sub="`${pct(countByType(NO_TYPE))}% dari kendaraan`" action :pressed="onlyType(NO_TYPE)" @select="quickType(NO_TYPE)" />
+            <MdKpi icon="truck" tone="info" :label="t('vehicle.kpi.total')" :value="rows.length" :sub="t('vehicle.kpi.totalSub', { n: typeOptions.length })" action :hint="t('vehicle.ui.showAll')" @select="clearAll" />
+            <MdKpi icon="layers" tone="success" :label="t('vehicle.kpi.top')" :value="topType ? topType.count : 0" :sub="topType ? topType.label : t('vehicle.kpi.topNone')" action :pressed="!!topType && onlyType(topType.value)" @select="topType && quickType(topType.value)" />
+            <MdKpi icon="alert" tone="warning" :label="t('vehicle.noType')" :value="countByType(NO_TYPE)" :sub="t('vehicle.kpi.noTypeSub', { n: pct(countByType(NO_TYPE)) })" action :pressed="onlyType(NO_TYPE)" @select="quickType(NO_TYPE)" />
         </div>
 
         <MdBarChart
             v-if="rows.length && typeOptions.length"
-            title="Jumlah kendaraan per tipe"
-            :subtitle="`${rows.length} kendaraan dalam ${typeOptions.length} tipe`"
+            :title="t('vehicle.chart.title')"
+            :subtitle="t('vehicle.chart.subtitle', { n: rows.length, t: typeOptions.length })"
             :bars="bars"
             :selected="filterType"
             @toggle="toggleType" />
@@ -25,27 +25,27 @@
             :total-rows="rows.length"
             :loading="loading"
             :error="fetchError || ''"
-            entity-label="Kendaraan"
+            :entity-label="t('vehicle.entity')"
             empty-icon="truck"
-            empty-text="Tambahkan kendaraan pertama agar bisa dipakai di pengangkutan panen."
-            add-label="Tambah Kendaraan"
+            :empty-text="t('vehicle.empty')"
+            :add-label="t('vehicle.add')"
             :can-add="canWrite"
             initial-sort="name"
-            aria-label="Daftar kendaraan"
+            :aria-label="t('vehicle.aria')"
             @retry="loadData"
             @add="openCreate"
             @clear-filters="clearAll">
             <template #toolbar>
                 <label class="md-search">
                     <MdIcon name="search" />
-                    <input v-model.trim="searchName" type="search" placeholder="Cari nama, tipe, atau nomor polisi…" aria-label="Cari kendaraan" />
+                    <input v-model.trim="searchName" type="search" :placeholder="t('vehicle.searchPlaceholder')" :aria-label="t('vehicle.searchAria')" />
                 </label>
-                <MdDropdown v-model="filterType" label="Tipe" :options="typeFilterOptions" multiple />
+                <MdDropdown v-model="filterType" :label="t('vehicle.type')" :options="typeFilterOptions" multiple />
                 <div class="md-chips">
-                    <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+                    <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="t('vehicle.ui.removeFilter', { label: c.label })" @click="c.remove()">
                         {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
                     </button>
-                    <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+                    <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">{{ t('vehicle.ui.clearAll') }}</button>
                 </div>
             </template>
 
@@ -73,8 +73,8 @@
             </template>
 
             <template v-if="canWrite" #actions="{ row }">
-                <button type="button" class="md-icon-btn" :aria-label="`Ubah kendaraan ${row.name}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
-                <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus kendaraan ${row.name}`" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+                <button type="button" class="md-icon-btn" :aria-label="t('vehicle.editAria', { name: row.name })" @click="openEdit(row)"><MdIcon name="edit" /></button>
+                <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="t('vehicle.deleteAria', { name: row.name })" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
             </template>
 
             <template #card="{ row }">
@@ -84,10 +84,10 @@
                     <MdBadge v-if="row.type" tone="info">{{ row.type }}</MdBadge>
                 </div>
                 <div class="md-card__grid">
-                    <div>Judul<b>{{ row.title || '—' }}</b></div>
-                    <div>Catatan<b>{{ row.notes || '—' }}</b></div>
-                    <div>Dibuat oleh<b>{{ userName(row.created_by) }}</b></div>
-                    <div>Diubah oleh<b>{{ userName(row.updated_by) }}</b></div>
+                    <div>{{ t('vehicle.titleField') }}<b>{{ row.title || '—' }}</b></div>
+                    <div>{{ t('vehicle.ui.notes') }}<b>{{ row.notes || '—' }}</b></div>
+                    <div>{{ t('vehicle.ui.createdBy') }}<b>{{ userName(row.created_by) }}</b></div>
+                    <div>{{ t('vehicle.ui.updatedBy') }}<b>{{ userName(row.updated_by) }}</b></div>
                 </div>
             </template>
         </MdDataTable>
@@ -101,9 +101,12 @@
             @submit="onFormSubmit"
             @cancel="closeForm" />
 
-        <MdConfirm :open="showDeleteConfirm" title="Hapus kendaraan?" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
+        <MdConfirm :open="showDeleteConfirm" :title="t('vehicle.confirm.title')" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
             <template v-if="deletingVehicle">
-                Kendaraan <b>{{ deletingVehicle.name }}</b>{{ deletingVehicle.plate_number?.trim() ? ` (${deletingVehicle.plate_number.trim()})` : '' }} akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.
+                <i18n-t keypath="vehicle.confirm.body" scope="global">
+                    <template #name><b>{{ deletingVehicle.name }}</b></template>
+                    <template #plate>{{ deletingVehicle.plate_number?.trim() ? ` (${deletingVehicle.plate_number.trim()})` : '' }}</template>
+                </i18n-t>
             </template>
         </MdConfirm>
     </MdPage>
@@ -111,6 +114,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import VehicleForm from './VehicleForm.vue'
 import { listVehicles, createVehicle, updateVehicle, deleteVehicle } from '../model'
 import { useToast } from '../../../../utils/toast'
@@ -118,6 +122,7 @@ import { useUserNames } from '../../../../auth/useUserNames'
 import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
 import { MdPage, MdKpi, MdBarChart, MdDataTable, MdDropdown, MdBadge, MdConfirm, MdIcon } from '../../../shared/masterdata-ui'
 
+const { t } = useI18n()
 const { userName } = useUserNames()
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
 const canWrite = useCanManageMasterData()
@@ -125,14 +130,14 @@ const { show: showToast } = useToast()
 
 const NO_TYPE = '-'
 
-const columns = [
-    { key: 'name', label: 'Nama' },
-    { key: 'type', label: 'Tipe' },
-    { key: 'plate_number', label: 'Nomor polisi', sortValue: (r) => r.plate_number?.trim() || '' },
-    { key: 'notes', label: 'Catatan', sortable: false },
-    { key: 'created_by', label: 'Dibuat oleh', sortable: false },
-    { key: 'updated_by', label: 'Diubah oleh', sortable: false }
-]
+const columns = computed(() => [
+    { key: 'name', label: t('vehicle.ui.name') },
+    { key: 'type', label: t('vehicle.type') },
+    { key: 'plate_number', label: t('vehicle.plate'), sortValue: (r) => r.plate_number?.trim() || '' },
+    { key: 'notes', label: t('vehicle.ui.notes'), sortable: false },
+    { key: 'created_by', label: t('vehicle.ui.createdBy'), sortable: false },
+    { key: 'updated_by', label: t('vehicle.ui.updatedBy'), sortable: false }
+])
 
 const table = ref(null)
 const rows = ref([])
@@ -159,7 +164,7 @@ const byName = (a, b) => String(a).localeCompare(String(b), 'id', { numeric: tru
 const typeOptions = computed(() => [...new Set(rows.value.map((r) => r.type?.trim()).filter(Boolean))].sort(byName))
 const typeFilterOptions = computed(() => {
     const opts = typeOptions.value.map((t) => ({ value: t, label: t, count: countByType(t) }))
-    if (countByType(NO_TYPE)) opts.push({ value: NO_TYPE, label: 'Tanpa tipe', count: countByType(NO_TYPE) })
+    if (countByType(NO_TYPE)) opts.push({ value: NO_TYPE, label: t('vehicle.noType'), count: countByType(NO_TYPE) })
     return opts
 })
 const topType = computed(() =>
@@ -170,7 +175,7 @@ const bars = computed(() =>
     typeFilterOptions.value.map((o) => ({
         key: o.value,
         label: o.label,
-        ariaLabel: `${o.label}: ${o.count} kendaraan`,
+        ariaLabel: t('vehicle.chart.barAria', { label: o.label, n: o.count }),
         segments: [{ value: o.count, color: o.value === NO_TYPE ? 'var(--border-strong)' : 'var(--success)' }]
     }))
 )
@@ -186,7 +191,7 @@ const filteredRows = computed(() => {
 const chips = computed(() => {
     const c = []
     if (searchName.value) c.push({ key: 'q', label: `“${searchName.value}”`, remove: () => (searchName.value = '') })
-    filterType.value.forEach((t) => c.push({ key: `t-${t}`, label: t === NO_TYPE ? 'Tanpa tipe' : t, remove: () => (filterType.value = filterType.value.filter((x) => x !== t)) }))
+    filterType.value.forEach((v) => c.push({ key: `t-${v}`, label: v === NO_TYPE ? t('vehicle.noType') : v, remove: () => (filterType.value = filterType.value.filter((x) => x !== v)) }))
     return c
 })
 
@@ -209,7 +214,7 @@ async function loadData() {
         rows.value = await listVehicles()
     } catch (err) {
         console.error('[Vehicles] Failed to load:', err)
-        fetchError.value = err?.message || 'Gagal memuat kendaraan.'
+        fetchError.value = err?.message || t('vehicle.error.load')
     } finally {
         loading.value = false
     }
@@ -240,16 +245,16 @@ async function onFormSubmit(formData) {
             const updated = await updateVehicle(editingVehicle.value.id, formData)
             const idx = rows.value.findIndex((r) => r.id === editingVehicle.value.id)
             if (idx !== -1) rows.value[idx] = updated || { ...rows.value[idx], ...formData }
-            showToast('Kendaraan berhasil diubah.')
+            showToast(t('vehicle.toast.updated'))
         } else {
             const created = await createVehicle(formData)
             if (created) rows.value.unshift(created)
-            showToast('Kendaraan berhasil ditambahkan.')
+            showToast(t('vehicle.toast.created'))
         }
         closeForm()
     } catch (err) {
         console.error('[Vehicles] Save failed:', err)
-        actionError.value = err?.message || 'Gagal menyimpan data.'
+        actionError.value = err?.message || t('vehicle.ui.saveFailed')
     } finally {
         submitting.value = false
     }
@@ -276,10 +281,10 @@ async function onDeleteConfirm() {
         rows.value = rows.value.filter((r) => r.id !== deletingVehicle.value.id)
         showDeleteConfirm.value = false
         deletingVehicle.value = null
-        showToast('Kendaraan berhasil dihapus.')
+        showToast(t('vehicle.toast.deleted'))
     } catch (err) {
         console.error('[Vehicles] Delete failed:', err)
-        deleteError.value = err?.message || 'Gagal menghapus kendaraan.'
+        deleteError.value = err?.message || t('vehicle.error.delete')
     } finally {
         submitting.value = false
     }

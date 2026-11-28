@@ -2,26 +2,26 @@
   <div class="flex h-screen bg-(--bg) text-(--text) max-[920px]:flex-col">
     <BaseSidebar :items="navigation" :user="user" />
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <BaseHeader eyebrow="Panduan" title="Bantuan & SOP" :notifications="0" :user="user" :on-logout="logoutFromKeycloak" />
+      <BaseHeader :eyebrow="t('bantuan.eyebrow')" :title="t('bantuan.title')" :notifications="0" :user="user" :on-logout="logoutFromKeycloak" />
       <main class="min-w-0 flex-1 overflow-y-auto bg-(--surface-muted) p-6 max-[920px]:p-4">
         <header class="mb-5 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 class="m-0 text-2xl font-semibold">Bantuan & SOP</h1>
-            <p class="m-0 mt-1 text-sm text-(--text-muted)">Panduan pemakaian aplikasi dan prosedur kerja kebun.</p>
+            <h1 class="m-0 text-2xl font-semibold">{{ t('bantuan.title') }}</h1>
+            <p class="m-0 mt-1 text-sm text-(--text-muted)">{{ t('bantuan.subtitle') }}</p>
           </div>
           <label class="relative block w-full max-w-80">
-            <span class="sr-only">Cari panduan</span>
-            <input v-model="query" type="search" placeholder="Cari panduan…"
+            <span class="sr-only">{{ t('bantuan.searchLabel') }}</span>
+            <input v-model="query" type="search" :placeholder="t('bantuan.searchPlaceholder')"
               class="h-10 w-full rounded-xl border border-(--border) bg-(--surface) px-3 text-sm text-(--text) outline-none focus:border-(--brand)" />
           </label>
         </header>
 
-        <p v-if="loading" class="text-sm text-(--text-muted)">Memuat panduan…</p>
+        <p v-if="loading" class="text-sm text-(--text-muted)">{{ t('bantuan.loading') }}</p>
         <p v-else-if="error" class="rounded-xl border border-(--border) bg-(--surface) p-4 text-sm text-(--text-muted)">
-          Panduan tidak dapat dimuat saat ini. Coba lagi beberapa saat lagi.
+          {{ t('bantuan.loadError') }}
         </p>
         <p v-else-if="!groups.length" class="rounded-xl border border-(--border) bg-(--surface) p-4 text-sm text-(--text-muted)">
-          {{ query ? 'Tidak ada panduan yang cocok dengan pencarian.' : 'Belum ada panduan.' }}
+          {{ query ? t('bantuan.noMatch') : t('bantuan.empty') }}
         </p>
 
         <section v-for="group in groups" :key="group.category" class="mb-6">
@@ -40,6 +40,7 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { computed, onMounted, ref } from 'vue'
 import BaseHeader from '../shared/header'
 import BaseSidebar from '../shared/sidebar'
@@ -48,6 +49,7 @@ import { useAppStore } from '../../stores'
 import { navigation as sharedNavigation } from '../shared/navigation'
 import { fetchHelpPages } from './api'
 
+const { t } = useI18n()
 const appStore = useAppStore()
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
 const navigation = sharedNavigation
@@ -63,7 +65,7 @@ const groups = computed(() => {
   for (const page of pages.value) {
     const haystack = `${page.title} ${page.summary} ${page.category}`.toLowerCase()
     if (needle && !haystack.includes(needle)) continue
-    const category = page.category || 'Umum'
+    const category = page.category || t('bantuan.generalCategory')
     if (!byCategory.has(category)) byCategory.set(category, [])
     byCategory.get(category).push(page)
   }

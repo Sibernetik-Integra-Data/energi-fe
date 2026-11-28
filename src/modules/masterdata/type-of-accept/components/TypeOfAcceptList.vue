@@ -1,21 +1,21 @@
 <template>
-  <MdPage title="Status Penugasan" description="Status yang dipakai saat menerima penugasan, dikelompokkan per label status. Klik kartu untuk menyaring tabel.">
+  <MdPage :title="t('typeOfAccept.title')" :description="t('typeOfAccept.description')">
     <template #actions>
-      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah Status Penugasan</button>
+      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />{{ t('typeOfAccept.add') }}</button>
     </template>
 
     <div class="md-kpis">
-      <MdKpi icon="layers" tone="info" label="Total status" :value="rows.length" :sub="`${count('detail')} berketerangan`" action hint="Tampilkan semua" @select="clearAll" />
-      <MdKpi icon="info" tone="warning" label="Tanpa keterangan" :value="count('nodetail')" :sub="`${pct(count('nodetail'))}% dari data`" action :pressed="only('nodetail')" @select="quick('nodetail')" />
-      <MdKpi icon="bookmark" tone="success" label="Ada catatan" :value="count('notes')" :sub="`${pct(count('notes'))}% dari data`" action :pressed="only('notes')" @select="quick('notes')" />
-      <MdKpi icon="list" tone="brand" label="Label status" :value="groupOptions.length" :sub="topGroup ? `Terbanyak: ${topGroup.label} (${topGroup.count})` : 'Belum ada data'" action hint="Urutkan" @select="table?.setSort('status', 1)" />
+      <MdKpi icon="layers" tone="info" :label="t('typeOfAccept.kpi.total')" :value="rows.length" :sub="t('typeOfAccept.withDetailSub', { n: count('detail') })" action :hint="t('typeOfAccept.showAll')" @select="clearAll" />
+      <MdKpi icon="info" tone="warning" :label="t('typeOfAccept.kpi.noDetail')" :value="count('nodetail')" :sub="t('typeOfAccept.pctOfData', { n: pct(count('nodetail')) })" action :pressed="only('nodetail')" @select="quick('nodetail')" />
+      <MdKpi icon="bookmark" tone="success" :label="t('typeOfAccept.kpi.notes')" :value="count('notes')" :sub="t('typeOfAccept.pctOfData', { n: pct(count('notes')) })" action :pressed="only('notes')" @select="quick('notes')" />
+      <MdKpi icon="list" tone="brand" :label="t('typeOfAccept.kpi.labels')" :value="groupOptions.length" :sub="topGroup ? t('typeOfAccept.mostCommon', { label: topGroup.label, n: topGroup.count }) : t('typeOfAccept.noData')" action :hint="t('typeOfAccept.sort')" @select="table?.setSort('status', 1)" />
     </div>
 
     <MdBarChart
       v-if="groupOptions.length"
-      title="Jumlah status per label"
-      :subtitle="`${rows.length} data di ${groupOptions.length} label`"
-      :legend="[{ label: 'Ada keterangan', color: 'var(--success)' }, { label: 'Tanpa keterangan', color: 'var(--border-strong)' }]"
+      :title="t('typeOfAccept.chartTitle')"
+      :subtitle="t('typeOfAccept.chartSubtitle', { n: rows.length, g: groupOptions.length })"
+      :legend="[{ label: t('typeOfAccept.info.detail'), color: 'var(--success)' }, { label: t('typeOfAccept.info.nodetail'), color: 'var(--border-strong)' }]"
       :bars="bars"
       :selected="filterGroup"
       @toggle="toggleGroup" />
@@ -27,28 +27,28 @@
       :total-rows="rows.length"
       :loading="loading"
       :error="fetchError || ''"
-      entity-label="Status Penugasan"
+      :entity-label="t('typeOfAccept.entity')"
       empty-icon="layers"
-      empty-text="Tambahkan status penugasan pertama."
-      add-label="Tambah Status Penugasan"
+      :empty-text="t('typeOfAccept.empty')"
+      :add-label="t('typeOfAccept.add')"
       :can-add="canWrite"
       initial-sort="name"
-      aria-label="Daftar status penugasan"
+      :aria-label="t('typeOfAccept.tableAria')"
       @retry="loadData"
       @add="openCreate"
       @clear-filters="clearAll">
       <template #toolbar>
         <label class="md-search">
           <MdIcon name="search" />
-          <input v-model.trim="search" type="search" placeholder="Cari nama, keterangan, atau catatan…" aria-label="Cari status penugasan" />
+          <input v-model.trim="search" type="search" :placeholder="t('typeOfAccept.searchPlaceholder')" :aria-label="t('typeOfAccept.searchAria')" />
         </label>
-        <MdDropdown v-model="filterGroup" label="Label status" :options="groupOptions" multiple />
-        <MdDropdown v-model="filterInfo" label="Kelengkapan" :options="infoOptions" multiple />
+        <MdDropdown v-model="filterGroup" :label="t('typeOfAccept.statusLabel')" :options="groupOptions" multiple />
+        <MdDropdown v-model="filterInfo" :label="t('typeOfAccept.info.label')" :options="infoOptions" multiple />
         <div class="md-chips">
-          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="t('typeOfAccept.removeFilter', { label: c.label })" @click="c.remove()">
             {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
           </button>
-          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">{{ t('typeOfAccept.clearAll') }}</button>
         </div>
       </template>
 
@@ -75,8 +75,8 @@
       </template>
 
       <template v-if="canWrite" #actions="{ row }">
-        <button type="button" class="md-icon-btn" :aria-label="`Ubah status penugasan ${row.name}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
-        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus status penugasan ${row.name}`" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+        <button type="button" class="md-icon-btn" :aria-label="t('typeOfAccept.editAria', { name: row.name })" @click="openEdit(row)"><MdIcon name="edit" /></button>
+        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="t('typeOfAccept.deleteAria', { name: row.name })" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
       </template>
 
       <template #card="{ row }">
@@ -86,19 +86,19 @@
           <MdBadge v-if="row.status" tone="info">{{ row.status }}</MdBadge>
         </div>
         <div class="md-card__grid">
-          <div>Keterangan<b>{{ row.detail || '—' }}</b></div>
-          <div>Catatan<b>{{ row.notes || '—' }}</b></div>
-          <div>Dibuat<b>{{ fmtDate(row.created_at) }} · {{ userName(row.created_by) }}</b></div>
-          <div>Diubah<b>{{ fmtDate(row.updated_at) }} · {{ userName(row.updated_by) }}</b></div>
+          <div>{{ t('typeOfAccept.col.detail') }}<b>{{ row.detail || '—' }}</b></div>
+          <div>{{ t('typeOfAccept.col.notes') }}<b>{{ row.notes || '—' }}</b></div>
+          <div>{{ t('typeOfAccept.col.createdAt') }}<b>{{ fmtDate(row.created_at) }} · {{ userName(row.created_by) }}</b></div>
+          <div>{{ t('typeOfAccept.col.updatedAt') }}<b>{{ fmtDate(row.updated_at) }} · {{ userName(row.updated_by) }}</b></div>
         </div>
       </template>
     </MdDataTable>
 
     <TypeOfAcceptForm :visible="showForm" :type-of-accept="editing" :rows="rows" :submitting="submitting" :error="actionError || ''" @submit="onFormSubmit" @cancel="closeForm" />
 
-    <MdConfirm :open="!!deleting" title="Hapus status penugasan?" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
+    <MdConfirm :open="!!deleting" :title="t('typeOfAccept.confirmTitle')" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
       <template v-if="deleting">
-        Status penugasan <b>{{ deleting.name }}</b> akan dihapus permanen. Penghapusan ditolak bila masih dipakai data lain.
+        {{ t('typeOfAccept.confirmBefore') }} <b>{{ deleting.name }}</b> {{ t('typeOfAccept.confirmAfter') }}
       </template>
     </MdConfirm>
   </MdPage>
@@ -106,6 +106,8 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { currentIntlLocale } from '../../../../i18n'
 import TypeOfAcceptForm from './TypeOfAcceptForm.vue'
 import { createTypeOfAccept, deleteTypeOfAccept, listTypeOfAccept, updateTypeOfAccept } from '../model'
 import { useToast } from '../../../../utils/toast'
@@ -113,19 +115,20 @@ import { useUserNames } from '../../../../auth/useUserNames'
 import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
 import { MdPage, MdKpi, MdDataTable, MdDropdown, MdBadge, MdBarChart, MdConfirm, MdIcon } from '../../../shared/masterdata-ui'
 
+const { t } = useI18n()
 const { userName } = useUserNames()
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
 const canWrite = useCanManageMasterData()
 const { show: showToast } = useToast()
 
-const columns = [
-  { key: 'name', label: 'Nama' },
-  { key: 'status', label: 'Label status', sortValue: (r) => r.status || '' },
-  { key: 'detail', label: 'Keterangan', sortValue: (r) => r.detail || '' },
-  { key: 'notes', label: 'Catatan', sortValue: (r) => r.notes || '' },
-  { key: 'created_at', label: 'Dibuat', sortValue: (r) => r.created_at || '' },
-  { key: 'updated_at', label: 'Diubah', sortValue: (r) => r.updated_at || '' }
-]
+const columns = computed(() => [
+  { key: 'name', label: t('typeOfAccept.col.name') },
+  { key: 'status', label: t('typeOfAccept.statusLabel'), sortValue: (r) => r.status || '' },
+  { key: 'detail', label: t('typeOfAccept.col.detail'), sortValue: (r) => r.detail || '' },
+  { key: 'notes', label: t('typeOfAccept.col.notes'), sortValue: (r) => r.notes || '' },
+  { key: 'created_at', label: t('typeOfAccept.col.createdAt'), sortValue: (r) => r.created_at || '' },
+  { key: 'updated_at', label: t('typeOfAccept.col.updatedAt'), sortValue: (r) => r.updated_at || '' }
+])
 
 const table = ref(null)
 const rows = ref([])
@@ -148,24 +151,24 @@ const initial = (n) => String(n || '#').trim().charAt(0).toUpperCase() || '#'
 const fmtDate = (v) => {
   if (!v) return '-'
   const d = new Date(v)
-  return isNaN(d) ? String(v) : d.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
+  return isNaN(d) ? String(v) : d.toLocaleString(currentIntlLocale(), { dateStyle: 'medium', timeStyle: 'short' })
 }
 const INFO = {
-  detail: { label: 'Ada keterangan', test: (r) => !!r.detail },
-  nodetail: { label: 'Tanpa keterangan', test: (r) => !r.detail },
-  notes: { label: 'Ada catatan', test: (r) => !!r.notes },
-  recent: { label: 'Diubah 30 hari', test: (r) => Date.now() - new Date(r.updated_at || r.created_at || 0).getTime() <= 30 * DAY }
+  detail: { label: () => t('typeOfAccept.info.detail'), test: (r) => !!r.detail },
+  nodetail: { label: () => t('typeOfAccept.info.nodetail'), test: (r) => !r.detail },
+  notes: { label: () => t('typeOfAccept.info.notes'), test: (r) => !!r.notes },
+  recent: { label: () => t('typeOfAccept.info.recent'), test: (r) => Date.now() - new Date(r.updated_at || r.created_at || 0).getTime() <= 30 * DAY }
 }
 const count = (k) => rows.value.filter(INFO[k].test).length
 const pct = (n) => (rows.value.length ? Math.round((n / rows.value.length) * 100) : 0)
-const infoOptions = computed(() => Object.entries(INFO).map(([value, o]) => ({ value, label: o.label, count: count(value) })))
+const infoOptions = computed(() => Object.entries(INFO).map(([value, o]) => ({ value, label: o.label(), count: count(value) })))
 
 const groupOptions = computed(() => {
   const m = new Map()
   rows.value.forEach((r) => m.set(groupOf(r), (m.get(groupOf(r)) || 0) + 1))
   return [...m.entries()]
     .sort((a, b) => String(a[0]).localeCompare(String(b[0]), 'id', { numeric: true }))
-    .map(([value, count]) => ({ value, label: value === NONE ? 'Tanpa label' : value, count }))
+    .map(([value, count]) => ({ value, label: value === NONE ? t('typeOfAccept.noLabel') : value, count }))
 })
 const topGroup = computed(() => groupOptions.value.reduce((t, g) => (!t || g.count > t.count ? g : t), null))
 const bars = computed(() =>
@@ -175,7 +178,7 @@ const bars = computed(() =>
     return {
       key: g.value,
       label: g.label,
-      ariaLabel: `${g.label}: ${rs.length} data, ${withDetail} berketerangan`,
+      ariaLabel: t('typeOfAccept.barAriaDetail', { label: g.label, total: rs.length, n: withDetail }),
       segments: [
         { value: withDetail, color: 'var(--success)' },
         { value: rs.length - withDetail, color: 'var(--border-strong)' }
@@ -199,8 +202,8 @@ const filteredRows = computed(() => {
 const chips = computed(() => {
   const c = []
   if (search.value) c.push({ key: 'q', label: `“${search.value}”`, remove: () => (search.value = '') })
-  filterGroup.value.forEach((g) => c.push({ key: `g-${g}`, label: g === NONE ? 'Tanpa label' : g, remove: () => (filterGroup.value = filterGroup.value.filter((x) => x !== g)) }))
-  filterInfo.value.forEach((k) => c.push({ key: `i-${k}`, label: INFO[k].label, remove: () => (filterInfo.value = filterInfo.value.filter((x) => x !== k)) }))
+  filterGroup.value.forEach((g) => c.push({ key: `g-${g}`, label: g === NONE ? t('typeOfAccept.noLabel') : g, remove: () => (filterGroup.value = filterGroup.value.filter((x) => x !== g)) }))
+  filterInfo.value.forEach((k) => c.push({ key: `i-${k}`, label: INFO[k].label(), remove: () => (filterInfo.value = filterInfo.value.filter((x) => x !== k)) }))
   return c
 })
 
@@ -221,7 +224,7 @@ async function loadData() {
     rows.value = await listTypeOfAccept()
   } catch (err) {
     console.error('[TypeOfAccept] Failed to load:', err)
-    fetchError.value = err?.message || 'Gagal memuat data.'
+    fetchError.value = err?.message || t('typeOfAccept.loadFailed')
   } finally {
     loading.value = false
   }
@@ -248,18 +251,18 @@ async function onFormSubmit(formData) {
   try {
     if (editing.value?.id) {
       await updateTypeOfAccept(editing.value.id, formData)
-      showToast('Status Penugasan berhasil diubah.')
+      showToast(t('typeOfAccept.toastUpdated'))
     } else {
       await createTypeOfAccept(formData)
-      showToast('Status Penugasan berhasil ditambahkan.')
+      showToast(t('typeOfAccept.toastCreated'))
     }
     closeForm()
     await loadData()
   } catch (err) {
     console.error('[TypeOfAccept] Save failed:', err)
     actionError.value = /409/.test(err?.message || '')
-      ? `Nama ${formData.name} sudah dipakai. Gunakan nama lain.`
-      : err?.message || 'Gagal menyimpan data.'
+      ? t('typeOfAccept.nameTaken', { name: formData.name })
+      : err?.message || t('typeOfAccept.saveFailed')
   } finally {
     submitting.value = false
   }
@@ -280,13 +283,13 @@ async function onDeleteConfirm() {
   try {
     await deleteTypeOfAccept(deleting.value.id)
     deleting.value = null
-    showToast('Status Penugasan berhasil dihapus.')
+    showToast(t('typeOfAccept.toastDeleted'))
     await loadData()
   } catch (err) {
     console.error('[TypeOfAccept] Delete failed:', err)
     deleteError.value = /dirujuk|409/i.test(err?.message || '')
-      ? 'Status penugasan masih dipakai data lain, jadi tidak bisa dihapus.'
-      : err?.message || 'Gagal menghapus data.'
+      ? t('typeOfAccept.inUse')
+      : err?.message || t('typeOfAccept.deleteFailed')
   } finally {
     submitting.value = false
   }

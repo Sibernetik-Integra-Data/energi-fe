@@ -1,21 +1,21 @@
 <template>
   <section class="overflow-hidden rounded-2xl border border-(--border) bg-(--surface)">
     <header class="border-b border-(--border) px-5 py-4">
-      <h2 class="m-0 text-base font-semibold text-(--text)">Daftar Pekerja</h2>
-      <p class="m-0 mt-1 text-sm text-(--text-muted)">Ringkasan aktivitas pekerja pada periode yang dipilih.</p>
+      <h2 class="m-0 text-base font-semibold text-(--text)">{{ t('performance.table.title') }}</h2>
+      <p class="m-0 mt-1 text-sm text-(--text-muted)">{{ t('performance.table.subtitle') }}</p>
     </header>
     <div class="overflow-x-auto">
       <table class="performance-table">
         <thead>
           <tr>
-            <th>Nama</th>
-            <th>Jabatan</th>
-            <th>Jumlah Hari Kerja</th>
-            <th>Jumlah Pembersihan</th>
-            <th>Jumlah Pemupukan</th>
-            <th>Jumlah Panen</th>
-            <th>Total Hari Kerja</th>
-            <th v-if="canViewProfiles">Action</th>
+            <th>{{ t('performance.table.name') }}</th>
+            <th>{{ t('performance.table.position') }}</th>
+            <th>{{ t('performance.table.workDays') }}</th>
+            <th>{{ t('performance.table.cleaning') }}</th>
+            <th>{{ t('performance.table.fertilizing') }}</th>
+            <th>{{ t('performance.table.harvest') }}</th>
+            <th>{{ t('performance.table.totalWorkDays') }}</th>
+            <th v-if="canViewProfiles">{{ t('performance.action') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -26,13 +26,13 @@
             <td>{{ row.cleaningDays }}</td>
             <td>{{ row.fertilizingDays }}</td>
             <td>{{ row.harvestDays }}</td>
-            <td>{{ row.workDays }} hari</td>
+            <td>{{ t('performance.table.days', { n: row.workDays }, row.workDays) }}</td>
             <td v-if="canViewProfiles" class="text-center">
-              <button type="button" class="performance-view-button" @click="$emit('view', row)">View</button>
+              <button type="button" class="performance-view-button" @click="$emit('view', row)">{{ t('performance.view') }}</button>
             </td>
           </tr>
           <tr v-if="!rows.length">
-            <td :colspan="canViewProfiles ? 8 : 7" class="py-10 text-center text-sm text-(--text-muted)">Tidak ada data pada periode ini.</td>
+            <td :colspan="canViewProfiles ? 8 : 7" class="py-10 text-center text-sm text-(--text-muted)">{{ t('performance.table.empty') }}</td>
           </tr>
         </tbody>
       </table>
@@ -41,6 +41,10 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 defineProps({
   rows: { type: Array, default: () => [] },
   canViewProfiles: { type: Boolean, default: false }

@@ -1,21 +1,21 @@
 <template>
-  <MdPage title="Satuan" description="Satuan ukur yang dipakai jenis kebutuhan dan pekerjaan, beserta kelengkapan keterangannya. Klik kartu untuk menyaring tabel.">
+  <MdPage :title="t('typeOfUnit.title')" :description="t('typeOfUnit.description')">
     <template #actions>
-      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />Tambah Satuan</button>
+      <button v-if="canWrite" type="button" class="md-btn md-btn--primary" @click="openCreate"><MdIcon name="plus" />{{ t('typeOfUnit.add') }}</button>
     </template>
 
     <div class="md-kpis">
-      <MdKpi icon="layers" tone="info" label="Total satuan" :value="rows.length" :sub="`${count('detail')} berketerangan`" action hint="Tampilkan semua" @select="clearAll" />
-      <MdKpi icon="info" tone="warning" label="Tanpa keterangan" :value="count('nodetail')" :sub="`${pct(count('nodetail'))}% dari data`" action :pressed="only('nodetail')" @select="quick('nodetail')" />
-      <MdKpi icon="bookmark" tone="success" label="Ada catatan" :value="count('notes')" :sub="`${pct(count('notes'))}% dari data`" action :pressed="only('notes')" @select="quick('notes')" />
-      <MdKpi icon="alert" tone="brand" label="Belum dipakai" :value="count('unused')" sub="Tidak dipakai kebutuhan, parameter, atau pembayaran" action :pressed="only('unused')" @select="quick('unused')" />
+      <MdKpi icon="layers" tone="info" :label="t('typeOfUnit.kpi.total')" :value="rows.length" :sub="t('typeOfUnit.withDetailSub', { n: count('detail') })" action :hint="t('typeOfUnit.showAll')" @select="clearAll" />
+      <MdKpi icon="info" tone="warning" :label="t('typeOfUnit.kpi.noDetail')" :value="count('nodetail')" :sub="t('typeOfUnit.pctOfData', { n: pct(count('nodetail')) })" action :pressed="only('nodetail')" @select="quick('nodetail')" />
+      <MdKpi icon="bookmark" tone="success" :label="t('typeOfUnit.kpi.notes')" :value="count('notes')" :sub="t('typeOfUnit.pctOfData', { n: pct(count('notes')) })" action :pressed="only('notes')" @select="quick('notes')" />
+      <MdKpi icon="alert" tone="brand" :label="t('typeOfUnit.kpi.unused')" :value="count('unused')" :sub="t('typeOfUnit.kpi.unusedSub')" action :pressed="only('unused')" @select="quick('unused')" />
     </div>
 
     <MdBarChart
       v-if="rows.length"
-      title="Pemakaian satuan"
-      :subtitle="`${rows.length - count('unused')} dari ${rows.length} satuan dipakai`"
-      :legend="USAGE.map((u) => ({ label: u.label, color: u.color }))"
+      :title="t('typeOfUnit.chartTitle')"
+      :subtitle="t('typeOfUnit.chartSubtitle', { used: rows.length - count('unused'), n: rows.length })"
+      :legend="USAGE.map((u) => ({ label: t(u.label), color: u.color }))"
       :bars="bars"
       :selected="filterUnit"
       @toggle="toggleUnit" />
@@ -27,27 +27,27 @@
       :total-rows="rows.length"
       :loading="loading"
       :error="fetchError || ''"
-      entity-label="Satuan"
+      :entity-label="t('typeOfUnit.entity')"
       empty-icon="layers"
-      empty-text="Tambahkan satuan pertama."
-      add-label="Tambah Satuan"
+      :empty-text="t('typeOfUnit.empty')"
+      :add-label="t('typeOfUnit.add')"
       :can-add="canWrite"
       initial-sort="name"
-      aria-label="Daftar satuan"
+      :aria-label="t('typeOfUnit.tableAria')"
       @retry="loadData"
       @add="openCreate"
       @clear-filters="clearAll">
       <template #toolbar>
         <label class="md-search">
           <MdIcon name="search" />
-          <input v-model.trim="search" type="search" placeholder="Cari nama, keterangan, atau catatan…" aria-label="Cari satuan" />
+          <input v-model.trim="search" type="search" :placeholder="t('typeOfUnit.searchPlaceholder')" :aria-label="t('typeOfUnit.searchAria')" />
         </label>
-        <MdDropdown v-model="filterInfo" label="Kelengkapan" :options="infoOptions" multiple />
+        <MdDropdown v-model="filterInfo" :label="t('typeOfUnit.info.label')" :options="infoOptions" multiple />
         <div class="md-chips">
-          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="`Hapus filter ${c.label}`" @click="c.remove()">
+          <button v-for="c in chips" :key="c.key" type="button" class="md-chip" :aria-label="t('typeOfUnit.removeFilter', { label: c.label })" @click="c.remove()">
             {{ c.label }}<MdIcon name="x" :size="14" :stroke="2.4" />
           </button>
-          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">Bersihkan semua</button>
+          <button v-if="chips.length > 1" type="button" class="md-btn md-btn--ghost md-btn--sm" @click="clearAll">{{ t('typeOfUnit.clearAll') }}</button>
         </div>
       </template>
 
@@ -61,7 +61,7 @@
         <span v-if="row.detail">{{ row.detail }}</span><span v-else class="md-muted">—</span>
       </template>
       <template #cell-usage="{ row }">
-        <span v-if="usageTotal(row.id)" class="md-num">{{ usageTotal(row.id) }}</span><span v-else class="md-muted">Belum dipakai</span>
+        <span v-if="usageTotal(row.id)" class="md-num">{{ usageTotal(row.id) }}</span><span v-else class="md-muted">{{ t('typeOfUnit.unused') }}</span>
       </template>
       <template #cell-notes="{ row }">
         <span v-if="row.notes">{{ row.notes }}</span><span v-else class="md-muted">—</span>
@@ -74,8 +74,8 @@
       </template>
 
       <template v-if="canWrite" #actions="{ row }">
-        <button type="button" class="md-icon-btn" :aria-label="`Ubah satuan ${row.name}`" @click="openEdit(row)"><MdIcon name="edit" /></button>
-        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="`Hapus satuan ${row.name}`" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
+        <button type="button" class="md-icon-btn" :aria-label="t('typeOfUnit.editAria', { name: row.name })" @click="openEdit(row)"><MdIcon name="edit" /></button>
+        <button type="button" class="md-icon-btn md-icon-btn--danger" :aria-label="t('typeOfUnit.deleteAria', { name: row.name })" @click="confirmDelete(row)"><MdIcon name="trash" /></button>
       </template>
 
       <template #card="{ row }">
@@ -84,20 +84,20 @@
           <div style="flex: 1"><b class="md-strong">{{ row.name || '-' }}</b><div class="md-muted" style="font-size: 12px">ID {{ row.id }}</div></div>
         </div>
         <div class="md-card__grid">
-          <div>Keterangan<b>{{ row.detail || '—' }}</b></div>
-          <div>Dipakai<b>{{ usageTotal(row.id) || 'Belum' }}</b></div>
-          <div>Catatan<b>{{ row.notes || '—' }}</b></div>
-          <div>Dibuat<b>{{ fmtDate(row.created_at) }} · {{ userName(row.created_by) }}</b></div>
-          <div>Diubah<b>{{ fmtDate(row.updated_at) }} · {{ userName(row.updated_by) }}</b></div>
+          <div>{{ t('typeOfUnit.col.detail') }}<b>{{ row.detail || '—' }}</b></div>
+          <div>{{ t('typeOfUnit.colUsage') }}<b>{{ usageTotal(row.id) || t('typeOfUnit.unusedShort') }}</b></div>
+          <div>{{ t('typeOfUnit.col.notes') }}<b>{{ row.notes || '—' }}</b></div>
+          <div>{{ t('typeOfUnit.col.createdAt') }}<b>{{ fmtDate(row.created_at) }} · {{ userName(row.created_by) }}</b></div>
+          <div>{{ t('typeOfUnit.col.updatedAt') }}<b>{{ fmtDate(row.updated_at) }} · {{ userName(row.updated_by) }}</b></div>
         </div>
       </template>
     </MdDataTable>
 
     <TypeOfUnitForm :visible="showForm" :type-of-unit="editing" :rows="rows" :submitting="submitting" :error="actionError || ''" @submit="onFormSubmit" @cancel="closeForm" />
 
-    <MdConfirm :open="!!deleting" title="Hapus satuan?" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
+    <MdConfirm :open="!!deleting" :title="t('typeOfUnit.confirmTitle')" :busy="submitting" :error="deleteError" @cancel="closeDelete" @confirm="onDeleteConfirm">
       <template v-if="deleting">
-        Satuan <b>{{ deleting.name }}</b> akan dihapus permanen. Penghapusan ditolak bila masih dipakai data lain.
+        {{ t('typeOfUnit.confirmBefore') }} <b>{{ deleting.name }}</b> {{ t('typeOfUnit.confirmAfter') }}
       </template>
     </MdConfirm>
   </MdPage>
@@ -105,6 +105,8 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { currentIntlLocale } from '../../../../i18n'
 import TypeOfUnitForm from './TypeOfUnitForm.vue'
 import { createTypeOfUnit, deleteTypeOfUnit, listTypeOfUnit, updateTypeOfUnit } from '../model'
 import { useToast } from '../../../../utils/toast'
@@ -113,19 +115,20 @@ import { useCanManageMasterData } from '../../../../auth/useMasterAccess'
 import { signedApiFetch } from '../../../../api/fetch'
 import { MdPage, MdKpi, MdBarChart, MdDataTable, MdDropdown, MdConfirm, MdIcon } from '../../../shared/masterdata-ui'
 
+const { t } = useI18n()
 const { userName } = useUserNames()
 // Owner/Admin boleh mengubah; peran lain hanya melihat (server tetap memeriksa).
 const canWrite = useCanManageMasterData()
 const { show: showToast } = useToast()
 
-const columns = [
-  { key: 'name', label: 'Nama' },
-  { key: 'detail', label: 'Keterangan', sortValue: (r) => r.detail || '' },
-  { key: 'usage', label: 'Dipakai', align: 'right', sortValue: (r) => usageTotal(r.id) },
-  { key: 'notes', label: 'Catatan', sortValue: (r) => r.notes || '' },
-  { key: 'created_at', label: 'Dibuat', sortValue: (r) => r.created_at || '' },
-  { key: 'updated_at', label: 'Diubah', sortValue: (r) => r.updated_at || '' }
-]
+const columns = computed(() => [
+  { key: 'name', label: t('typeOfUnit.col.name') },
+  { key: 'detail', label: t('typeOfUnit.col.detail'), sortValue: (r) => r.detail || '' },
+  { key: 'usage', label: t('typeOfUnit.colUsage'), align: 'right', sortValue: (r) => usageTotal(r.id) },
+  { key: 'notes', label: t('typeOfUnit.col.notes'), sortValue: (r) => r.notes || '' },
+  { key: 'created_at', label: t('typeOfUnit.col.createdAt'), sortValue: (r) => r.created_at || '' },
+  { key: 'updated_at', label: t('typeOfUnit.col.updatedAt'), sortValue: (r) => r.updated_at || '' }
+])
 
 const table = ref(null)
 const rows = ref([])
@@ -146,13 +149,13 @@ const initial = (n) => String(n || '#').trim().charAt(0).toUpperCase() || '#'
 const fmtDate = (v) => {
   if (!v) return '-'
   const d = new Date(v)
-  return isNaN(d) ? String(v) : d.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
+  return isNaN(d) ? String(v) : d.toLocaleString(currentIntlLocale(), { dateStyle: 'medium', timeStyle: 'short' })
 }
 // Pemakaian satuan oleh data lain (unit_id). Gagal dimuat = dianggap 0, daftar tetap tampil.
 const USAGE = [
-  { key: 'need', label: 'Jenis kebutuhan', path: '/type_of_need', color: 'var(--success)' },
-  { key: 'params', label: 'Parameter', path: '/fullfil_params?page=1&limit=1000', color: '#0ea5e9' },
-  { key: 'payment', label: 'Pembayaran', path: '/fullfil_payment?page=1&limit=1000', color: 'var(--warning)' }
+  { key: 'need', label: 'typeOfUnit.usage.need', path: '/type_of_need', color: 'var(--success)' },
+  { key: 'params', label: 'typeOfUnit.usage.params', path: '/fullfil_params?page=1&limit=1000', color: '#0ea5e9' },
+  { key: 'payment', label: 'typeOfUnit.usage.payment', path: '/fullfil_payment?page=1&limit=1000', color: 'var(--warning)' }
 ]
 const usage = ref({}) // { need: { [unitId]: n }, ... }
 const usageOf = (key, id) => usage.value[key]?.[String(id)] || 0
@@ -180,7 +183,7 @@ const bars = computed(() =>
     .map((r) => ({
       key: String(r.id),
       label: r.name,
-      ariaLabel: `${r.name}: ${USAGE.map((u) => `${usageOf(u.key, r.id)} ${u.label.toLowerCase()}`).join(', ')}`,
+      ariaLabel: `${r.name}: ${USAGE.map((u) => `${usageOf(u.key, r.id)} ${t(u.label).toLowerCase()}`).join(', ')}`,
       segments: USAGE.map((u) => ({ value: usageOf(u.key, r.id), color: u.color }))
     }))
 )
@@ -189,15 +192,15 @@ function toggleUnit(id) {
 }
 
 const INFO = {
-  unused: { label: 'Belum dipakai', test: (r) => usageTotal(r.id) === 0 },
-  detail: { label: 'Ada keterangan', test: (r) => !!r.detail },
-  nodetail: { label: 'Tanpa keterangan', test: (r) => !r.detail },
-  notes: { label: 'Ada catatan', test: (r) => !!r.notes },
-  recent: { label: 'Diubah 30 hari', test: (r) => Date.now() - new Date(r.updated_at || r.created_at || 0).getTime() <= 30 * DAY }
+  unused: { label: () => t('typeOfUnit.info.unused'), test: (r) => usageTotal(r.id) === 0 },
+  detail: { label: () => t('typeOfUnit.info.detail'), test: (r) => !!r.detail },
+  nodetail: { label: () => t('typeOfUnit.info.nodetail'), test: (r) => !r.detail },
+  notes: { label: () => t('typeOfUnit.info.notes'), test: (r) => !!r.notes },
+  recent: { label: () => t('typeOfUnit.info.recent'), test: (r) => Date.now() - new Date(r.updated_at || r.created_at || 0).getTime() <= 30 * DAY }
 }
 const count = (k) => rows.value.filter(INFO[k].test).length
 const pct = (n) => (rows.value.length ? Math.round((n / rows.value.length) * 100) : 0)
-const infoOptions = computed(() => Object.entries(INFO).map(([value, o]) => ({ value, label: o.label, count: count(value) })))
+const infoOptions = computed(() => Object.entries(INFO).map(([value, o]) => ({ value, label: o.label(), count: count(value) })))
 
 const filteredRows = computed(() => {
   const q = search.value.toLowerCase()
@@ -211,8 +214,8 @@ const filteredRows = computed(() => {
 const chips = computed(() => {
   const c = []
   if (search.value) c.push({ key: 'q', label: `“${search.value}”`, remove: () => (search.value = '') })
-  filterInfo.value.forEach((k) => c.push({ key: `i-${k}`, label: INFO[k].label, remove: () => (filterInfo.value = filterInfo.value.filter((x) => x !== k)) }))
-  filterUnit.value.forEach((id) => c.push({ key: `u-${id}`, label: rows.value.find((r) => String(r.id) === id)?.name || `Satuan ${id}`, remove: () => toggleUnit(id) }))
+  filterInfo.value.forEach((k) => c.push({ key: `i-${k}`, label: INFO[k].label(), remove: () => (filterInfo.value = filterInfo.value.filter((x) => x !== k)) }))
+  filterUnit.value.forEach((id) => c.push({ key: `u-${id}`, label: rows.value.find((r) => String(r.id) === id)?.name || t('typeOfUnit.unitChip', { id }), remove: () => toggleUnit(id) }))
   return c
 })
 
@@ -234,7 +237,7 @@ async function loadData() {
     rows.value = list
   } catch (err) {
     console.error('[TypeOfUnit] Failed to load:', err)
-    fetchError.value = err?.message || 'Gagal memuat data.'
+    fetchError.value = err?.message || t('typeOfUnit.loadFailed')
   } finally {
     loading.value = false
   }
@@ -261,18 +264,18 @@ async function onFormSubmit(formData) {
   try {
     if (editing.value?.id) {
       await updateTypeOfUnit(editing.value.id, formData)
-      showToast('Satuan berhasil diubah.')
+      showToast(t('typeOfUnit.toastUpdated'))
     } else {
       await createTypeOfUnit(formData)
-      showToast('Satuan berhasil ditambahkan.')
+      showToast(t('typeOfUnit.toastCreated'))
     }
     closeForm()
     await loadData()
   } catch (err) {
     console.error('[TypeOfUnit] Save failed:', err)
     actionError.value = /409/.test(err?.message || '')
-      ? `Nama ${formData.name} sudah dipakai. Gunakan nama lain.`
-      : err?.message || 'Gagal menyimpan data.'
+      ? t('typeOfUnit.nameTaken', { name: formData.name })
+      : err?.message || t('typeOfUnit.saveFailed')
   } finally {
     submitting.value = false
   }
@@ -293,13 +296,13 @@ async function onDeleteConfirm() {
   try {
     await deleteTypeOfUnit(deleting.value.id)
     deleting.value = null
-    showToast('Satuan berhasil dihapus.')
+    showToast(t('typeOfUnit.toastDeleted'))
     await loadData()
   } catch (err) {
     console.error('[TypeOfUnit] Delete failed:', err)
     deleteError.value = /dirujuk|409/i.test(err?.message || '')
-      ? 'Satuan masih dipakai data lain, jadi tidak bisa dihapus.'
-      : err?.message || 'Gagal menghapus data.'
+      ? t('typeOfUnit.inUse')
+      : err?.message || t('typeOfUnit.deleteFailed')
   } finally {
     submitting.value = false
   }

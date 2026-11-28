@@ -11,11 +11,11 @@
         <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
       </svg>
-      <span class="text-(--text-muted) font-semibold">Date:</span>
+      <span class="text-(--text-muted) font-semibold">{{ t('sensus.datePicker.label') }}</span>
       <span v-if="modelValue.start && modelValue.end" class="text-(--text)">
         {{ formatDate(modelValue.start) }} – {{ formatDate(modelValue.end) }}
       </span>
-      <span v-else class="text-(--text-muted) italic">Pilih rentang tanggal</span>
+      <span v-else class="text-(--text-muted) italic">{{ t('sensus.datePicker.placeholder') }}</span>
     </button>
 
     <!-- Popover -->
@@ -30,7 +30,7 @@
           <button
             @click="prevMonth"
             class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-(--surface-muted) text-(--text) cursor-pointer border-0 bg-transparent transition-colors"
-            aria-label="Bulan sebelumnya"
+            :aria-label="t('sensus.datePicker.prevMonth')"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -40,7 +40,7 @@
           <button
             @click="nextMonth"
             class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-(--surface-muted) text-(--text) cursor-pointer border-0 bg-transparent transition-colors"
-            aria-label="Bulan berikutnya"
+            :aria-label="t('sensus.datePicker.nextMonth')"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
@@ -51,8 +51,8 @@
         <!-- Day of week headers -->
         <div class="grid grid-cols-7 px-3 pt-3 pb-1">
           <div
-            v-for="d in DOW"
-            :key="d"
+            v-for="(d, i) in DOW"
+            :key="i"
             class="flex items-center justify-center text-xs font-semibold text-(--text-muted) h-8"
           >{{ d }}</div>
         </div>
@@ -96,11 +96,11 @@
 
         <!-- Footer: max warning + clear -->
         <div class="flex items-center justify-between px-4 py-3 border-t border-(--border) bg-(--surface-muted)">
-          <span class="text-xs text-(--text-muted)">Min. 7 hari · Maks. 31 hari</span>
+          <span class="text-xs text-(--text-muted)">{{ t('sensus.datePicker.limits', { min: MIN_DAYS, max: MAX_DAYS }) }}</span>
           <button
             @click="clearRange"
             class="text-xs font-semibold text-(--text-muted) hover:text-red-500 cursor-pointer border-0 bg-transparent transition-colors"
-          >Reset</button>
+          >{{ t('sensus.datePicker.reset') }}</button>
         </div>
       </div>
     </Transition>
@@ -109,6 +109,8 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { currentIntlLocale } from '../../../i18n'
 import { useToast } from '../../../utils/toast'
 import { createDefaultPlanningDateRange } from '../../../utils/planningDateRange';
 
@@ -124,7 +126,13 @@ const MAX_DAYS = 31
 const MIN_DAYS = 7
 
 const { show: showToast } = useToast()
-const DOW = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+const { t, locale } = useI18n()
+// Sunday-first narrow weekday names (2023-01-01 was a Sunday)
+const DOW = computed(() => {
+  void locale.value
+  const fmt = new Intl.DateTimeFormat(currentIntlLocale(), { weekday: 'narrow' })
+  return Array.from({ length: 7 }, (_, i) => fmt.format(new Date(2023, 0, 1 + i)))
+})
 
 const open = ref(false)
 const rootRef = ref(null)
@@ -155,8 +163,9 @@ function toggle() {
 
 // ─── Month navigation ──────────────────────────────────────────────────────
 const monthLabel = computed(() => {
+  void locale.value
   return new Date(viewYear.value, viewMonth.value, 1)
-    .toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    .toLocaleDateString(currentIntlLocale(), { month: 'long', year: 'numeric' })
 })
 
 function prevMonth() {
@@ -236,7 +245,7 @@ function selectDay(cell) {
     const days = diff + 1
 
     if (days < MIN_DAYS) {
-      showToast(`Rentang minimal ${MIN_DAYS} hari. Pilih rentang yang lebih panjang.`, 'error')
+      showToast(t('sensus.datePicker.minError', { n: MIN_DAYS }), 'error')
       // reset to re-pick start
       picking.value = 'start'
       tempStart.value = null
@@ -244,7 +253,7 @@ function selectDay(cell) {
       return
     }
     if (days > MAX_DAYS) {
-      showToast(`Rentang maksimal ${MAX_DAYS} hari. Silakan kurangi rentang tanggal.`, 'error')
+      showToast(t('sensus.datePicker.maxError', { n: MAX_DAYS }), 'error')
       // reset to re-pick start
       picking.value = 'start'
       tempStart.value = null
@@ -299,7 +308,7 @@ function daysBetween(a, b) {
 function formatDate(iso) {
   if (!iso) return ''
   const d = new Date(iso)
-  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+  return d.toLocaleDateString(currentIntlLocale(), { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 // ─── Close on outside click ────────────────────────────────────────────────

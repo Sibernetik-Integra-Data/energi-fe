@@ -36,7 +36,10 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { formatDay, formatNumber } from '../dashboardData'
+
+const { t, locale } = useI18n()
 
 const props = defineProps({
   rows: { type: Array, required: true },
@@ -67,8 +70,9 @@ const y = (v) => H - PB - ((v || 0) / maxValue.value) * (H - PB - PT)
 const points = (key) => props.rows.map((r, i) => `${x(i)},${y(r[key])}`).join(' ')
 
 const ariaLabel = computed(() => {
+  void locale.value
   const totals = visibleSeries.value.map((s) => `${s.label} ${formatNumber(props.rows.reduce((t, r) => t + (r[s.key] || 0), 0))}`)
-  return `Grafik garis sensus harian per kelompok, ${props.rows.length} hari. Total: ${totals.join(', ')}. Gunakan panah kiri dan kanan untuk membaca per hari.`
+  return t('dashboard.sensus.chartLabel', { days: props.rows.length, totals: totals.join(', ') })
 })
 
 function onMove(event) {

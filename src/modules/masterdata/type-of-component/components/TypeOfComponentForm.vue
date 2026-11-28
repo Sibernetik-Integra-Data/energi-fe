@@ -1,29 +1,29 @@
 <template>
   <MdModal
     :open="visible"
-    :title="isEdit ? `Ubah Jenis Komponen ${typeOfComponent.name || ''}` : 'Tambah Jenis Komponen'"
-    subtitle="Lengkapi data jenis komponen. Kolom bertanda * wajib diisi."
+    :title="isEdit ? t('typeOfComponent.formEdit', { name: typeOfComponent.name || '' }) : t('typeOfComponent.add')"
+    :subtitle="t('typeOfComponent.formSubtitle')"
     as-form
     @close="onCancel"
     @submit="onSubmit">
-    <MdField label="Nama" for-id="toc-name" required full hint="Maksimal 100 karakter." :error="errors.name">
-      <input id="toc-name" v-model.trim="form.name" class="md-input" :class="{ 'is-invalid': errors.name }" maxlength="100" placeholder="mis. Biaya" autocomplete="off" />
+    <MdField :label="t('typeOfComponent.col.name')" for-id="toc-name" required full :hint="t('typeOfComponent.form.max100')" :error="errors.name">
+      <input id="toc-name" v-model.trim="form.name" class="md-input" :class="{ 'is-invalid': errors.name }" maxlength="100" :placeholder="t('typeOfComponent.namePlaceholder')" autocomplete="off" />
     </MdField>
 
-    <MdField label="Keterangan" for-id="toc-detail" full hint="Opsional, maksimal 500 karakter." :error="errors.detail">
-      <textarea id="toc-detail" v-model.trim="form.detail" class="md-input" :class="{ 'is-invalid': errors.detail }" rows="3" maxlength="500" placeholder="Keterangan (opsional)" />
+    <MdField :label="t('typeOfComponent.col.detail')" for-id="toc-detail" full :hint="t('typeOfComponent.form.optionalMax500')" :error="errors.detail">
+      <textarea id="toc-detail" v-model.trim="form.detail" class="md-input" :class="{ 'is-invalid': errors.detail }" rows="3" maxlength="500" :placeholder="t('typeOfComponent.form.detailPlaceholder')" />
     </MdField>
 
-    <MdField label="Catatan" for-id="toc-notes" full hint="Opsional, maksimal 500 karakter." :error="errors.notes">
-      <textarea id="toc-notes" v-model.trim="form.notes" class="md-input" :class="{ 'is-invalid': errors.notes }" rows="3" maxlength="500" placeholder="Catatan (opsional)" />
+    <MdField :label="t('typeOfComponent.col.notes')" for-id="toc-notes" full :hint="t('typeOfComponent.form.optionalMax500')" :error="errors.notes">
+      <textarea id="toc-notes" v-model.trim="form.notes" class="md-input" :class="{ 'is-invalid': errors.notes }" rows="3" maxlength="500" :placeholder="t('typeOfComponent.form.notesPlaceholder')" />
     </MdField>
 
     <div v-if="error" class="md-modal__error" role="alert">{{ error }}</div>
 
     <template #footer>
-      <button type="button" class="md-btn" :disabled="submitting" @click="onCancel">Batal</button>
+      <button type="button" class="md-btn" :disabled="submitting" @click="onCancel">{{ t('typeOfComponent.form.cancel') }}</button>
       <button type="submit" class="md-btn md-btn--primary" :disabled="submitting">
-        <MdIcon name="check" />{{ submitting ? 'Menyimpan…' : isEdit ? 'Simpan Perubahan' : 'Simpan' }}
+        <MdIcon name="check" />{{ submitting ? t('typeOfComponent.form.saving') : isEdit ? t('typeOfComponent.form.saveChanges') : t('typeOfComponent.form.save') }}
       </button>
     </template>
   </MdModal>
@@ -31,6 +31,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { MdModal, MdField, MdIcon } from '../../../shared/masterdata-ui'
 
 const props = defineProps({
@@ -41,6 +42,7 @@ const props = defineProps({
   error: { type: String, default: '' }
 })
 const emit = defineEmits(['submit', 'cancel'])
+const { t } = useI18n()
 
 const isEdit = computed(() => Boolean(props.typeOfComponent?.id))
 const emptyForm = () => ({ name: '', detail: '', notes: '' })
@@ -61,11 +63,11 @@ watch(
 function validate() {
   const errs = {}
   const f = form.value
-  if (!f.name) errs.name = 'Nama wajib diisi.'
-  else if (f.name.length > 100) errs.name = 'Nama maksimal 100 karakter.'
-  else if (props.rows.some((r) => r.id !== props.typeOfComponent?.id && String(r.name || '').toLowerCase() === f.name.toLowerCase())) errs.name = `Jenis komponen ${f.name} sudah ada.`
-  if (f.detail && f.detail.length > 500) errs.detail = 'Keterangan maksimal 500 karakter.'
-  if (f.notes && f.notes.length > 500) errs.notes = 'Catatan maksimal 500 karakter.'
+  if (!f.name) errs.name = t('typeOfComponent.form.nameRequired')
+  else if (f.name.length > 100) errs.name = t('typeOfComponent.form.nameMax100')
+  else if (props.rows.some((r) => r.id !== props.typeOfComponent?.id && String(r.name || '').toLowerCase() === f.name.toLowerCase())) errs.name = t('typeOfComponent.duplicate', { name: f.name })
+  if (f.detail && f.detail.length > 500) errs.detail = t('typeOfComponent.form.detailMax500')
+  if (f.notes && f.notes.length > 500) errs.notes = t('typeOfComponent.form.notesMax500')
   errors.value = errs
   return Object.keys(errs).length === 0
 }

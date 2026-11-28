@@ -1,17 +1,17 @@
 <template>
     <div class="flex flex-col gap-5">
         <div class="flex flex-col gap-1">
-            <h1 class="m-0 text-2xl font-semibold leading-8 tracking-tight text-(--text)">Detail Penugasan</h1>
+            <h1 class="m-0 text-2xl font-semibold leading-8 tracking-tight text-(--text)">{{ t('activity.detailTitle') }}</h1>
             <button
                 class="inline-flex items-center gap-2 text-sm text-(--brand) hover:text-[color-mix(in_srgb,var(--brand)_80%,black)] transition-colors cursor-pointer w-fit bg-transparent border-0 p-0"
                 @click="$emit('back')">
                 <span aria-hidden="true">←</span>
-                Kembali ke halaman sebelumnya
+                {{ t('activity.back') }}
             </button>
         </div>
 
         <div v-if="loading" class="flex justify-center items-center py-20 text-sm text-(--text-muted)">
-            <span class="animate-pulse">Memuat detail&hellip;</span>
+            <span class="animate-pulse">{{ t('activity.loadingDetail') }}</span>
         </div>
 
         <div v-else-if="error" class="flex flex-col items-center justify-center py-16 gap-3 text-sm text-red-600">
@@ -25,15 +25,15 @@
                     <div class="min-w-0">
                         <div>
                             <h2 class="text-xl font-bold text-(--text) leading-5 m-0 truncate">{{ plan.jobType }}</h2>
-                            <p class="text-sm text-(--text-muted) mt-1 m-0">Sensus {{ plan.sensusId || "—" }}</p>
+                            <p class="text-sm text-(--text-muted) mt-1 m-0">{{ t('activity.sensusRef', { id: plan.sensusId || '—' }) }}</p>
                         </div>
                     </div>
-                    <img :src="taskIcon" alt="Ikon pemupukan" class="w-14 h-14 shrink-0" />
+                    <img :src="taskIcon" :alt="t('pemupukan.iconAlt')" class="w-14 h-14 shrink-0" />
                 </div>
 
                 <div class="flex items-start gap-2 font-inter" v-if="plan.sensusDateFormatted || plan.sensusDate">
                     <span class="w-25 shrink-0 text-xs leading-5 text-(--text-muted)"
-                        >Tanggal Sensus</span
+                        >{{ t('activity.sensusDate') }}</span
                     >
                     <span class="text-sm leading-5 text-(--text)">{{
                         plan.sensusDateFormatted || plan.sensusDate || "—"
@@ -41,7 +41,7 @@
                 </div>
 
                 <div v-if="plan.blocks && plan.blocks.length > 0" class="flex items-start gap-2">
-                    <p class="w-25 shrink-0 text-xs leading-4 text-(--text-muted) m-0 pt-1">Nomor Petak</p>
+                    <p class="w-25 shrink-0 text-xs leading-4 text-(--text-muted) m-0 pt-1">{{ t('activity.plotNumber') }}</p>
                     <div class="flex flex-wrap gap-2">
                         <span
                             v-for="(block, i) in plan.blocks"
@@ -52,31 +52,31 @@
                     </div>
                 </div>
 
-                <ProtectedImage v-if="plan.photo" :src="plan.photo" alt="Foto pemupukan" container-class="mt-4 rounded-xl overflow-hidden bg-(--surface-muted)" image-class="w-full max-h-72 object-cover" />
+                <ProtectedImage v-if="plan.photo" :src="plan.photo" :alt="t('pemupukan.photoAlt')" container-class="mt-4 rounded-xl overflow-hidden bg-(--surface-muted)" image-class="w-full max-h-72 object-cover" />
 
                 <div class="flex items-start gap-3 px-4 py-4 rounded-xl bg-[#caeaff] border border-[#18a0fb] text-[#121314]">
                     <img :src="infoIcon" alt="" aria-hidden="true" class="w-6 h-6 shrink-0" />
                     <p v-if="plan.planningStartDate || plan.planningEndDate" class="text-sm leading-5 m-0">
-                        Rencana Pengerjaan :
+                        {{ t('activity.workPlan') }}
                         <span class="font-bold">{{ plan.planningStartDate || "—" }}</span>
-                        s.d.
+                        {{ t('activity.until') }}
                         <span class="font-bold">{{ plan.planningEndDate || "—" }}</span>
                     </p>
-                    <p v-else class="text-sm leading-5 m-0">Rencana Pengerjaan : <span class="font-bold">Belum Ada Rencana</span></p>
+                    <p v-else class="text-sm leading-5 m-0">{{ t('activity.workPlan') }} <span class="font-bold">{{ t('activity.noPlan') }}</span></p>
                 </div>
             </div>
 
             <div>
                 <div class="mb-3">
-                    <h3 class="text-base font-extrabold text-(--text) m-0">Realisasi</h3>
+                    <h3 class="text-base font-extrabold text-(--text) m-0">{{ t('activity.realisation') }}</h3>
                     <p class="text-sm text-(--text-muted) mt-0.5 m-0">
-                        Absensi dan laporan dari pekerja untuk setiap kerja.
+                        {{ t('activity.realisationDescription') }}
                     </p>
                 </div>
 
                 <div class="mb-4 w-full max-w-[272px] h-[142px] bg-(--surface) border border-(--border) rounded-[14px] p-[25px] flex items-start justify-between">
                     <div class="h-[92px] flex flex-col justify-between min-w-0">
-                        <p class="text-sm leading-5 text-(--text-muted) m-0 max-w-[146px]">Total Pekerja Terdaftar</p>
+                        <p class="text-sm leading-5 text-(--text-muted) m-0 max-w-[146px]">{{ t('activity.totalWorkers') }}</p>
                         <p class="text-[30px] leading-9 font-semibold tracking-[0.4px] text-(--text) m-0">{{ effectiveLabors.length }}</p>
                     </div>
                     <span class="w-14 h-14 rounded-[24px] bg-[#b8a44c] p-[10px] flex items-center justify-center shrink-0">
@@ -88,7 +88,7 @@
                     v-if="laborGroups.length === 0"
                     class="flex flex-col items-center justify-center py-16 gap-3 text-(--text-muted) border border-(--border) rounded-2xl bg-(--surface)">
                     <span class="text-4xl">👷</span>
-                    <p class="text-sm font-semibold m-0">Belum ada pekerja ditugaskan.</p>
+                    <p class="text-sm font-semibold m-0">{{ t('activity.noWorkers') }}</p>
                 </div>
 
                 <div v-else class="flex flex-col gap-3">
@@ -102,14 +102,14 @@
                             @click="toggleGroup(group.key)">
                             <div class="min-w-0">
                                 <p class="text-xl font-bold text-(--text) m-0">{{ group.label }}</p>
-                                <p class="text-sm text-(--text-muted) m-0 mt-1">Sensus {{ plan.sensusId || "—" }}</p>
+                                <p class="text-sm text-(--text-muted) m-0 mt-1">{{ t('activity.sensusRef', { id: plan.sensusId || '—' }) }}</p>
                             </div>
 
                             <div class="ml-auto flex items-center gap-2 shrink-0">
                                 <span
                                     v-if="group.labors.length > 0"
                                     class="inline-flex items-center text-sm px-2 py-1 rounded-full bg-(--status-done-bg) text-(--status-done-text)"
-                                    >{{ group.labors.length }} Labors</span
+                                    >{{ t('activity.laborsCount', { n: group.labors.length }) }}</span
                                 >
                                 <span
                                     class="inline-flex items-center justify-center w-10 h-10 rounded-lg text-(--text-muted)"
@@ -140,6 +140,7 @@
 
 <script setup>
 import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import LaborCard from "./LaborCard.vue";
 import ProtectedImage from "../../shared/ProtectedImage.vue";
 import infoIcon from "@/assets/icons/info-square-rounded-filled.svg";
@@ -155,6 +156,8 @@ const props = defineProps({
 });
 
 defineEmits(["back"]);
+
+const { t } = useI18n();
 
 const effectiveLabors = computed(() => {
     return Array.isArray(props.plan?.labors) ? props.plan.labors : [];
@@ -211,8 +214,9 @@ function toggleGroup(key) {
 }
 
 function statusLabel(status) {
-    const map = { draft: "Draft", wip: "WIP", done: "Done", submitted: "Submitted", in_progress: "In Progress" };
-    return map[status] || status || "—";
+    const known = ["draft", "wip", "done", "submitted", "in_progress"];
+    if (known.includes(status)) return t(`activity.status.${status}`);
+    return status || "—";
 }
 
 function statusChipClass(status) {

@@ -81,5 +81,13 @@
   "comingSoon": {
     "notYet": "Halaman ini belum tersedia — segera hadir.",
     "contact": "Jika Anda membutuhkan bagian ini sekarang, hubungi tim produk untuk memprioritaskannya."
+  },
+  "masterIndex": {
+    "kicker": "Kelola referensi sistem",
+    "title": "Pilih data yang ingin dikelola",
+    "description": "Akses seluruh halaman master data dalam satu tempat untuk menjaga data operasional tetap rapi dan konsisten.",
+    "listTitle": "Daftar halaman",
+    "available": "{n} halaman tersedia",
+    "manage": "Kelola {label}"
   }
 }

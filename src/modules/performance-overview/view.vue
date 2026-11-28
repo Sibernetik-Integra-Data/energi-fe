@@ -2,11 +2,11 @@
   <div class="flex h-screen bg-(--bg) text-(--text) max-[920px]:flex-col">
     <BaseSidebar :items="navigation" :user="user" />
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <BaseHeader eyebrow="Manajemen" title="Ikhtisar Kinerja" :notifications="0" :user="user" :on-logout="logoutFromKeycloak" />
+      <BaseHeader :eyebrow="t('performance.eyebrow')" :title="t('nav.performanceOverview')" :notifications="0" :user="user" :on-logout="logoutFromKeycloak" />
       <main class="min-w-0 flex-1 overflow-y-auto bg-(--surface-muted) p-6 max-[920px]:p-4">
         <div class="mb-6">
-          <h1 class="m-0 text-2xl font-semibold leading-8">Ikhtisar Kinerja</h1>
-          <p class="m-0 mt-1 text-sm text-(--text-muted)">Monitor your plantation operations and activities</p>
+          <h1 class="m-0 text-2xl font-semibold leading-8">{{ t('nav.performanceOverview') }}</h1>
+          <p class="m-0 mt-1 text-sm text-(--text-muted)">{{ t('performance.subtitle') }}</p>
         </div>
 
         <div class="mb-6 flex flex-col gap-6 rounded-2xl bg-(--surface) p-4">
@@ -14,14 +14,14 @@
           <div class="grid grid-cols-4 gap-4 max-[920px]:grid-cols-2 max-[560px]:grid-cols-1">
             <div class="performance-stat">
               <div>
-                <p>Total Pekerja</p>
+                <p>{{ t('performance.totalWorkers') }}</p>
                 <strong>{{ totalWorkers }}</strong>
               </div>
               <span><BaseIcon name="users" :size="30" /></span>
             </div>
             <div class="performance-stat">
               <div>
-                <p>Total hari kerja</p>
+                <p>{{ t('performance.totalWorkDays') }}</p>
                 <strong>{{ totalWorkDays }}</strong>
               </div>
               <span><BaseIcon name="calendar" :size="30" /></span>
@@ -29,7 +29,7 @@
           </div>
         </div>
 
-        <div v-if="loading" class="rounded-xl bg-(--surface) px-4 py-12 text-center text-sm text-(--text-muted)">Memuat data performa…</div>
+        <div v-if="loading" class="rounded-xl bg-(--surface) px-4 py-12 text-center text-sm text-(--text-muted)">{{ t('performance.loading') }}</div>
         <div v-else-if="error" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ error }}</div>
         <PerformanceOverviewTable v-else :rows="visibleRows" :can-view-profiles="canViewProfiles" @view="openWorker" />
       </main>
@@ -40,6 +40,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import BaseHeader from '../shared/header'
 import BaseSidebar from '../shared/sidebar'
 import BaseIcon from '../shared/icon'
@@ -52,6 +53,7 @@ import PerformanceOverviewTable from './components/PerformanceOverviewTable.vue'
 import { buildWorkerPerformanceRows, getDefaultPerformancePeriod } from './model'
 
 const props = defineProps({ controller: { type: Object, required: true } })
+const { t } = useI18n()
 const appStore = useAppStore()
 const router = useRouter()
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
@@ -84,7 +86,7 @@ onMounted(async () => {
     workers.value = dataResult.value.workers || []
     laborRows.value = dataResult.value.laborRows || []
   } else {
-    error.value = dataResult.reason?.message || 'Gagal memuat data performa.'
+    error.value = dataResult.reason?.message || t('performance.loadError')
   }
   canViewProfiles.value = accessResult.status === 'fulfilled' && accessResult.value?.canViewWorkerProfiles === true
   loading.value = false

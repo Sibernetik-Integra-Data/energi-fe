@@ -1,10 +1,12 @@
 import { signedApiFetch } from '../../api/fetch'
 import { listPekerja } from '../masterdata/pekerja/model'
+import { currentIntlLocale } from '../../i18n'
 
-export const PERFORMANCE_MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
-]
+// Month names in the active language, read when called.
+export function getPerformanceMonths() {
+  const format = new Intl.DateTimeFormat(currentIntlLocale(), { month: 'long' })
+  return Array.from({ length: 12 }, (_, index) => format.format(new Date(2000, index, 1)))
+}
 
 export function getDefaultPerformancePeriod() {
   const today = new Date()
@@ -194,7 +196,7 @@ export function formatPerformanceDate(value) {
   const date = asDateOnly(value)
   if (!date) return '—'
   const [year, month, day] = date.split('-').map(Number)
-  return new Date(year, month - 1, day).toLocaleDateString('id-ID', {
+  return new Date(year, month - 1, day).toLocaleDateString(currentIntlLocale(), {
     day: '2-digit', month: '2-digit', year: 'numeric'
   })
 }

@@ -1,60 +1,60 @@
 <template>
   <MdModal
     :open="visible"
-    :title="isEdit ? `Ubah TPH ${tph.code || tph.name || ''}` : 'Tambah TPH'"
-    subtitle="Lengkapi data TPH. Kolom bertanda * wajib diisi."
+    :title="isEdit ? t('tph.form.titleEdit', { name: tph.code || tph.name || '' }) : t('tph.add')"
+    :subtitle="t('tph.form.subtitle')"
     as-form
     @close="onCancel"
     @submit="onSubmit">
-    <MdField label="Petak" for-id="tph-petak" required full :hint="petakError || 'Sumber: Data Master → Nomor Petak'" :error="errors.id_block">
+    <MdField :label="t('tph.col.petak')" for-id="tph-petak" required full :hint="petakError || t('tph.form.petakHint')" :error="errors.id_block">
       <MdDropdown
         id="tph-petak"
         v-model="form.id_block"
         field
         :invalid="!!errors.id_block"
         :disabled="petakLoading"
-        :placeholder="petakLoading ? 'Memuat…' : 'Pilih petak'"
-        :options="petakOptions.map((p) => ({ value: p.id, label: `${p.name}${p.block_group ? ` · Blok ${p.block_group}` : ''}` }))" />
+        :placeholder="petakLoading ? t('tph.ui.loading') : t('tph.form.petakPlaceholder')"
+        :options="petakOptions.map((p) => ({ value: p.id, label: `${p.name}${p.block_group ? ` · ${t('tph.blokLabel', { name: p.block_group })}` : ''}` }))" />
     </MdField>
 
-    <MdField label="Jenis" required full :error="errors.tph_type">
-      <MdSegmented v-model="form.tph_type" aria-label="Jenis TPH" :options="typeOptions" />
+    <MdField :label="t('tph.col.type')" required full :error="errors.tph_type">
+      <MdSegmented v-model="form.tph_type" :aria-label="t('tph.form.typeAria')" :options="typeOptions" />
     </MdField>
 
-    <MdField label="Sisi" required full :error="errors.side">
-      <MdSegmented v-model="form.side" aria-label="Sisi" :options="sideOptions" />
+    <MdField :label="t('tph.col.side')" required full :error="errors.side">
+      <MdSegmented v-model="form.side" :aria-label="t('tph.col.side')" :options="sideOptions" />
     </MdField>
 
-    <MdField label="Nomor jalur" for-id="tph-line" required :hint="`Kode TPH: ${code || '—'} (otomatis dari sisi + nomor jalur)`" :error="errors.line_no">
+    <MdField :label="t('tph.form.line')" for-id="tph-line" required :hint="t('tph.form.lineHint', { code: code || '—' })" :error="errors.line_no">
       <input id="tph-line" v-model.number="form.line_no" class="md-input" :class="{ 'is-invalid': errors.line_no }" type="number" min="1" max="99" step="1" placeholder="1–99" />
     </MdField>
 
-    <MdField label="Jumlah pohon" for-id="tph-trees" hint="Opsional." :error="errors.tree_count">
-      <input id="tph-trees" v-model.number="form.tree_count" class="md-input" :class="{ 'is-invalid': errors.tree_count }" type="number" min="0" step="1" placeholder="mis. 40" />
+    <MdField :label="t('tph.form.trees')" for-id="tph-trees" :hint="t('tph.ui.optional')" :error="errors.tree_count">
+      <input id="tph-trees" v-model.number="form.tree_count" class="md-input" :class="{ 'is-invalid': errors.tree_count }" type="number" min="0" step="1" :placeholder="t('tph.form.treesPlaceholder')" />
     </MdField>
 
     <MdField label="Latitude" for-id="tph-lat" :error="errors.latitude">
-      <input id="tph-lat" v-model.trim="form.latitude" class="md-input" :class="{ 'is-invalid': errors.latitude }" inputmode="decimal" placeholder="mis. -0.5123" />
+      <input id="tph-lat" v-model.trim="form.latitude" class="md-input" :class="{ 'is-invalid': errors.latitude }" inputmode="decimal" :placeholder="t('tph.form.latPlaceholder')" />
     </MdField>
 
     <MdField label="Longitude" for-id="tph-lng" :error="errors.longitude">
-      <input id="tph-lng" v-model.trim="form.longitude" class="md-input" :class="{ 'is-invalid': errors.longitude }" inputmode="decimal" placeholder="mis. 117.1234" />
+      <input id="tph-lng" v-model.trim="form.longitude" class="md-input" :class="{ 'is-invalid': errors.longitude }" inputmode="decimal" :placeholder="t('tph.form.lngPlaceholder')" />
     </MdField>
 
-    <MdField label="Catatan" for-id="tph-notes" full hint="Opsional.">
-      <textarea id="tph-notes" v-model.trim="form.notes" class="md-input" rows="2" placeholder="Opsional" style="resize: vertical; height: auto" />
+    <MdField :label="t('tph.ui.notes')" for-id="tph-notes" full :hint="t('tph.ui.optional')">
+      <textarea id="tph-notes" v-model.trim="form.notes" class="md-input" rows="2" :placeholder="t('tph.form.notesPlaceholder')" style="resize: vertical; height: auto" />
     </MdField>
 
     <MdField full>
-      <MdSwitch v-model="form.is_active" label="Aktif" description="TPH nonaktif tidak dipakai di sensus dan penugasan baru." />
+      <MdSwitch v-model="form.is_active" :label="t('tph.active')" :description="t('tph.form.activeDesc')" />
     </MdField>
 
     <div v-if="error" class="md-modal__error" role="alert">{{ error }}</div>
 
     <template #footer>
-      <button type="button" class="md-btn" :disabled="submitting" @click="onCancel">Batal</button>
+      <button type="button" class="md-btn" :disabled="submitting" @click="onCancel">{{ t('tph.ui.cancel') }}</button>
       <button type="submit" class="md-btn md-btn--primary" :disabled="submitting">
-        <MdIcon name="check" />{{ submitting ? 'Menyimpan…' : 'Simpan' }}
+        <MdIcon name="check" />{{ submitting ? t('tph.ui.saving') : t('tph.ui.save') }}
       </button>
     </template>
   </MdModal>
@@ -62,6 +62,7 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { listPetakOptions } from '../model'
 import { MdModal, MdField, MdDropdown, MdSegmented, MdSwitch, MdIcon } from '../../../shared/masterdata-ui'
 
@@ -74,17 +75,18 @@ const props = defineProps({
   error: { type: String, default: '' }
 })
 const emit = defineEmits(['submit', 'cancel'])
+const { t } = useI18n()
 
 const isEdit = computed(() => Boolean(props.tph?.id))
-const typeOptions = [
-  { value: 'PERAWATAN', label: 'Perawatan' },
-  { value: 'PANEN', label: 'Panen' }
-]
-const sideOptions = [
-  { value: 'U', label: 'U (utara)' },
-  { value: 'S', label: 'S (selatan)' },
-  { value: 'US', label: 'US (utara-selatan)' }
-]
+const typeOptions = computed(() => [
+  { value: 'PERAWATAN', label: t('tph.type.perawatan') },
+  { value: 'PANEN', label: t('tph.type.panen') }
+])
+const sideOptions = computed(() => [
+  { value: 'U', label: t('tph.form.sideU') },
+  { value: 'S', label: t('tph.form.sideS') },
+  { value: 'US', label: t('tph.form.sideUS') }
+])
 
 const emptyForm = () => ({
   id_block: props.defaultPetakId ?? null, tph_type: '', side: '', line_no: null,
@@ -105,7 +107,7 @@ async function loadPetak() {
     const rows = await listPetakOptions()
     petakOptions.value = rows.slice().sort((a, b) => String(a.name).localeCompare(String(b.name), 'id', { numeric: true }))
   } catch (err) {
-    petakError.value = err?.message || 'Gagal memuat petak.'
+    petakError.value = err?.message || t('tph.form.petakLoadFailed')
   } finally {
     petakLoading.value = false
   }
@@ -143,13 +145,13 @@ const isBlank = (v) => v === null || v === undefined || v === ''
 function validate() {
   const f = form.value
   const e = {}
-  if (!f.id_block) e.id_block = 'Pilih petak.'
-  if (!f.tph_type) e.tph_type = 'Pilih jenis.'
-  if (!f.side) e.side = 'Pilih sisi.'
+  if (!f.id_block) e.id_block = t('tph.form.petakRequired')
+  if (!f.tph_type) e.tph_type = t('tph.form.typeRequired')
+  if (!f.side) e.side = t('tph.form.sideRequired')
   if (!Number.isInteger(f.line_no) || f.line_no < 1 || f.line_no > 99) e.line_no = '1–99.'
-  if (!isBlank(f.tree_count) && (!Number.isInteger(f.tree_count) || f.tree_count < 0)) e.tree_count = 'Bilangan bulat ≥ 0.'
-  if (f.latitude && !(Number(f.latitude) >= -90 && Number(f.latitude) <= 90)) e.latitude = 'Angka -90 s.d. 90.'
-  if (f.longitude && !(Number(f.longitude) >= -180 && Number(f.longitude) <= 180)) e.longitude = 'Angka -180 s.d. 180.'
+  if (!isBlank(f.tree_count) && (!Number.isInteger(f.tree_count) || f.tree_count < 0)) e.tree_count = t('tph.ui.int')
+  if (f.latitude && !(Number(f.latitude) >= -90 && Number(f.latitude) <= 90)) e.latitude = t('tph.form.lat')
+  if (f.longitude && !(Number(f.longitude) >= -180 && Number(f.longitude) <= 180)) e.longitude = t('tph.form.lng')
   errors.value = e
   return Object.keys(e).length === 0
 }
