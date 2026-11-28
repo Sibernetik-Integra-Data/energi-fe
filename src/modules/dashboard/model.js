@@ -3,6 +3,9 @@ import { navigation as sharedNavigation } from '../shared/navigation'
 import { signedApiFetch } from '../../api/fetch'
 import { resolveUsernames } from '../../utils/userCache'
 
+// Dasbor "Ruang kendali" (prototipe p08). Semua angka berasal dari API:
+// /sensus, /planning dan /trip-receipts. Tidak ada data contoh di sini.
+
 function cloneNavigation(items) {
   return items.map((item) => ({
     ...item,
@@ -10,383 +13,234 @@ function cloneNavigation(items) {
   }))
 }
 
-function parseIsoDate(dateString) {
-  if (typeof dateString !== 'string') return null
-  const match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})$/)
-  if (!match) return null
+// ── Tanggal ────────────────────────────────────────────────────────────────
 
-  const year = Number(match[1])
-  const month = Number(match[2])
-  const day = Number(match[3])
-  const date = new Date(year, month - 1, day)
+const pad = (n) => String(n).padStart(2, '0')
 
-  if (Number.isNaN(date.getTime())) return null
-  return date
+/** Tanggal lokal sebagai kunci YYYY-MM-DD. */
+export function dateKey(date) {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
 
-// ── Weekly (per-month) helpers ─────────────────────────────────────────────
-
-function getCurrentMonthWeekLabels(referenceDate = new Date()) {
-  const year = referenceDate.getFullYear()
-  const month = referenceDate.getMonth()
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const weekCount = Math.ceil(daysInMonth / 7)
-  const monthLabel = referenceDate.toLocaleString('id-ID', { month: 'long' })
-
-  return Array.from({ length: weekCount }, (_, index) => {
-    const weekNumber = index + 1
-    const startDay = index * 7 + 1
-    const endDay = Math.min((index + 1) * 7, daysInMonth)
-    return `Minggu ke ${weekNumber} (${startDay}-${endDay} ${monthLabel})`
-  })
-}
-
-function getMonthKey(referenceDate = new Date()) {
-  return `${referenceDate.getFullYear()}-${referenceDate.getMonth() + 1}`
-}
-
-// Persentase perubahan; null bila periode pembanding kosong (persentase tidak bermakna).
-function deltaText(current, previous) {
-  if (!previous) return null
-  const pct = Math.round(((current - previous) / previous) * 100)
-  return `${pct >= 0 ? '+' : ''}${pct}%`
-}
-
-function buildWeeklyMetric(config, sensusList, referenceDate = new Date()) {
-  const year = referenceDate.getFullYear()
-  const month = referenceDate.getMonth()
-  const pointLabels = getCurrentMonthWeekLabels(referenceDate)
-  const weeklyTotals = Array(pointLabels.length).fill(0)
-
-  for (const sensus of sensusList) {
-    const sensusDate = parseIsoDate(sensus?.sensus_date)
-    if (!sensusDate) continue
-    if (sensusDate.getFullYear() !== year || sensusDate.getMonth() !== month) continue
-
-    const weekIndex = Math.floor((sensusDate.getDate() - 1) / 7)
-    if (weekIndex >= 0 && weekIndex < weeklyTotals.length) {
-      weeklyTotals[weekIndex] += 1
-    }
-  }
-
-  const currentMonthTotal = weeklyTotals.reduce((sum, value) => sum + value, 0)
-  // Bulan berjalan: minggu ini dibanding minggu lalu. Bulan lampau: dua minggu terakhirnya.
-  const today = new Date()
-  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month
-  const lastIdx = isCurrentMonth ? Math.min(Math.floor((today.getDate() - 1) / 7), weeklyTotals.length - 1) : weeklyTotals.length - 1
-  const delta = deltaText(weeklyTotals[lastIdx] || 0, lastIdx > 0 ? weeklyTotals[lastIdx - 1] : 0)
-
-  return {
-    key: config.key,
-    title: config.title,
-    value: String(currentMonthTotal),
-    delta,
-    deltaHint: 'dibanding minggu lalu',
-    detail: config.detail,
-    tone: config.tone,
-    points: weeklyTotals,
-    pointLabels,
-    tooltipLabel: config.tooltipLabel
-  }
-}
-
-// ── Yearly (12-month) helpers ──────────────────────────────────────────────
-
-const MONTH_NAMES_ID = [
-  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-]
-
-function getYearlyMonthLabels(year) {
-  return MONTH_NAMES_ID.map((name) => `${name} ${year}`)
-}
-
-function buildYearlyMetric(config, sensusList, year) {
-  const pointLabels = getYearlyMonthLabels(year)
-  const monthlyTotals = Array(12).fill(0)
-
-  for (const sensus of sensusList) {
-    const sensusDate = parseIsoDate(sensus?.sensus_date)
-    if (!sensusDate) continue
-    if (sensusDate.getFullYear() !== year) continue
-
-    const monthIndex = sensusDate.getMonth() // 0-based
-    monthlyTotals[monthIndex] += 1
-  }
-
-  const yearTotal = monthlyTotals.reduce((sum, v) => sum + v, 0)
-
-  // Tahun berjalan: bulan ini dibanding bulan lalu. Tahun lampau: Desember dibanding November.
-  const today = new Date()
-  const monthIdx = today.getFullYear() === year ? today.getMonth() : 11
-  const delta = deltaText(monthlyTotals[monthIdx], monthIdx > 0 ? monthlyTotals[monthIdx - 1] : 0)
-
-  return {
-    key: config.key,
-    title: config.title,
-    value: String(yearTotal),
-    delta,
-    deltaHint: 'dibanding bulan lalu',
-    detail: `Total tahun ${year}`,
-    tone: config.tone,
-    points: monthlyTotals,
-    pointLabels,
-    tooltipLabel: config.tooltipLabel
-  }
-}
-
-// ── Config ─────────────────────────────────────────────────────────────────
-
-const DASHBOARD_METRIC_CONFIGS = [
-  {
-    key: 'sensus',
-    title: 'Sensus',
-    detail: 'Total bulan berjalan',
-    tone: 'orange',
-    tooltipLabel: 'Total sensus',
-    groupOfWork: null
-  },
-  {
-    key: 'pembersihan',
-    title: 'Pembersihan',
-    detail: 'Blok aktif',
-    tone: 'green',
-    tooltipLabel: 'Total aktivitas',
-    groupOfWork: 1
-  },
-  {
-    key: 'pemupukan',
-    title: 'Pemupukan',
-    detail: 'Target mingguan',
-    tone: 'blue',
-    tooltipLabel: 'Total aktivitas',
-    groupOfWork: 3
-  },
-  {
-    key: 'panen',
-    title: 'Panen',
-    detail: 'Tonase terkini',
-    tone: 'amber',
-    tooltipLabel: 'Total aktivitas',
-    groupOfWork: 2
-  }
-]
-
-function buildEmptyMetric(config, referenceDate = new Date(), value = '0', mode = 'monthly') {
-  const pointLabels = mode === 'yearly'
-    ? getYearlyMonthLabels(referenceDate.getFullYear())
-    : getCurrentMonthWeekLabels(referenceDate)
-  return {
-    key: config.key,
-    title: config.title,
-    value,
-    delta: null,
-    detail: config.detail,
-    tone: config.tone,
-    points: Array(pointLabels.length).fill(0),
-    pointLabels,
-    tooltipLabel: config.tooltipLabel
-  }
-}
-
-/**
- * Fetch metrics for a given filter.
- * @param {Object} filter - { mode: 'monthly'|'yearly', year: number, month: number (1-based, only for monthly) }
- */
-async function fetchMetricWithFilter(config, filter) {
-  const { mode, year, month } = filter
-  const referenceDate = mode === 'monthly'
-    ? new Date(year, month - 1, 1)
-    : new Date(year, 0, 1)
-
-  try {
-    const params = new URLSearchParams()
-    params.set('limit', '500')
-    if (config.groupOfWork !== null && config.groupOfWork !== undefined) {
-      params.set('group_of_work', String(config.groupOfWork))
-    }
-
-    const response = await signedApiFetch(`/sensus?${params.toString()}`, { method: 'GET' })
-    const sensusList = Array.isArray(response.data) ? response.data : []
-
-    if (mode === 'yearly') {
-      return buildYearlyMetric(config, sensusList, year)
-    }
-    return buildWeeklyMetric(config, sensusList, referenceDate)
-  } catch (error) {
-    console.error(`[Dashboard] Failed to fetch ${config.title} metrics:`, error)
-    return buildEmptyMetric(config, referenceDate, '0', mode)
-  }
-}
-
-// ── Main factory ───────────────────────────────────────────────────────────
-
-// ── Verifikasi sensus (data sungguhan) ──────────────────────────────────────
-// Detail sensus dianggap terverifikasi bila sudah punya planning; selama belum,
-// sensus itu menunggu pemeriksaan (kecuali detail yang selesai/dibatalkan).
-const CLOSED_STATUSES = new Set(['done', 'cancelled'])
-const VERIFICATION_LIMIT = 5
-
-function formatSensusDate(value) {
-  if (!value) return '-'
+/** Nilai API (tanggal polos atau stempel waktu) ke kunci YYYY-MM-DD lokal; null bila tidak terbaca. */
+export function toDateKey(value) {
+  if (!value) return null
+  const plain = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value))
+  if (plain) return plain[0]
   const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? String(value) : d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+  return Number.isNaN(d.getTime()) ? null : dateKey(d)
 }
 
-function formatSensusTime(value) {
-  if (!value) return '-'
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? '-' : d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
+export function addDays(date, days) {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  d.setDate(d.getDate() + days)
+  return d
 }
 
-function blockLabel(details) {
-  const names = [...new Set(details.flatMap((d) => (d.blocks || []).map((b) => String(b.name || `Blok ${b.id}`).replace(/^Block\b/i, 'Blok'))))]
+/** Selisih hari kalender a - b (kunci YYYY-MM-DD). */
+export function dayDiff(a, b) {
+  const [ya, ma, da] = a.split('-').map(Number)
+  const [yb, mb, db] = b.split('-').map(Number)
+  return Math.round((Date.UTC(ya, ma - 1, da) - Date.UTC(yb, mb - 1, db)) / 86400000)
+}
+
+// ── Kelompok pekerjaan ─────────────────────────────────────────────────────
+
+export const GROUPS = [
+  { key: 'pembersihan', label: 'Pembersihan' },
+  { key: 'pemupukan', label: 'Pemupukan' },
+  { key: 'panen', label: 'Panen' }
+]
+// Cadangan bila nama kelompok tidak dikirim: id yang dipakai dasbor lama.
+const GROUP_BY_ID = { 1: 'pembersihan', 2: 'panen', 3: 'pemupukan' }
+
+export function groupKeyOf(typeOfWork) {
+  const name = String(typeOfWork?.group_of_work_name || '').toLowerCase()
+  if (name.includes('bersih')) return 'pembersihan'
+  if (name.includes('pupuk')) return 'pemupukan'
+  if (name.includes('panen')) return 'panen'
+  const id = Number(typeOfWork?.group_of_work)
+  return GROUP_BY_ID[id] || null
+}
+
+function blockNames(blocks) {
+  return [...new Set((Array.isArray(blocks) ? blocks : [])
+    .map((b) => String((typeof b === 'string' ? b : b?.name) || (b?.id ? `Blok ${b.id}` : '')).replace(/^Block\b/i, 'Blok'))
+    .filter(Boolean))]
+}
+
+function blockLabel(names) {
   if (!names.length) return '-'
   return names.length > 1 ? `${names[0]} +${names.length - 1}` : names[0]
 }
 
-function toVerificationRow(sensus, details, extra = {}) {
-  return {
-    sensusId: sensus.id_sensus || `#${sensus.id}`,
-    numericId: sensus.id ?? null,
-    workerId: sensus.created_by || '',
-    worker: '',
-    block: blockLabel(details),
-    date: formatSensusDate(sensus.sensus_date),
-    time: formatSensusTime(sensus.created_at),
-    jobTypes: [...new Set(details.map((d) => d.type_of_work?.name).filter(Boolean))],
-    ...extra
-  }
+// ── Sensus ─────────────────────────────────────────────────────────────────
+
+/** Satu permintaan /sensus; daftar mentahnya dipakai grafik, KPI dan verifikasi. */
+async function loadSensusList() {
+  const resp = await signedApiFetch('/sensus?page=1&limit=500', { method: 'GET' })
+  const list = Array.isArray(resp?.data) ? resp.data : []
+  return list.map((sensus) => {
+    const details = Array.isArray(sensus.details) ? sensus.details : []
+    return {
+      id: sensus.id ?? null,
+      code: sensus.id_sensus || `#${sensus.id}`,
+      date: toDateKey(sensus.sensus_date),
+      createdAt: sensus.created_at || null,
+      createdBy: sensus.created_by || '',
+      groups: [...new Set(details.map((d) => groupKeyOf(d.type_of_work)).filter(Boolean))],
+      details
+    }
+  })
 }
 
-async function loadVerificationRows() {
-  const resp = await signedApiFetch('/sensus?page=1&limit=100', { method: 'GET' })
-  const list = Array.isArray(resp?.data) ? resp.data : []
-  const pending = []
-  const verified = []
+// Detail sensus dianggap terverifikasi bila sudah punya planning; selama belum,
+// sensus itu menunggu pemeriksaan (kecuali detail yang selesai/dibatalkan).
+const CLOSED_DETAIL = new Set(['done', 'cancelled'])
+const PENDING_LIMIT = 6
 
-  for (const sensus of list) {
-    const details = Array.isArray(sensus.details) ? sensus.details : []
-    const open = details.filter((d) => !d.planning && !CLOSED_STATUSES.has(String(d.progress_status || '').toLowerCase()))
-    const planned = details.filter((d) => d.planning)
-    if (open.length) pending.push(toVerificationRow(sensus, open, { status: 'Menunggu', sortKey: sensus.created_at || sensus.sensus_date }))
-    if (planned.length) {
-      const lastPlanned = planned.map((d) => d.planning.start_date || '').sort().pop() || sensus.sensus_date
-      verified.push(toVerificationRow(sensus, planned, { sortKey: lastPlanned }))
-    }
+/** Sensus yang menunggu verifikasi, yang paling lama menunggu lebih dulu. */
+export function pendingSensus(sensusList) {
+  const rows = []
+  for (const s of sensusList) {
+    const open = s.details.filter((d) => !d.planning && !CLOSED_DETAIL.has(String(d.progress_status || '').toLowerCase()))
+    if (!open.length) continue
+    rows.push({
+      id: s.id,
+      code: s.code,
+      workerId: s.createdBy,
+      worker: '',
+      block: blockLabel(blockNames(open.flatMap((d) => d.blocks || []))),
+      jobTypes: [...new Set(open.map((d) => d.type_of_work?.name).filter(Boolean))],
+      groups: [...new Set(open.map((d) => groupKeyOf(d.type_of_work)).filter(Boolean))],
+      sensusDate: s.date,
+      createdAt: s.createdAt,
+      sortKey: s.createdAt || s.date || ''
+    })
   }
+  rows.sort((a, b) => String(a.sortKey).localeCompare(String(b.sortKey)))
+  return rows
+}
 
-  // Menunggu: yang paling lama menunggu di atas. Terverifikasi: yang terbaru di atas.
-  pending.sort((a, b) => String(a.sortKey || '').localeCompare(String(b.sortKey || '')))
-  verified.sort((a, b) => String(b.sortKey || '').localeCompare(String(a.sortKey || '')))
-
-  const pendingTotal = pending.length
-  const pendingRows = pending.slice(0, VERIFICATION_LIMIT)
-  const verifiedRows = verified.slice(0, VERIFICATION_LIMIT)
-  const shown = [...pendingRows, ...verifiedRows]
-
+/** Isi nama pekerja untuk baris yang ditampilkan (resolveUsernames). */
+export async function withWorkerNames(rows) {
+  const shown = rows.slice(0, PENDING_LIMIT).map((r) => ({ ...r }))
   try {
     const names = await resolveUsernames([...new Set(shown.map((r) => r.workerId).filter(Boolean))])
     shown.forEach((r) => { r.worker = names.get(r.workerId) || '-' })
   } catch {
     shown.forEach((r) => { r.worker = '-' })
   }
-
-  return { pendingRows, pendingTotal, verifiedRows }
+  return shown
 }
+
+// ── Planning ───────────────────────────────────────────────────────────────
+
+export const PLAN_STATUS = {
+  planned: 'Direncanakan',
+  in_progress: 'Berjalan',
+  done: 'Selesai',
+  cancelled: 'Dibatalkan'
+}
+
+function mapPlanning(p, todayKey) {
+  const tow = p.sensus_detail?.type_of_work || p.type_of_work || null
+  const status = String(p.status || '').toLowerCase()
+  const start = toDateKey(p.start_date)
+  const end = toDateKey(p.end_date)
+  const actualEnd = toDateKey(p.actual_end_date)
+  const closed = status === 'done' || status === 'cancelled' || Boolean(actualEnd)
+  const lateDays = !closed && end && end < todayKey ? dayDiff(todayKey, end) : 0
+  return {
+    id: p.id,
+    sensusCode: p.id_sensus || '',
+    group: groupKeyOf(tow),
+    groupLabel: tow?.group_of_work_name || '',
+    job: tow?.name || '-',
+    block: blockLabel(blockNames(Array.isArray(p.blocks) ? p.blocks : p.sensus_detail?.blocks)),
+    start,
+    end,
+    actualStart: toDateKey(p.actual_start_date),
+    actualEnd,
+    status,
+    closed,
+    lateDays
+  }
+}
+
+async function loadPlanningList() {
+  const rows = []
+  const limit = 500
+  for (let page = 1; page <= 10; page += 1) {
+    const resp = await signedApiFetch(`/planning?page=${page}&limit=${limit}`, { method: 'GET' })
+    const data = Array.isArray(resp?.data) ? resp.data : []
+    rows.push(...data)
+    const total = Number(resp?.meta?.total)
+    if (data.length < limit || (Number.isFinite(total) && rows.length >= total)) break
+  }
+  const todayKey = dateKey(new Date())
+  return rows.map((p) => mapPlanning(p, todayKey))
+}
+
+// ── Pengiriman dan penerimaan ──────────────────────────────────────────────
+
+export const SHIPMENT_WINDOW_DAYS = 56 // dua kali periode terpanjang (28 hari)
+
+/** Pengiriman sejak `days` hari lalu (filter tanggal kirim di server), beserta penerimaan yang berlaku. */
+async function loadShipmentList(days = SHIPMENT_WINDOW_DAYS) {
+  const today = new Date()
+  const params = new URLSearchParams({
+    date_from: dateKey(addDays(today, -(days - 1))),
+    date_to: dateKey(today),
+    limit: '200'
+  })
+  const rows = []
+  for (let page = 1; page <= 20; page += 1) {
+    params.set('page', String(page))
+    const resp = await signedApiFetch(`/trip-receipts?${params.toString()}`, { method: 'GET' })
+    const data = Array.isArray(resp?.data) ? resp.data : []
+    rows.push(...data)
+    const total = Number(resp?.meta?.total)
+    if (data.length < 200 || (Number.isFinite(total) && rows.length >= total)) break
+  }
+  return rows.map((row) => {
+    const shipped = Number(row.shipped_quantity)
+    const received = row.receipt ? Number(row.receipt.quantity) : null
+    return {
+      tripId: row.trip_id,
+      date: toDateKey(row.shipped_at),
+      shippedQty: Number.isFinite(shipped) ? shipped : 0,
+      shippedUnitId: row.shipped_unit_id ?? null,
+      shippedUnit: row.shipped_unit_name || '',
+      received: Boolean(row.receipt),
+      receivedQty: Number.isFinite(received) ? received : null,
+      receivedUnitId: row.receipt?.unit_id ?? null,
+      receivedUnit: row.receipt?.unit_name || '',
+      receivedDate: toDateKey(row.receipt?.received_date)
+    }
+  })
+}
+
+// ── Model ──────────────────────────────────────────────────────────────────
 
 export function createDashboardModel() {
   const navigation = cloneNavigation(sharedNavigation)
-
-  const header = {
-    title: 'Dasbor',
-    notifications: 5
-  }
-
-  const intro = {
-    title: 'Dasbor',
-    description: 'Ringkasan aktivitas kebun, progres pekerjaan, dan daftar tindak lanjut yang sedang berjalan.'
-  }
-
-  // Kolom tabel verifikasi; barisnya diisi loadVerification() dari data sensus sungguhan.
-  const verificationColumns = [
-    { key: 'sensusId', label: 'ID SENSUS' },
-    { key: 'worker', label: 'PEKERJA' },
-    { key: 'block', label: 'BLOK' },
-    { key: 'dateTime', label: 'TANGGAL DAN WAKTU', type: 'datetime' },
-    { key: 'jobTypes', label: 'JENIS PEKERJAAN', type: 'chips' }
-  ]
-
-  const pendingVerification = {
-    title: 'Menunggu Verifikasi',
-    subtitle: 'Laporan pekerja yang menunggu pemeriksaan Anda',
-    columns: [...verificationColumns, { key: 'status', label: 'STATUS', type: 'status' }],
-    rows: []
-  }
-
-  const recentVerified = {
-    title: 'Sensus Terverifikasi Terbaru',
-    subtitle: 'Laporan pekerja terbaru yang sudah diverifikasi',
-    columns: verificationColumns,
-    rows: []
-  }
 
   return {
     getNavigation() {
       return cloneNavigation(navigation)
     },
     getHeader() {
-      return { ...header, user: { ...getAuthenticatedUser() } }
+      return { title: 'Dasbor', notifications: 0, user: { ...getAuthenticatedUser() } }
     },
     getIntro() {
-      return { ...intro }
-    },
-    getPendingVerification() {
       return {
-        ...pendingVerification,
-        columns: pendingVerification.columns.map((column) => ({ ...column })),
-        rows: pendingVerification.rows.map((row) => ({
-          ...row,
-          jobTypes: [...row.jobTypes]
-        }))
+        title: 'Dasbor',
+        description: 'Ringkasan aktivitas kebun, progres pekerjaan, dan daftar tindak lanjut yang sedang berjalan.'
       }
     },
-    loadVerification: loadVerificationRows,
-    getRecentVerified() {
-      return {
-        ...recentVerified,
-        columns: recentVerified.columns.map((column) => ({ ...column })),
-        rows: recentVerified.rows.map((row) => ({
-          ...row,
-          jobTypes: [...row.jobTypes]
-        }))
-      }
-    },
-    getMetrics(filter) {
-      const now = new Date()
-      const safeFilter = filter || {
-        mode: 'monthly',
-        year: now.getFullYear(),
-        month: now.getMonth() + 1
-      }
-      const referenceDate = safeFilter.mode === 'yearly'
-        ? new Date(safeFilter.year, 0, 1)
-        : new Date(safeFilter.year, safeFilter.month - 1, 1)
-      return DASHBOARD_METRIC_CONFIGS.map((config) =>
-        buildEmptyMetric(config, referenceDate, '-', safeFilter.mode)
-      )
-    },
-    async loadMetrics(filter) {
-      const now = new Date()
-      const safeFilter = filter || {
-        mode: 'monthly',
-        year: now.getFullYear(),
-        month: now.getMonth() + 1
-      }
-      const results = await Promise.all(
-        DASHBOARD_METRIC_CONFIGS.map((config) => fetchMetricWithFilter(config, safeFilter))
-      )
-      return results
-    }
+    loadSensus: loadSensusList,
+    loadPlannings: loadPlanningList,
+    loadShipments: loadShipmentList
   }
 }
