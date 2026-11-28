@@ -23,6 +23,10 @@ export function createDashboardController() {
     return model.getRecentVerified()
   }
 
+  async function loadVerification() {
+    return model.loadVerification()
+  }
+
   function getMetrics(filter) {
     return model.getMetrics(filter)
   }
@@ -37,6 +41,7 @@ export function createDashboardController() {
     getIntro,
     getPendingVerification,
     getRecentVerified,
+    loadVerification,
     getMetrics,
     loadMetrics,
   }

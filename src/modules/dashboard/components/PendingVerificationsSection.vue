@@ -20,6 +20,9 @@
           </tr>
         </thead>
         <tbody>
+          <tr v-if="!section.rows.length">
+            <td :colspan="section.columns.length + 1" class="dashboard-empty">{{ section.emptyText || 'Belum ada data.' }}</td>
+          </tr>
           <tr v-for="row in section.rows" :key="row.sensusId">
             <td class="pending-card__sensus-id">{{ row.sensusId }}</td>
             <td>{{ row.worker }}</td>
@@ -56,9 +59,9 @@
               <span class="pending-status">{{ row.status }}</span>
             </td>
             <td class="pending-card__actions-cell">
-              <button type="button" class="pending-card__action" aria-label="Open verification">
+              <RouterLink v-if="row.numericId != null" :to="`/sensus/${row.numericId}`" class="pending-card__action" :aria-label="`Periksa sensus ${row.sensusId}`" :title="`Periksa sensus ${row.sensusId}`">
                 <span></span>
-              </button>
+              </RouterLink>
             </td>
           </tr>
         </tbody>
@@ -291,5 +294,12 @@ defineProps({
     padding-left: 18px;
     padding-right: 18px;
   }
+}
+
+.dashboard-empty {
+  padding: 28px 16px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
 }
 </style>

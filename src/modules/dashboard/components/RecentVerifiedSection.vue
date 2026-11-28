@@ -17,6 +17,9 @@
           </tr>
         </thead>
         <tbody>
+          <tr v-if="!section.rows.length">
+            <td :colspan="section.columns.length" class="dashboard-empty">{{ section.emptyText || 'Belum ada data.' }}</td>
+          </tr>
           <tr v-for="row in section.rows" :key="row.sensusId">
             <td class="recent-card__sensus-id">{{ row.sensusId }}</td>
             <td>{{ row.worker }}</td>
@@ -210,5 +213,12 @@ defineProps({
     padding-left: 18px;
     padding-right: 18px;
   }
+}
+
+.dashboard-empty {
+  padding: 28px 16px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
 }
 </style>

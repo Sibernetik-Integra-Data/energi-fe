@@ -1,6 +1,7 @@
 import { getAuthenticatedUser } from '../../auth/keycloak'
 import { navigation as sharedNavigation } from '../shared/navigation'
 import { signedApiFetch } from '../../api/fetch'
+import { resolveUsernames } from '../../utils/userCache'
 
 function cloneNavigation(items) {
   return items.map((item) => ({
@@ -219,6 +220,80 @@ async function fetchMetricWithFilter(config, filter) {
 
 // ── Main factory ───────────────────────────────────────────────────────────
 
+// ── Verifikasi sensus (data sungguhan) ──────────────────────────────────────
+// Detail sensus dianggap terverifikasi bila sudah punya planning; selama belum,
+// sensus itu menunggu pemeriksaan (kecuali detail yang selesai/dibatalkan).
+const CLOSED_STATUSES = new Set(['done', 'cancelled'])
+const VERIFICATION_LIMIT = 5
+
+function formatSensusDate(value) {
+  if (!value) return '-'
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? String(value) : d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+function formatSensusTime(value) {
+  if (!value) return '-'
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? '-' : d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
+}
+
+function blockLabel(details) {
+  const names = [...new Set(details.flatMap((d) => (d.blocks || []).map((b) => String(b.name || `Blok ${b.id}`).replace(/^Block\b/i, 'Blok'))))]
+  if (!names.length) return '-'
+  return names.length > 1 ? `${names[0]} +${names.length - 1}` : names[0]
+}
+
+function toVerificationRow(sensus, details, extra = {}) {
+  return {
+    sensusId: sensus.id_sensus || `#${sensus.id}`,
+    numericId: sensus.id ?? null,
+    workerId: sensus.created_by || '',
+    worker: '',
+    block: blockLabel(details),
+    date: formatSensusDate(sensus.sensus_date),
+    time: formatSensusTime(sensus.created_at),
+    jobTypes: [...new Set(details.map((d) => d.type_of_work?.name).filter(Boolean))],
+    ...extra
+  }
+}
+
+async function loadVerificationRows() {
+  const resp = await signedApiFetch('/sensus?page=1&limit=100', { method: 'GET' })
+  const list = Array.isArray(resp?.data) ? resp.data : []
+  const pending = []
+  const verified = []
+
+  for (const sensus of list) {
+    const details = Array.isArray(sensus.details) ? sensus.details : []
+    const open = details.filter((d) => !d.planning && !CLOSED_STATUSES.has(String(d.progress_status || '').toLowerCase()))
+    const planned = details.filter((d) => d.planning)
+    if (open.length) pending.push(toVerificationRow(sensus, open, { status: 'Menunggu', sortKey: sensus.created_at || sensus.sensus_date }))
+    if (planned.length) {
+      const lastPlanned = planned.map((d) => d.planning.start_date || '').sort().pop() || sensus.sensus_date
+      verified.push(toVerificationRow(sensus, planned, { sortKey: lastPlanned }))
+    }
+  }
+
+  // Menunggu: yang paling lama menunggu di atas. Terverifikasi: yang terbaru di atas.
+  pending.sort((a, b) => String(a.sortKey || '').localeCompare(String(b.sortKey || '')))
+  verified.sort((a, b) => String(b.sortKey || '').localeCompare(String(a.sortKey || '')))
+
+  const pendingTotal = pending.length
+  const pendingRows = pending.slice(0, VERIFICATION_LIMIT)
+  const verifiedRows = verified.slice(0, VERIFICATION_LIMIT)
+  const shown = [...pendingRows, ...verifiedRows]
+
+  try {
+    const names = await resolveUsernames([...new Set(shown.map((r) => r.workerId).filter(Boolean))])
+    shown.forEach((r) => { r.worker = names.get(r.workerId) || '-' })
+  } catch {
+    shown.forEach((r) => { r.worker = '-' })
+  }
+
+  return { pendingRows, pendingTotal, verifiedRows }
+}
+
 export function createDashboardModel() {
   const navigation = cloneNavigation(sharedNavigation)
 
@@ -232,93 +307,27 @@ export function createDashboardModel() {
     description: 'Ringkasan aktivitas kebun, progres pekerjaan, dan daftar tindak lanjut yang sedang berjalan.'
   }
 
+  // Kolom tabel verifikasi; barisnya diisi loadVerification() dari data sensus sungguhan.
+  const verificationColumns = [
+    { key: 'sensusId', label: 'ID SENSUS' },
+    { key: 'worker', label: 'PEKERJA' },
+    { key: 'block', label: 'BLOK' },
+    { key: 'dateTime', label: 'TANGGAL DAN WAKTU', type: 'datetime' },
+    { key: 'jobTypes', label: 'JENIS PEKERJAAN', type: 'chips' }
+  ]
+
   const pendingVerification = {
     title: 'Menunggu Verifikasi',
     subtitle: 'Laporan pekerja yang menunggu pemeriksaan Anda',
-    badge: '3 Menunggu',
-    columns: [
-      { key: 'sensusId', label: 'ID SENSUS' },
-      { key: 'worker', label: 'PEKERJA' },
-      { key: 'block', label: 'BLOK' },
-      { key: 'dateTime', label: 'TANGGAL DAN WAKTU', type: 'datetime' },
-      { key: 'jobTypes', label: 'JENIS PEKERJAAN', type: 'chips' },
-      { key: 'status', label: 'STATUS', type: 'status' }
-    ],
-    rows: [
-      {
-        sensusId: 'SEN-2024-005',
-        worker: 'Eko Prasetyo',
-        block: 'Blok D-22',
-        date: '2026-02-18',
-        time: '10:30',
-        jobTypes: ['Rawat jalan', 'Pemupukan NPK TBM', 'Semprot lalang'],
-        status: 'Menunggu'
-      },
-      {
-        sensusId: 'SEN-2024-006',
-        worker: 'Rina Wijaya',
-        block: 'Blok E-14',
-        date: '2026-02-18',
-        time: '11:00',
-        jobTypes: ['Panen', 'Pemupukan dolomit'],
-        status: 'Menunggu'
-      },
-      {
-        sensusId: 'SEN-2024-007',
-        worker: 'Agus Setiawan',
-        block: 'Blok F-09',
-        date: '2026-02-18',
-        time: '09:45',
-        jobTypes: ['Semprot lalang', 'Rawat jalan'],
-        status: 'Menunggu'
-      }
-    ]
+    columns: [...verificationColumns, { key: 'status', label: 'STATUS', type: 'status' }],
+    rows: []
   }
 
   const recentVerified = {
     title: 'Sensus Terverifikasi Terbaru',
     subtitle: 'Laporan pekerja terbaru yang sudah diverifikasi',
-    columns: [
-      { key: 'sensusId', label: 'ID SENSUS' },
-      { key: 'worker', label: 'PEKERJA' },
-      { key: 'block', label: 'BLOK' },
-      { key: 'dateTime', label: 'TANGGAL DAN WAKTU', type: 'datetime' },
-      { key: 'jobTypes', label: 'JENIS PEKERJAAN', type: 'chips' }
-    ],
-    rows: [
-      {
-        sensusId: 'SEN-2024-001',
-        worker: 'Ahmad Rifai',
-        block: 'Blok A-12',
-        date: '2026-02-18',
-        time: '08:30',
-        jobTypes: ['Rawat jalan', 'Pemupukan NPK TBM']
-      },
-      {
-        sensusId: 'SEN-2024-002',
-        worker: 'Budi Santoso',
-        block: 'Blok B-05',
-        date: '2026-02-18',
-        time: '09:15',
-        jobTypes: ['Panen', 'Semprot lalang']
-      },
-      {
-        sensusId: 'SEN-2024-003',
-        worker: 'Siti Nurhaliza',
-        block: 'Blok C-18',
-        date: '2026-02-18',
-        time: '07:45',
-        jobTypes: ['Pemupukan dolomit', 'Rawat jalan']
-      },
-      {
-        sensusId: 'SEN-2024-004',
-        worker: 'Dewi Lestari',
-        block: 'Blok A-08',
-        date: '2026-02-17',
-        time: '14:20',
-        jobTypes: ['Panen']
-      }
-    ]
+    columns: verificationColumns,
+    rows: []
   }
 
   return {
@@ -341,6 +350,7 @@ export function createDashboardModel() {
         }))
       }
     },
+    loadVerification: loadVerificationRows,
     getRecentVerified() {
       return {
         ...recentVerified,

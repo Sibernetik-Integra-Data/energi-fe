@@ -100,8 +100,36 @@ function withCmsText(base, override) {
 const navigation = computed(() => props.controller.getNavigation())
 const header = computed(() => props.controller.getHeader())
 const intro = computed(() => withCmsText(props.controller.getIntro(), cms.value?.intro))
-const pendingVerification = computed(() => withCmsText(props.controller.getPendingVerification(), cms.value?.pending))
-const recentVerified = computed(() => withCmsText(props.controller.getRecentVerified(), cms.value?.recent))
+// Baris verifikasi dari data sensus sungguhan (dimuat saat aplikasi siap).
+const verification = ref({ loading: true, error: '', pendingRows: [], pendingTotal: 0, verifiedRows: [] })
+
+async function loadVerification() {
+  verification.value = { ...verification.value, loading: true, error: '' }
+  try {
+    const result = await props.controller.loadVerification()
+    verification.value = { loading: false, error: '', ...result }
+  } catch (error) {
+    console.error('[Dashboard] Failed to load verification rows:', error)
+    verification.value = { loading: false, error: 'Gagal memuat data sensus.', pendingRows: [], pendingTotal: 0, verifiedRows: [] }
+  }
+}
+
+function emptyText(state, text) {
+  if (state.loading) return 'Memuat data sensus…'
+  return state.error || text
+}
+
+const pendingVerification = computed(() => ({
+  ...withCmsText(props.controller.getPendingVerification(), cms.value?.pending),
+  rows: verification.value.pendingRows,
+  badge: verification.value.loading ? '…' : `${verification.value.pendingTotal} Menunggu`,
+  emptyText: emptyText(verification.value, 'Tidak ada sensus yang menunggu verifikasi.')
+}))
+const recentVerified = computed(() => ({
+  ...withCmsText(props.controller.getRecentVerified(), cms.value?.recent),
+  rows: verification.value.verifiedRows,
+  emptyText: emptyText(verification.value, 'Belum ada sensus yang terverifikasi.')
+}))
 const showPending = computed(() => cms.value?.pending?.isVisible !== false)
 const showRecent = computed(() => cms.value?.recent?.isVisible !== false)
 const quickLinks = computed(() => cms.value?.quickLinks || [])
@@ -138,6 +166,7 @@ watch(
   async (ready) => {
     if (!ready || metricsLoading.value) return
     loadMetricsForFilter(activeFilter.value)
+    loadVerification()
   },
   { immediate: true }
 )
