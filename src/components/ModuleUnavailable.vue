@@ -11,7 +11,7 @@
             <p class="module-unavailable-kicker">{{ statusText.eyebrow }}</p>
             <h2>{{ module.label }}</h2>
             <p class="module-unavailable-message">{{ module.message || statusText.message }}</p>
-            <RouterLink v-if="!isOnDashboard" to="/dashboard" class="module-unavailable-action">Kembali ke Dashboard</RouterLink>
+            <RouterLink v-if="!isOnDashboard" to="/dashboard" class="module-unavailable-action">{{ t('common.backToDashboard') }}</RouterLink>
           </div>
         </section>
       </main>
@@ -20,6 +20,8 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import BaseSidebar from '../modules/shared/sidebar'
@@ -33,21 +35,18 @@ const props = defineProps({
 })
 
 const STATUS_TEXT = {
-  'coming-soon': {
-    eyebrow: 'Segera hadir',
-    message: 'Modul ini sedang disiapkan dan belum bisa dipakai.'
-  },
-  maintenance: {
-    eyebrow: 'Sedang dalam perbaikan',
-    message: 'Modul ini sedang dalam perbaikan. Silakan coba lagi nanti.'
-  }
+  'coming-soon': { eyebrow: 'module.comingSoonEyebrow', message: 'module.comingSoonMessage' },
+  maintenance: { eyebrow: 'module.maintenanceEyebrow', message: 'module.maintenanceMessage' }
 }
 
 const route = useRoute()
 const navigation = defaultNavigation
 const appStore = useAppStore()
 const user = computed(() => profileToUser(appStore.profile) || getAuthenticatedUser())
-const statusText = computed(() => STATUS_TEXT[props.module.status] || STATUS_TEXT['coming-soon'])
+const statusText = computed(() => {
+  const keys = STATUS_TEXT[props.module.status] || STATUS_TEXT['coming-soon']
+  return { eyebrow: t(keys.eyebrow), message: t(keys.message) }
+})
 const isOnDashboard = computed(() => route.path === '/dashboard' || route.path.startsWith('/dashboard/'))
 </script>
 

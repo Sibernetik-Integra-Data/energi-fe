@@ -476,6 +476,13 @@ export function buildKeycloakLoginUrl() {
   url.searchParams.set('redirect_uri', KEYCLOAK_REDIRECT_URI)
   url.searchParams.set('response_type', 'code')
   url.searchParams.set('scope', KEYCLOAK_SCOPE)
+  // Halaman login Keycloak memakai bahasa pilihan pengguna (bila realm mengaktifkannya).
+  try {
+    const locale = localStorage.getItem('energi-locale')
+    if (locale) url.searchParams.set('ui_locales', locale)
+  } catch {
+    // penyimpanan diblokir: Keycloak memakai bahasa bawaannya
+  }
   return url.toString()
 }
 

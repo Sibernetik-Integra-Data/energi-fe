@@ -17,6 +17,8 @@
         <span class="header__button-badge">{{ notifications }}</span>
       </button> -->
 
+      <LanguageSwitch />
+
       <span class="header__divider" aria-hidden="true"></span>
 
       <div ref="userMenuRef" class="header__user-menu" :class="{ 'is-open': isUserMenuOpen }">
@@ -39,7 +41,7 @@
           </span>
         </button>
 
-        <div v-if="isUserMenuOpen" class="header__user-menu-panel" role="menu" aria-label="User actions" @keydown.esc.stop="closeUserMenu">
+        <div v-if="isUserMenuOpen" class="header__user-menu-panel" role="menu" :aria-label="t('header.userActions')" @keydown.esc.stop="closeUserMenu">
           <!-- Compact profile card -->
           <div class="header__profile-card">
             <div class="header__profile-avatar-wrap">
@@ -62,14 +64,14 @@
             <span class="header__user-menu-item-icon">
               <BaseIcon name="profile" :size="16" />
             </span>
-            Profile
+            {{ t('header.profile') }}
           </button>
 
           <button v-if="isOwner" class="header__user-menu-item" type="button" role="menuitem" @click="handleUserManagement">
             <span class="header__user-menu-item-icon">
               <BaseIcon name="users" :size="16" />
             </span>
-            Manajemen Pengguna
+            {{ t('header.userManagement') }}
           </button>
 
           <button
@@ -82,9 +84,9 @@
             <span class="header__user-menu-item-icon">
               <BaseIcon :name="isDarkMode ? 'sun' : 'moon'" :size="16" />
             </span>
-            <span class="header__user-menu-item-label">{{ isDarkMode ? 'Light mode' : 'Dark mode' }}</span>
+            <span class="header__user-menu-item-label">{{ isDarkMode ? t('header.lightMode') : t('header.darkMode') }}</span>
             <span class="header__theme-pill" :class="isDarkMode ? 'is-dark' : 'is-light'">
-              {{ isDarkMode ? 'ON' : 'OFF' }}
+              {{ isDarkMode ? t('header.on') : t('header.off') }}
             </span>
           </button>
 
@@ -94,7 +96,7 @@
             <span class="header__user-menu-item-icon">
               <BaseIcon name="logout" :size="16" />
             </span>
-            Logout
+            {{ t('header.logout') }}
           </button>
         </div>
       </div>
@@ -109,7 +111,10 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import BaseIcon from '../icon'
+import LanguageSwitch from '../../../components/LanguageSwitch.vue'
+import { NAV_KEY_BY_PATH } from '../sidebar/navLabels'
 import AnnouncementBanner from '../announcement/AnnouncementBanner.vue'
 import { pageSettingsFor } from '../modules/moduleAvailability'
 
@@ -146,6 +151,7 @@ const props = defineProps({
   }
 })
 
+const { t, locale } = useI18n()
 const isUserMenuOpen = ref(false)
 const userMenuRef = ref(null)
 const isDarkMode = ref(isDarkFn())
@@ -155,11 +161,21 @@ const isOwner = computed(() => isOwnerAccess(props.user))
 
 // Texts and help link from the CMS for this page; the props are the fallback.
 const pageSettings = computed(() => pageSettingsFor(route.path))
-const shownEyebrow = computed(() => pageSettings.value.eyebrow || props.eyebrow)
-const shownTitle = computed(() => pageSettings.value.title || props.title)
+// Bahasa selain Indonesia: judul dari terjemahan menu halaman ini (Strapi belum multibahasa).
+const translatedTitle = computed(() => {
+  if (locale.value === 'id') return ''
+  const key = NAV_KEY_BY_PATH[route.path.replace(/\/+$/, '')]
+  return key ? t(key) : ''
+})
+const translatedEyebrow = computed(() => {
+  if (locale.value === 'id') return ''
+  return route.path.startsWith('/master-data/') ? t('nav.masterData') : translatedTitle.value
+})
+const shownEyebrow = computed(() => translatedEyebrow.value || pageSettings.value.eyebrow || props.eyebrow)
+const shownTitle = computed(() => translatedTitle.value || pageSettings.value.title || props.title)
 const helpTitle = computed(() => {
   const pageTitle = pageSettings.value.helpPage?.title
-  return pageTitle ? `Bantuan: ${pageTitle}` : 'Bantuan untuk halaman ini'
+  return pageTitle ? t('header.helpFor', { title: pageTitle }) : t('header.help')
 })
 
 function closeUserMenu() {

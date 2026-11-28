@@ -35,7 +35,7 @@
 
     <!-- Nav (scrollable) -->
     <nav class="flex min-h-0 flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto px-3 py-3"
-      :aria-label="navLabel">
+      :aria-label="navLabel || t('sidebar.mainNav')">
       <div v-for="item in visibleItems" :key="getItemKey(item)">
         <!-- Group item with children -->
         <template v-if="hasChildren(item)">
@@ -45,7 +45,7 @@
               'group relative flex min-w-0 flex-1 items-center appearance-none border-0 bg-transparent text-left outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-(--brand) min-h-10 rounded-[10px] px-3 py-1.5 cursor-pointer',
               'text-(--text-muted) hover:bg-black/4 hover:text-(--text)',
               isItemActive(item) ? 'is-active' : '',
-            ]" :title="isCollapsed ? item.label : ''" @click="onNavigate(item)">
+            ]" :title="isCollapsed ? labelOf(item) : ''" @click="onNavigate(item)">
               <span v-if="isItemActive(item)" aria-hidden="true"
                 class="absolute left-0 top-2 bottom-2 w-0.75 rounded-full bg-(--brand)"></span>
 
@@ -55,7 +55,7 @@
                 </span>
                 <span v-show="!isCollapsed"
                   class="flex-1 truncate text-[15px] font-semibold leading-snug tracking-[-0.01em] text-current">{{
-                  item.label }}</span>
+                  labelOf(item) }}</span>
               </span>
 
               <span v-if="item.badge && !isCollapsed"
@@ -65,7 +65,7 @@
 
             <button v-if="!isCollapsed" type="button"
               class="group ml-0.5 inline-grid h-9 w-9 shrink-0 place-items-center rounded-lg border-0 bg-transparent text-(--text-muted) outline-none transition-colors hover:bg-black/4 hover:text-(--text) focus-visible:ring-2 focus-visible:ring-(--brand) cursor-pointer"
-              :aria-label="isExpanded(item) ? `Tutup ${item.label}` : `Buka ${item.label}`"
+              :aria-label="isExpanded(item) ? t('sidebar.closeGroup', { label: labelOf(item) }) : t('sidebar.openGroup', { label: labelOf(item) })"
               :aria-expanded="isExpanded(item)" @click="toggleGroup(item)">
               <span
                 :class="['inline-grid h-5 w-5 place-items-center transition-transform duration-150', isExpanded(item) ? 'rotate-180' : 'rotate-0']">
@@ -90,7 +90,7 @@
               </span>
               <span
                 :class="['truncate text-[14px] font-medium leading-snug tracking-[-0.01em]', isChildActive(child) ? 'text-(--brand)' : 'text-current']">{{
-                child.label }}</span>
+                labelOf(child) }}</span>
             </button>
           </div>
         </template>
@@ -103,7 +103,7 @@
             ? 'bg-(--brand-soft) text-(--brand)'
             : 'bg-transparent text-(--text-muted) hover:bg-black/4 hover:text-(--text)',
           isItemActive(item) ? 'is-active' : '',
-        ]" :title="isCollapsed ? item.label : ''" @click="onNavigate(item)">
+        ]" :title="isCollapsed ? labelOf(item) : ''" @click="onNavigate(item)">
           <span v-if="isItemActive(item)" aria-hidden="true"
             class="absolute left-0 top-2 bottom-2 w-0.75 rounded-full bg-(--brand)"></span>
 
@@ -113,11 +113,7 @@
             </span>
             <span v-show="!isCollapsed"
               :class="['flex-1 text-[15px] font-semibold leading-snug tracking-[-0.01em]', isItemActive(item) ? 'text-(--brand)' : 'text-current']">
-              <template v-if="['Pengiriman & Penerimaan', 'Pengiriman dan Penerimaan'].includes(item.label)">
-                <span class="block">Pengiriman dan</span>
-                <span class="block">Penerimaan</span>
-              </template>
-              <span v-else class="truncate">{{ item.label }}</span>
+              <span class="line-clamp-2">{{ labelOf(item) }}</span>
             </span>
           </span>
 
@@ -133,7 +129,7 @@
     <!-- User footer -->
     <p v-show="!isCollapsed"
       class="mt-3 mb-1 ml-4 text-[11px] font-bold uppercase leading-none tracking-[0.18em] text-(--text-soft)">
-      {{ footerLabel }}
+      {{ footerLabel || t('sidebar.signedInAs') }}
     </p>
     <footer v-if="user" class="px-3 pb-4 pt-1">
       <div :class="[
@@ -155,8 +151,8 @@
     <!-- Collapse toggle (modern floating circular button) -->
     <button type="button"
       class="absolute top-1/2 -right-7 z-40 -translate-y-1/2 flex items-center justify-center h-10 w-10 rounded-full bg-(--surface-muted) border border-(--border) shadow-[0_8px_24px_rgba(2,6,23,0.16)] text-(--text) transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--brand) cursor-pointer"
-      :aria-label="isCollapsed ? 'Tampilkan sidebar' : 'Sembunyikan sidebar'" :aria-pressed="isCollapsed"
-      @click="isCollapsed = !isCollapsed" :title="isCollapsed ? 'Tampilkan sidebar' : 'Sembunyikan sidebar'">
+      :aria-label="isCollapsed ? t('sidebar.show') : t('sidebar.hide')" :aria-pressed="isCollapsed"
+      @click="isCollapsed = !isCollapsed" :title="isCollapsed ? t('sidebar.show') : t('sidebar.hide')">
       <BaseIcon :name="isCollapsed ? 'chevron-right' : 'chevron-left'" :size="16"
         class="transition-transform duration-200 text-(--text)" />
     </button>
@@ -166,11 +162,15 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import BaseIcon from "../icon";
+import { navLabel as navLabelFor } from "./navLabels";
 import { cloneNavigation, loadStrapiSidebarNavigation } from "./strapiNavigation";
 import { canViewAuditLog } from "../../../auth/access";
 import { cmsBrand } from "../../../utils/cmsTheme";
 
+const { t, locale } = useI18n();
+const labelOf = (item) => navLabelFor(item, t, locale.value);
 const isCollapsed = ref(false);
 const router = useRouter();
 const route = useRoute();
@@ -252,11 +252,11 @@ const props = defineProps({
   },
   navLabel: {
     type: String,
-    default: "Navigasi utama",
+    default: "",
   },
   footerLabel: {
     type: String,
-    default: "Masuk sebagai: ",
+    default: "",
   },
   footerRole: {
     type: String,

@@ -1,0 +1,85 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "retry": "Try again",
+    "close": "Close",
+    "backToDashboard": "Back to Dashboard"
+  },
+  "language": {
+    "label": "Language",
+    "switchTo": "Switch language to {name}",
+    "current": "Language: {name}"
+  },
+  "app": {
+    "checkingSession": "Checking session and access",
+    "pleaseWait": "Please wait…",
+    "loginFailedKicker": "Sign-in failed",
+    "loginFailedTitle": "We could not sign you in",
+    "loginFailedDefault": "The Keycloak sign-in code exchange failed.",
+    "tryAgain": "Try again"
+  },
+  "header": {
+    "userActions": "User actions",
+    "profile": "Profile",
+    "userManagement": "User Management",
+    "darkMode": "Dark mode",
+    "lightMode": "Light mode",
+    "on": "ON",
+    "off": "OFF",
+    "logout": "Sign out",
+    "help": "Help for this page",
+    "helpFor": "Help: {title}"
+  },
+  "sidebar": {
+    "mainNav": "Main navigation",
+    "signedInAs": "Signed in as:",
+    "show": "Show sidebar",
+    "hide": "Hide sidebar",
+    "openGroup": "Open {label}",
+    "closeGroup": "Close {label}"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "sensus": "Census",
+    "planning": "Planning",
+    "pembersihan": "Weeding",
+    "pemupukan": "Fertilising",
+    "panen": "Harvest",
+    "pengirimanPenerimaan": "Shipping and Receiving",
+    "performanceOverview": "Performance Overview",
+    "auditLog": "Audit Trail",
+    "masterData": "Master Data",
+    "bantuan": "Help",
+    "blocks": "Blocks",
+    "aktifitasKebun": "Estate Activities",
+    "driver": "Drivers",
+    "vehicle": "Vehicles",
+    "groupOfWork": "Work Groups",
+    "petak": "Plots",
+    "tph": "Collection Points (TPH)",
+    "sensusProgressStatus": "Census Progress Status",
+    "destination": "Destinations",
+    "typeOfAccept": "Assignment Status",
+    "typeOfComponent": "Component Types",
+    "typeOfNeed": "Requirement Types",
+    "typeOfUnit": "Units",
+    "pekerja": "Workers",
+    "fullfilMapping": "Requirement Mapping",
+    "fullfilParams": "Requirement Parameters",
+    "fullfilPayment": "Requirement Payments"
+  },
+  "announcement": {
+    "region": "Announcements",
+    "close": "Close announcement"
+  },
+  "module": {
+    "comingSoonEyebrow": "Coming soon",
+    "comingSoonMessage": "This module is being prepared and is not available yet.",
+    "maintenanceEyebrow": "Under maintenance",
+    "maintenanceMessage": "This module is under maintenance. Please try again later."
+  },
+  "comingSoon": {
+    "notYet": "This page is not available yet — coming soon.",
+    "contact": "If you need this area now, contact the product team to prioritise it."
+  }
+}

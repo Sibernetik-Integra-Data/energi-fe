@@ -1,5 +1,5 @@
 <template>
-  <section v-if="items.length" class="announcements" aria-label="Pengumuman">
+  <section v-if="items.length" class="announcements" :aria-label="t('announcement.region')">
     <div v-for="item in items" :key="item.id" :class="['announcement', `announcement--${item.level}`]"
       :role="item.level === 'danger' ? 'alert' : 'status'">
       <span class="announcement__mark" aria-hidden="true">{{ item.level === 'info' ? 'i' : '!' }}</span>
@@ -13,13 +13,15 @@
         </template>
       </div>
 
-      <button v-if="item.dismissible" type="button" class="announcement__close" aria-label="Tutup pengumuman"
+      <button v-if="item.dismissible" type="button" class="announcement__close" :aria-label="t('announcement.close')"
         @click="dismissAnnouncement(item)">×</button>
     </div>
   </section>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 import { dismissAnnouncement, useAnnouncements } from './announcements'
 
 const items = useAnnouncements()

@@ -6,8 +6,8 @@
       <main class="coming-soon-content">
         <div class="coming-soon-card">
           <h2>{{ title }}</h2>
-          <p class="muted">This page is not available yet — coming soon.</p>
-          <p>If you need this area now, contact the product team to prioritise implementation.</p>
+          <p class="muted">{{ t('comingSoon.notYet') }}</p>
+          <p>{{ t('comingSoon.contact') }}</p>
         </div>
       </main>
     </div>
@@ -15,6 +15,8 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 import { computed } from 'vue'
 import BaseSidebar from '../modules/shared/sidebar'
 import BaseHeader from '../modules/shared/header'

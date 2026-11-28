@@ -8,8 +8,8 @@
       <div class="route-loading-card">
         <span class="route-loading-mark" aria-hidden="true"><span></span></span>
         <div>
-          <p class="route-loading-title">Memeriksa sesi dan akses</p>
-          <p class="route-loading-caption">Mohon tunggu sebentar…</p>
+          <p class="route-loading-title">{{ t('app.checkingSession') }}</p>
+          <p class="route-loading-caption">{{ t('app.pleaseWait') }}</p>
         </div>
       </div>
     </div>
@@ -17,11 +17,11 @@
 
   <main v-if="authError" class="auth-error-shell">
     <section class="auth-error-card">
-      <p class="auth-error-kicker">Login failed</p>
-      <h1>We could not sign you in</h1>
+      <p class="auth-error-kicker">{{ t('app.loginFailedKicker') }}</p>
+      <h1>{{ t('app.loginFailedTitle') }}</h1>
       <p class="auth-error-copy">{{ authError }}</p>
       <button class="auth-error-action" type="button" @click="retryLogin">
-        Try again
+        {{ t('app.tryAgain') }}
       </button>
     </section>
   </main>
@@ -29,6 +29,8 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { clearSessionTokens, exchangeAuthorizationCode, fetchUserProfile, redirectToKeycloakLogin, isAuthenticated, setAppStore, tryRestoreSession } from './auth/keycloak'
@@ -143,7 +145,7 @@ async function handleAuthCode() {
     clearLoginRetried()
     clearSessionTokens()
     appStore.clearProfile()
-    authError.value = err?.message || 'Keycloak login exchange failed'
+    authError.value = err?.message || t('app.loginFailedDefault')
     return
   }
 

@@ -1,0 +1,85 @@
+{
+  "common": {
+    "loading": "Memuat…",
+    "retry": "Coba lagi",
+    "close": "Tutup",
+    "backToDashboard": "Kembali ke Dasbor"
+  },
+  "language": {
+    "label": "Bahasa",
+    "switchTo": "Ganti bahasa ke {name}",
+    "current": "Bahasa: {name}"
+  },
+  "app": {
+    "checkingSession": "Memeriksa sesi dan akses",
+    "pleaseWait": "Mohon tunggu sebentar…",
+    "loginFailedKicker": "Gagal masuk",
+    "loginFailedTitle": "Kami tidak dapat memasukkan Anda",
+    "loginFailedDefault": "Pertukaran kode login Keycloak gagal.",
+    "tryAgain": "Coba lagi"
+  },
+  "header": {
+    "userActions": "Aksi pengguna",
+    "profile": "Profil",
+    "userManagement": "Manajemen Pengguna",
+    "darkMode": "Mode gelap",
+    "lightMode": "Mode terang",
+    "on": "AKTIF",
+    "off": "MATI",
+    "logout": "Keluar",
+    "help": "Bantuan untuk halaman ini",
+    "helpFor": "Bantuan: {title}"
+  },
+  "sidebar": {
+    "mainNav": "Navigasi utama",
+    "signedInAs": "Masuk sebagai:",
+    "show": "Tampilkan sidebar",
+    "hide": "Sembunyikan sidebar",
+    "openGroup": "Buka {label}",
+    "closeGroup": "Tutup {label}"
+  },
+  "nav": {
+    "dashboard": "Dasbor",
+    "sensus": "Sensus",
+    "planning": "Perencanaan",
+    "pembersihan": "Pembersihan",
+    "pemupukan": "Pemupukan",
+    "panen": "Panen",
+    "pengirimanPenerimaan": "Pengiriman dan Penerimaan",
+    "performanceOverview": "Ikhtisar Kinerja",
+    "auditLog": "Jejak Audit",
+    "masterData": "Data Master",
+    "bantuan": "Bantuan",
+    "blocks": "Blok",
+    "aktifitasKebun": "Aktivitas Kebun",
+    "driver": "Pengemudi",
+    "vehicle": "Kendaraan",
+    "groupOfWork": "Kelompok Pekerjaan",
+    "petak": "Nomor Petak",
+    "tph": "TPH",
+    "sensusProgressStatus": "Status Progres Sensus",
+    "destination": "Tujuan",
+    "typeOfAccept": "Status Penugasan",
+    "typeOfComponent": "Jenis Komponen",
+    "typeOfNeed": "Jenis Kebutuhan",
+    "typeOfUnit": "Satuan",
+    "pekerja": "Pekerja",
+    "fullfilMapping": "Pemetaan Kebutuhan",
+    "fullfilParams": "Parameter Kebutuhan",
+    "fullfilPayment": "Pembayaran Kebutuhan"
+  },
+  "announcement": {
+    "region": "Pengumuman",
+    "close": "Tutup pengumuman"
+  },
+  "module": {
+    "comingSoonEyebrow": "Segera hadir",
+    "comingSoonMessage": "Modul ini sedang disiapkan dan belum bisa dipakai.",
+    "maintenanceEyebrow": "Sedang dalam perbaikan",
+    "maintenanceMessage": "Modul ini sedang dalam perbaikan. Silakan coba lagi nanti."
+  },
+  "comingSoon": {
+    "notYet": "Halaman ini belum tersedia — segera hadir.",
+    "contact": "Jika Anda membutuhkan bagian ini sekarang, hubungi tim produk untuk memprioritaskannya."
+  }
+}
