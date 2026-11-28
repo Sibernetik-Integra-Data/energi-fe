@@ -7,7 +7,7 @@
     <div class="md-kpis">
       <MdKpi icon="sliders" tone="info" label="Total parameter" :value="rows.length" :sub="`${mappingOptions.length} pemetaan`" action hint="Tampilkan semua" @select="clearAll" />
       <MdKpi icon="layers" tone="success" label="Pemetaan tercakup" :value="mappingOptions.length" :sub="`dari ${mappings.length} pemetaan`" action hint="Urutkan" @select="table?.setSort('fullfil_id', 1)" />
-      <MdKpi icon="grid" tone="brand" label="Satuan dipakai" :value="unitOptions.length" :sub="topUnit ? `Terbanyak: ${unitName(topUnit)}` : 'Belum ada'" action :pressed="!!topUnit && only(filterUnit, topUnit)" @select="topUnit && quick(filterUnit, topUnit)" />
+      <MdKpi icon="grid" tone="brand" label="Satuan dipakai" :value="unitOptions.length" :sub="topUnit ? `Terbanyak: ${unitName(topUnit)}` : 'Belum ada'" action :pressed="!!topUnit && only('unit', topUnit)" @select="topUnit && quick('unit', topUnit)" />
       <MdKpi icon="bookmark" tone="warning" label="Tanpa catatan" :value="noNotes" :sub="`${rows.length - noNotes} bercatatan`" action hint="Urutkan nilai" @select="table?.setSort('value', -1)" />
     </div>
 
@@ -165,8 +165,10 @@ const chips = computed(() => {
 })
 
 function clearAll() { search.value = ''; filterMapping.value = []; filterUnit.value = [] }
-const only = (f, v) => f.value.length === 1 && f.value[0] === v
-function quick(f, v) { f.value = only(f, v) ? [] : [v] }
+// Template membuka ref otomatis, jadi filter dirujuk lewat nama.
+const filterRefs = { unit: filterUnit }
+const only = (k, v) => filterRefs[k].value.length === 1 && filterRefs[k].value[0] === v
+function quick(k, v) { filterRefs[k].value = only(k, v) ? [] : [v] }
 function toggleMapping(id) { filterMapping.value = filterMapping.value.includes(id) ? filterMapping.value.filter((x) => x !== id) : [...filterMapping.value, id] }
 
 async function load() {

@@ -6,9 +6,9 @@
 
     <div class="md-kpis">
       <MdKpi icon="layers" tone="info" label="Total pemetaan" :value="rows.length" :sub="`${workOptions.length} jenis pekerjaan`" action hint="Tampilkan semua" @select="clearAll" />
-      <MdKpi icon="eye" tone="success" label="Ditampilkan" :value="countView('1')" :sub="`${countView('0')} disembunyikan`" action :pressed="only(filterView, '1')" @select="quick(filterView, '1')" />
-      <MdKpi icon="user" tone="brand" label="Akses admin" :value="countAccess('admin')" :sub="`${countAccess('-')} tanpa akses`" action :pressed="only(filterAccess, 'admin')" @select="quick(filterAccess, 'admin')" />
-      <MdKpi icon="users" tone="warning" label="Akses pekerja" :value="countAccess('pekerja')" :sub="`${needOptions.length} jenis kebutuhan dipakai`" action :pressed="only(filterAccess, 'pekerja')" @select="quick(filterAccess, 'pekerja')" />
+      <MdKpi icon="eye" tone="success" label="Ditampilkan" :value="countView('1')" :sub="`${countView('0')} disembunyikan`" action :pressed="only('view', '1')" @select="quick('view', '1')" />
+      <MdKpi icon="user" tone="brand" label="Akses admin" :value="countAccess('admin')" :sub="`${countAccess('-')} tanpa akses`" action :pressed="only('access', 'admin')" @select="quick('access', 'admin')" />
+      <MdKpi icon="users" tone="warning" label="Akses pekerja" :value="countAccess('pekerja')" :sub="`${needOptions.length} jenis kebutuhan dipakai`" action :pressed="only('access', 'pekerja')" @select="quick('access', 'pekerja')" />
     </div>
 
     <MdBarChart
@@ -194,8 +194,10 @@ const chips = computed(() => {
 })
 
 function clearAll() { search.value = ''; filterWork.value = []; filterNeed.value = []; filterAccess.value = []; filterView.value = [] }
-const only = (f, v) => f.value.length === 1 && f.value[0] === v
-function quick(f, v) { f.value = only(f, v) ? [] : [v] }
+// Template membuka ref otomatis, jadi filter dirujuk lewat nama.
+const filterRefs = { view: filterView, access: filterAccess }
+const only = (k, v) => filterRefs[k].value.length === 1 && filterRefs[k].value[0] === v
+function quick(k, v) { filterRefs[k].value = only(k, v) ? [] : [v] }
 function toggleWork(id) { filterWork.value = filterWork.value.includes(id) ? filterWork.value.filter((x) => x !== id) : [...filterWork.value, id] }
 
 async function load() {
