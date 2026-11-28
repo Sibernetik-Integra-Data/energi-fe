@@ -2,9 +2,19 @@
   "shipping": {
     "title": "Harvest shipping and receiving",
     "description": "Track harvest shipments and record their receipt at the destination.",
-    "harvestType": { "tbs": "FFB (TBS)", "looseFruit": "Loose fruit" },
-    "status": { "all": "All", "pending": "Not received", "received": "Received" },
-    "receiptStatus": { "cancelled": "Cancelled", "posted": "Valid" },
+    "harvestType": {
+      "tbs": "FFB (TBS)",
+      "looseFruit": "Loose fruit"
+    },
+    "status": {
+      "all": "All",
+      "pending": "Not received",
+      "received": "Received"
+    },
+    "receiptStatus": {
+      "cancelled": "Cancelled",
+      "posted": "Valid"
+    },
     "errors": {
       "loadList": "Failed to load shipping and receiving data.",
       "detailNotFound": "Shipment details not found.",
@@ -12,11 +22,26 @@
       "requestFailed": "The request could not be processed.",
       "reload": "Failed to reload data."
     },
-    "messages": { "saved": "Receipt {no} saved.", "cancelled": "Receipt {no} cancelled." },
-    "workers": { "title": "Workers", "workerId": "Worker ID {id}", "bunches": "{n} bunches", "showing": "Showing", "ofTotal": "of {n} records" },
+    "messages": {
+      "saved": "Receipt {no} saved.",
+      "cancelled": "Receipt {no} cancelled."
+    },
+    "workers": {
+      "title": "Workers",
+      "workerId": "Worker ID {id}",
+      "bunches": "{n} bunch | {n} bunches",
+      "showing": "Showing",
+      "ofTotal": "of {n} record | of {n} records"
+    },
     "fields": {
-      "receivedDate": "Received date", "harvestType": "Harvest type", "receivedQuantity": "Received quantity",
-      "unit": "Unit", "notes": "Notes", "receiptNo": "Receipt no.", "origin": "Origin", "destination": "Destination"
+      "receivedDate": "Received date",
+      "harvestType": "Harvest type",
+      "receivedQuantity": "Received quantity",
+      "unit": "Unit",
+      "notes": "Notes",
+      "receiptNo": "Receipt no.",
+      "origin": "Origin",
+      "destination": "Destination"
     },
     "form": {
       "title": "Receipt form",
@@ -50,13 +75,24 @@
       "confirmCancel": "Yes, cancel receipt"
     },
     "summary": {
-      "title": "Summary", "field": "Field", "shipment": "Shipment", "receipt": "Receipt", "difference": "Difference",
-      "quantity": "Quantity", "unitsDiffer": "Different units, not compared", "same": "Same",
-      "less": "{value} short", "more": "{value} over"
+      "title": "Summary",
+      "field": "Field",
+      "shipment": "Shipment",
+      "receipt": "Receipt",
+      "difference": "Difference",
+      "quantity": "Quantity",
+      "unitsDiffer": "Different units, not compared",
+      "same": "Same",
+      "less": "{value} short",
+      "more": "{value} over"
     },
     "trip": {
-      "title": "Shipping trip", "id": "Trip {id}", "startDate": "Start date", "endDate": "End date",
-      "volume": "Volume", "driver": "Driver"
+      "title": "Shipping trip",
+      "id": "Trip {id}",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "volume": "Volume",
+      "driver": "Driver"
     },
     "detail": {
       "title": "Details",
@@ -66,9 +102,21 @@
       "reason": "Reason"
     },
     "list": {
-      "loading": "Loading shipments…", "tripId": "Trip ID", "shippedDate": "Shipped date", "shipped": "Shipped",
-      "status": "Status", "received": "Received", "action": "Action", "view": "View", "empty": "No shipments found."
+      "loading": "Loading shipments…",
+      "tripId": "Trip ID",
+      "shippedDate": "Shipped date",
+      "shipped": "Shipped",
+      "status": "Status",
+      "received": "Received",
+      "action": "Action",
+      "view": "View",
+      "empty": "No shipments found."
     },
-    "overview": { "totalTrips": "Number of trips", "tripUnit": "trips", "totalShipped": "Total shipped", "totalReceived": "Total received" }
+    "overview": {
+      "totalTrips": "Number of trips",
+      "tripUnit": "trips",
+      "totalShipped": "Total shipped",
+      "totalReceived": "Total received"
+    }
   }
 }

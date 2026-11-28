@@ -70,7 +70,7 @@
       "realisation": "Actuals",
       "realisationHint": "Attendance and reports from workers for each job.",
       "noWorkers": "No workers assigned yet.",
-      "laborCount": "{n} workers",
+      "laborCount": "{n} worker | {n} workers",
       "metricWorkers": "Registered workers",
       "metricDays": "Total work days",
       "metricMandays": "Total man-days",
@@ -125,8 +125,8 @@
       "nextMonth": "Next month",
       "limits": "Min. {min} days · Max. {max} days",
       "reset": "Reset",
-      "minError": "The range must be at least {n} days. Choose a longer range.",
-      "maxError": "The range can be at most {n} days. Please shorten it."
+      "minError": "The range must be at least {n} day. Choose a longer range. | The range must be at least {n} days. Choose a longer range.",
+      "maxError": "The range can be at most {n} day. Please shorten it. | The range can be at most {n} days. Please shorten it."
     }
   }
 }

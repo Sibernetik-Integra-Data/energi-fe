@@ -14,7 +14,7 @@
     "editOf": "Edit {name}",
     "cannotDeleteSelf": "You cannot delete your own account",
     "deleteOf": "Delete {name}",
-    "results": "{n} results",
+    "results": "{n} result | {n} results",
     "previous": "Previous",
     "next": "Next",
     "pageOf": "Page {page} / {total}",
@@ -25,10 +25,18 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "deleting": "Deleting…",
-    "tabs": { "all": "All" },
+    "tabs": {
+      "all": "All"
+    },
     "columns": {
-      "name": "Name", "username": "Username", "email": "Email", "userAccess": "User access",
-      "mobileRoles": "Mobile roles", "created": "Created", "status": "Status", "actions": "Actions"
+      "name": "Name",
+      "username": "Username",
+      "email": "Email",
+      "userAccess": "User access",
+      "mobileRoles": "Mobile roles",
+      "created": "Created",
+      "status": "Status",
+      "actions": "Actions"
     },
     "errors": {
       "load": "Failed to load Keycloak users.",
@@ -42,7 +50,14 @@
       "statusUpdated": "User status updated.",
       "deleted": "User deleted."
     },
-    "options": { "single": "Single", "married": "Married", "divorced": "Divorced", "widowed": "Widowed", "male": "Male", "female": "Female" },
+    "options": {
+      "single": "Single",
+      "married": "Married",
+      "divorced": "Divorced",
+      "widowed": "Widowed",
+      "male": "Male",
+      "female": "Female"
+    },
     "modal": {
       "editTitle": "Edit user",
       "addSubtitle": "Create a Keycloak account and set up the user profile.",

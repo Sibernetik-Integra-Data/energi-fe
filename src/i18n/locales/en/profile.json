@@ -10,7 +10,12 @@
     "lastName": "Last name",
     "birthDate": "Date of birth",
     "maritalStatus": "Marital status",
-    "marital": { "single": "Single", "married": "Married", "divorced": "Divorced", "widowed": "Widowed" },
+    "marital": {
+      "single": "Single",
+      "married": "Married",
+      "divorced": "Divorced",
+      "widowed": "Widowed"
+    },
     "email": "Email",
     "userAccess": "User access",
     "gender": "Gender",

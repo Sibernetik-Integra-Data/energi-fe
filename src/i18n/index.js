@@ -71,6 +71,22 @@ export const i18n = createI18n({
   fallbackWarn: false
 })
 
+// Bentuk jamak otomatis: pesan "1 plot | {n} plots" dipilih dari {n}/{count}. vue-i18n hanya
+// melakukannya bila nilainya angka, sedangkan banyak pemanggil mengirim angka yang sudah
+// diformat ("1.234"). Ubah ke angka sebagai pemilih jamak; pesan tanpa "|" tidak terpengaruh.
+const toCount = (value) => Number(String(value).replace(/[\s.,  ]/g, ''))
+const baseT = i18n.global.t
+i18n.global.t = (key, ...args) => {
+  const named = args[0]
+  if (args.length === 1 && named && typeof named === 'object' && !Array.isArray(named)) {
+    const count = named.n ?? named.count
+    if (count !== undefined && typeof count !== 'number' && Number.isFinite(toCount(count))) {
+      return baseT(key, named, toCount(count))
+    }
+  }
+  return baseT(key, ...args)
+}
+
 /** Kode Intl (mis. 'id-ID') untuk bahasa aktif; dipakai toLocaleString di kode lama. */
 export function currentIntlLocale() {
   const code = i18n.global.locale.value

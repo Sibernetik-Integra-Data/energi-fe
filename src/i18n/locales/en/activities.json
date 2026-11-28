@@ -34,7 +34,7 @@
     "realisationDescription": "Attendance and reports from workers for each job.",
     "totalWorkers": "Total registered workers",
     "noWorkers": "No workers assigned yet.",
-    "laborsCount": "{n} workers",
+    "laborsCount": "{n} worker | {n} workers",
     "workerId": "Worker ID {id}",
     "workerNo": "Worker #{id}",
     "newPlanFor": "New plan for {name}",

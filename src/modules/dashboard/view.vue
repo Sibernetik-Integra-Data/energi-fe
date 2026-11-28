@@ -47,7 +47,7 @@
             <template v-if="sensus.loading"><span class="sk sk--line"></span></template>
             <span v-else-if="sensus.error" class="kc__err">{{ t('dashboard.kpi.failed') }}</span>
             <template v-else>
-              <span class="kc__value">{{ formatNumber(groupKpi[g.key].cur) }}<small>{{ t('dashboard.kpi.reports') }}</small></span>
+              <span class="kc__value">{{ formatNumber(groupKpi[g.key].cur) }}<small>{{ t('dashboard.kpi.reports', groupKpi[g.key].cur) }}</small></span>
               <KpiDelta :value="groupKpi[g.key].delta" />
               <span class="kc__sub">{{ t('dashboard.kpi.vs', { label: prevLabel, value: formatNumber(groupKpi[g.key].prev) }) }}</span>
             </template>

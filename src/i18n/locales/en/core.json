@@ -90,7 +90,7 @@
     "title": "Choose the data to manage",
     "description": "Reach every master data page in one place to keep operational data tidy and consistent.",
     "listTitle": "Pages",
-    "available": "{n} pages available",
+    "available": "{n} page available | {n} pages available",
     "manage": "Manage {label}"
   }
 }

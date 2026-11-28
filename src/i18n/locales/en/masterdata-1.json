@@ -29,18 +29,18 @@
     "add": "Add plot",
     "kpi": {
       "total": "Total plots",
-      "totalSub": "{n} blocks",
+      "totalSub": "{n} block | {n} blocks",
       "tm": "Mature (TM)",
       "tmSub": "{n}% of plots",
       "tbm": "Immature (TBM)",
       "tbmSub": "{n} not set",
       "tph": "TPH · trees",
-      "tphSub": "{n} trees recorded"
+      "tphSub": "{n} tree recorded | {n} trees recorded"
     },
     "chart": {
       "title": "Plots per block",
       "subtitle": "{petak} plots in {blok} blocks",
-      "barAria": "Block {b}: {n} plots, {tm} TM, {tbm} TBM"
+      "barAria": "Block {b}: {n} plot, {tm} TM, {tbm} TBM | Block {b}: {n} plots, {tm} TM, {tbm} TBM"
     },
     "entity": "Plot",
     "empty": "Add the first plot so it can be used in census and work planning.",
@@ -65,7 +65,7 @@
       "tmOpt": "TM · Mature",
       "tbmOpt": "TBM · Immature"
     },
-    "yearsAbbr": "{n} yrs",
+    "yearsAbbr": "{n} yr | {n} yrs",
     "tphTitle": "Maintenance {p} · Harvest {h}",
     "editAria": "Edit plot {name}",
     "deleteAria": "Delete plot {name}",
@@ -148,18 +148,18 @@
     "add": "Add block",
     "kpi": {
       "total": "Total blocks",
-      "totalSub": "{n} plots",
+      "totalSub": "{n} plot | {n} plots",
       "hasTm": "Blocks with TM",
       "hasTmSub": "{n}% of blocks",
       "tbm": "TBM blocks",
-      "tbmSub": "{n} blocks without plots",
+      "tbmSub": "{n} block without plots | {n} blocks without plots",
       "tph": "TPH · harvest trees",
       "tphSub": "{n} harvest trees"
     },
     "chart": {
       "title": "Plots per block",
       "subtitle": "{petak} plots in {blok} blocks",
-      "barAria": "Block {name}: {n} plots, {status}",
+      "barAria": "Block {name}: {n} plot, {status} | Block {name}: {n} plots, {status}",
       "barTm": "has TM"
     },
     "hasTm": "Has TM",
@@ -174,7 +174,7 @@
       "noPetak": "No plots"
     },
     "blokLabel": "Block {name}",
-    "petakCount": "{n} plots",
+    "petakCount": "{n} plot | {n} plots",
     "deleteBlocked": "Still contains plots",
     "editAria": "Edit block {name}",
     "deleteAria": "Delete block {name}",
@@ -362,7 +362,7 @@
     "add": "Add vehicle",
     "kpi": {
       "total": "Total vehicles",
-      "totalSub": "{n} types",
+      "totalSub": "{n} type | {n} types",
       "top": "Most common type",
       "topNone": "No types yet",
       "noTypeSub": "{n}% of vehicles"
@@ -370,8 +370,8 @@
     "noType": "No type",
     "chart": {
       "title": "Vehicles per type",
-      "subtitle": "{n} vehicles in {t} types",
-      "barAria": "{label}: {n} vehicles"
+      "subtitle": "{n} vehicle in {t} types | {n} vehicles in {t} types",
+      "barAria": "{label}: {n} vehicle | {label}: {n} vehicles"
     },
     "entity": "Vehicle",
     "empty": "Add the first vehicle so it can be used for harvest transport.",
@@ -437,7 +437,7 @@
     "add": "Add driver",
     "kpi": {
       "total": "Total drivers",
-      "totalSub": "{n} locations",
+      "totalSub": "{n} location | {n} locations",
       "pctSub": "{n}% of drivers"
     },
     "hasVehicle": "Has vehicle",
@@ -445,8 +445,8 @@
     "noLocation": "No location",
     "chart": {
       "title": "Drivers per location",
-      "subtitle": "{n} drivers in {l} locations",
-      "barAria": "{label}: {n} drivers, {v} with a vehicle"
+      "subtitle": "{n} driver in {l} locations | {n} drivers in {l} locations",
+      "barAria": "{label}: {n} driver, {v} with a vehicle | {label}: {n} drivers, {v} with a vehicle"
     },
     "entity": "Driver",
     "empty": "Add the first driver so they can be used for harvest transport.",
@@ -518,19 +518,19 @@
     "add": "Add destination",
     "kpi": {
       "total": "Total destinations",
-      "totalSub": "{n} types",
+      "totalSub": "{n} type | {n} types",
       "pctSub": "{n}% of destinations",
       "noCoordSub": "Fill in latitude & longitude",
       "top": "Most common type",
-      "topSub": "{n} destinations",
+      "topSub": "{n} destination | {n} destinations",
       "noData": "No data yet"
     },
     "hasCoord": "Has coordinates",
     "noCoord": "No coordinates",
     "chart": {
       "title": "Destinations per type",
-      "subtitle": "{n} destinations in {t} types",
-      "barAria": "{label}: {n} destinations, {c} with coordinates"
+      "subtitle": "{n} destination in {t} types | {n} destinations in {t} types",
+      "barAria": "{label}: {n} destination, {c} with coordinates | {label}: {n} destinations, {c} with coordinates"
     },
     "entity": "Destination",
     "empty": "Add the first destination so it can be used when shipping the harvest.",
@@ -603,7 +603,7 @@
     "add": "Add activity",
     "kpi": {
       "total": "Total activities",
-      "totalSub": "{n} groups in use",
+      "totalSub": "{n} group in use | {n} groups in use",
       "pctSub": "{n}% of activities",
       "noFotoSub": "No photo evidence needed",
       "groups": "Work groups",
@@ -614,8 +614,8 @@
     "noFoto": "No photo",
     "chart": {
       "title": "Activities per group",
-      "subtitle": "{n} activities in {g} groups",
-      "barAria": "{label}: {n} activities, {f} need a photo"
+      "subtitle": "{n} activity in {g} groups | {n} activities in {g} groups",
+      "barAria": "{label}: {n} activity, {f} need a photo | {label}: {n} activities, {f} need a photo"
     },
     "entity": "Activity",
     "empty": "Add the first activity so it can be used in work planning.",

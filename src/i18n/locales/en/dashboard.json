@@ -7,15 +7,15 @@
     "lastUpdated": "Last updated {time}",
     "reload": "Reload",
     "period": "Period",
-    "days": "{n} days",
+    "days": "{n} day | {n} days",
     "quickLinks": "Quick links",
     "summary": "Summary",
     "kpi": {
       "sensusGroup": "Census {group}",
       "failed": "Failed to load",
-      "reports": "reports",
+      "reports": "report | reports",
       "vs": "vs {label}: {value}",
-      "receivedVolume": "Volume received, {n} days",
+      "receivedVolume": "Volume received, {n} day | Volume received, {n} days",
       "noShipments": "No shipments yet",
       "diff": " · difference {pct}%",
       "receivedShare": "{pct}% of shipped volume received",
@@ -39,7 +39,7 @@
     },
     "feed": {
       "title": "Needs follow-up",
-      "count": "{n} items",
+      "count": "{n} item | {n} items",
       "filterLevel": "Filter level",
       "partialError": "Some sources failed to load: {sources}.",
       "empty": "No follow-up items.",
@@ -96,10 +96,10 @@
       "hint": "click a chart series to filter",
       "emptyFiltered": "No plans for this filter.",
       "empty": "No active work plans yet.",
-      "late": "{n} days late",
+      "late": "{n} day late | {n} days late",
       "findNone": "No plans in progress or planned.",
       "findAllOnTime": "{n} active plans, all on schedule.",
-      "findLate": "{n} plans past due; longest {job} in {block} ({days} days).",
+      "findLate": "{n} plan past due; longest {job} in {block} ({days} days). | {n} plans past due; longest {job} in {block} ({days} days).",
       "col": {
         "group": "Group",
         "job": "Work",
@@ -127,8 +127,8 @@
     },
     "wait": {
       "lessThanHour": "less than 1 hour",
-      "hours": "{n} hours",
-      "days": "{n} days"
+      "hours": "{n} hour | {n} hours",
+      "days": "{n} day | {n} days"
     },
     "block": "Block {id}"
   }

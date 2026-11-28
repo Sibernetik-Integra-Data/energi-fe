@@ -69,8 +69,8 @@
       "limits": "Min. {min} days · Max. {max} days",
       "hasPlan": "Has a work plan",
       "reset": "Reset",
-      "minError": "The range must be at least {n} days. Choose a longer range.",
-      "maxError": "The range can be at most {n} days. Please shorten it."
+      "minError": "The range must be at least {n} day. Choose a longer range. | The range must be at least {n} days. Choose a longer range.",
+      "maxError": "The range can be at most {n} day. Please shorten it. | The range can be at most {n} days. Please shorten it."
     }
   }
 }
