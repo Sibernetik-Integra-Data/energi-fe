@@ -143,8 +143,69 @@
             </template>
           </section>
 
+          <!-- Pengiriman 7 hari -->
+          <section class="p s8" aria-labelledby="h-ship">
+            <h2 id="h-ship">Pengiriman 7 hari <span>kirim vs terima per tanggal kirim{{ unit.primary ? `, ${unit.primary.name}` : '' }}</span></h2>
+            <div v-if="ships.loading" class="sk sk--block" aria-busy="true"></div>
+            <PanelError v-else-if="ships.error" :text="ships.error" @retry="loadShips" />
+            <template v-else>
+              <p class="find">{{ shipFinding }}</p>
+              <div class="legend" aria-hidden="true">
+                <span class="legend__key" style="--c: var(--dash-c-ship)">Kirim</span>
+                <span class="legend__key" style="--c: var(--text-muted)">Terima</span>
+              </div>
+              <ul class="ship" aria-label="Kirim dan terima per hari">
+                <li v-for="d in shipDays7" :key="d.date">
+                  <span class="ship__day">{{ formatDay(d.date) }}</span>
+                  <span class="ship__bars" aria-hidden="true">
+                    <i class="ship__bar" :style="{ width: barWidth(d.shipped), background: 'var(--dash-c-ship)' }"></i>
+                    <i class="ship__bar" :style="{ width: barWidth(d.received), background: 'var(--text-muted)' }"></i>
+                  </span>
+                  <span class="ship__nums">
+                    <span class="sr-only">Kirim</span> {{ formatNumber(d.shipped) }} / <span class="sr-only">terima</span> {{ formatNumber(d.received) }}
+                  </span>
+                  <span class="ship__pct" :class="{ 'is-over': d.selisihPct !== null && d.selisihPct > SELISIH_LIMIT }">
+                    <template v-if="!d.trips">tidak ada</template>
+                    <template v-else-if="d.selisihPct === null">belum diterima</template>
+                    <template v-else-if="d.selisihPct > SELISIH_LIMIT"><DashIcon name="alert" :size="12" /> {{ formatNumber(d.selisihPct, 1) }}% lewat batas</template>
+                    <template v-else>selisih {{ formatNumber(d.selisihPct, 1) }}%</template>
+                    <template v-if="d.trips && d.pendingTrips && d.selisihPct !== null"> · {{ d.pendingTrips }} belum diterima</template>
+                  </span>
+                </li>
+              </ul>
+              <p class="note">Selisih dihitung hanya dari pengiriman yang sudah diterima dengan satuan yang sama. Batas {{ SELISIH_LIMIT }}%.</p>
+            </template>
+          </section>
+
+          <!-- Menunggu verifikasi -->
+          <section v-if="showPending" class="p s4" aria-labelledby="h-pending">
+            <h2 id="h-pending">{{ pendingTitle }} <span>{{ sensus.loading ? '…' : `${pendingFiltered.length} menunggu` }}</span></h2>
+            <div v-if="sensus.loading" class="sk sk--block" aria-busy="true"></div>
+            <PanelError v-else-if="sensus.error" :text="sensus.error" @retry="loadSensus" />
+            <template v-else>
+              <p v-if="pendingSubtitle" class="find">{{ pendingSubtitle }}</p>
+              <ul v-if="pendingShown.length" class="pending">
+                <li v-for="row in pendingShown" :key="row.code">
+                  <div class="pending__main">
+                    <strong>{{ row.code }}</strong>
+                    <span class="pending__meta">{{ row.worker || '…' }} · {{ row.block }} · menunggu {{ waitLabel(hoursSince(row.createdAt)) || formatDay(row.sensusDate, true) }}</span>
+                    <span v-if="row.jobTypes.length" class="pending__jobs">{{ row.jobTypes.join(', ') }}</span>
+                  </div>
+                  <RouterLink v-if="row.id != null" :to="`/sensus/${row.id}`" class="dash__btn dash__btn--icon"
+                    :aria-label="`Periksa sensus ${row.code}`" :title="`Periksa sensus ${row.code}`">
+                    <DashIcon name="arrowRight" :size="14" />
+                  </RouterLink>
+                </li>
+              </ul>
+              <p v-else class="state">Tidak ada sensus yang menunggu verifikasi{{ selectedGroup ? ' untuk kelompok ini' : '' }}.</p>
+              <RouterLink v-if="pendingFiltered.length > pendingShown.length" to="/sensus" class="pending__more">
+                Lihat semua di Sensus <DashIcon name="arrowRight" :size="12" />
+              </RouterLink>
+            </template>
+          </section>
+
           <!-- Rencana kerja aktif -->
-          <section class="p s8" aria-labelledby="h-plan">
+          <section class="p s12" aria-labelledby="h-plan">
             <h2 id="h-plan">Rencana kerja aktif
               <span v-if="selectedGroup || feedKind === 'telat'">
                 {{ [selectedGroup && groupLabel(selectedGroup), feedKind === 'telat' && 'hanya terlambat'].filter(Boolean).join(' · ') }}
@@ -185,67 +246,6 @@
                   </tbody>
                 </table>
               </div>
-            </template>
-          </section>
-
-          <!-- Menunggu verifikasi -->
-          <section v-if="showPending" class="p s4" aria-labelledby="h-pending">
-            <h2 id="h-pending">{{ pendingTitle }} <span>{{ sensus.loading ? '…' : `${pendingFiltered.length} menunggu` }}</span></h2>
-            <div v-if="sensus.loading" class="sk sk--block" aria-busy="true"></div>
-            <PanelError v-else-if="sensus.error" :text="sensus.error" @retry="loadSensus" />
-            <template v-else>
-              <p v-if="pendingSubtitle" class="find">{{ pendingSubtitle }}</p>
-              <ul v-if="pendingShown.length" class="pending">
-                <li v-for="row in pendingShown" :key="row.code">
-                  <div class="pending__main">
-                    <strong>{{ row.code }}</strong>
-                    <span class="pending__meta">{{ row.worker || '…' }} · {{ row.block }} · menunggu {{ waitLabel(hoursSince(row.createdAt)) || formatDay(row.sensusDate, true) }}</span>
-                    <span v-if="row.jobTypes.length" class="pending__jobs">{{ row.jobTypes.join(', ') }}</span>
-                  </div>
-                  <RouterLink v-if="row.id != null" :to="`/sensus/${row.id}`" class="dash__btn dash__btn--icon"
-                    :aria-label="`Periksa sensus ${row.code}`" :title="`Periksa sensus ${row.code}`">
-                    <DashIcon name="arrowRight" :size="14" />
-                  </RouterLink>
-                </li>
-              </ul>
-              <p v-else class="state">Tidak ada sensus yang menunggu verifikasi{{ selectedGroup ? ' untuk kelompok ini' : '' }}.</p>
-              <RouterLink v-if="pendingFiltered.length > pendingShown.length" to="/sensus" class="pending__more">
-                Lihat semua di Sensus <DashIcon name="arrowRight" :size="12" />
-              </RouterLink>
-            </template>
-          </section>
-
-          <!-- Pengiriman 7 hari -->
-          <section class="p s12" aria-labelledby="h-ship">
-            <h2 id="h-ship">Pengiriman 7 hari <span>kirim vs terima per tanggal kirim{{ unit.primary ? `, ${unit.primary.name}` : '' }}</span></h2>
-            <div v-if="ships.loading" class="sk sk--block" aria-busy="true"></div>
-            <PanelError v-else-if="ships.error" :text="ships.error" @retry="loadShips" />
-            <template v-else>
-              <p class="find">{{ shipFinding }}</p>
-              <div class="legend" aria-hidden="true">
-                <span class="legend__key" style="--c: var(--dash-c-ship)">Kirim</span>
-                <span class="legend__key" style="--c: var(--text-muted)">Terima</span>
-              </div>
-              <ul class="ship" aria-label="Kirim dan terima per hari">
-                <li v-for="d in shipDays7" :key="d.date">
-                  <span class="ship__day">{{ formatDay(d.date) }}</span>
-                  <span class="ship__bars" aria-hidden="true">
-                    <i class="ship__bar" :style="{ width: barWidth(d.shipped), background: 'var(--dash-c-ship)' }"></i>
-                    <i class="ship__bar" :style="{ width: barWidth(d.received), background: 'var(--text-muted)' }"></i>
-                  </span>
-                  <span class="ship__nums">
-                    <span class="sr-only">Kirim</span> {{ formatNumber(d.shipped) }} / <span class="sr-only">terima</span> {{ formatNumber(d.received) }}
-                  </span>
-                  <span class="ship__pct" :class="{ 'is-over': d.selisihPct !== null && d.selisihPct > SELISIH_LIMIT }">
-                    <template v-if="!d.trips">tidak ada</template>
-                    <template v-else-if="d.selisihPct === null">belum diterima</template>
-                    <template v-else-if="d.selisihPct > SELISIH_LIMIT"><DashIcon name="alert" :size="12" /> {{ formatNumber(d.selisihPct, 1) }}% lewat batas</template>
-                    <template v-else>selisih {{ formatNumber(d.selisihPct, 1) }}%</template>
-                    <template v-if="d.trips && d.pendingTrips && d.selisihPct !== null"> · {{ d.pendingTrips }} belum diterima</template>
-                  </span>
-                </li>
-              </ul>
-              <p class="note">Selisih dihitung hanya dari pengiriman yang sudah diterima dengan satuan yang sama. Batas {{ SELISIH_LIMIT }}%.</p>
             </template>
           </section>
         </div>
