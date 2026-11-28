@@ -45,6 +45,13 @@ function getMonthKey(referenceDate = new Date()) {
   return `${referenceDate.getFullYear()}-${referenceDate.getMonth() + 1}`
 }
 
+// Persentase perubahan; null bila periode pembanding kosong (persentase tidak bermakna).
+function deltaText(current, previous) {
+  if (!previous) return null
+  const pct = Math.round(((current - previous) / previous) * 100)
+  return `${pct >= 0 ? '+' : ''}${pct}%`
+}
+
 function buildWeeklyMetric(config, sensusList, referenceDate = new Date()) {
   const year = referenceDate.getFullYear()
   const month = referenceDate.getMonth()
@@ -63,18 +70,18 @@ function buildWeeklyMetric(config, sensusList, referenceDate = new Date()) {
   }
 
   const currentMonthTotal = weeklyTotals.reduce((sum, value) => sum + value, 0)
-  const lastValue = weeklyTotals[weeklyTotals.length - 1] || 0
-  const prevValue = weeklyTotals[weeklyTotals.length - 2] || 0
-  const deltaPercent = prevValue > 0
-    ? Math.round(((lastValue - prevValue) / prevValue) * 100)
-    : (lastValue > 0 ? 100 : 0)
-  const deltaSign = deltaPercent >= 0 ? '+' : ''
+  // Bulan berjalan: minggu ini dibanding minggu lalu. Bulan lampau: dua minggu terakhirnya.
+  const today = new Date()
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month
+  const lastIdx = isCurrentMonth ? Math.min(Math.floor((today.getDate() - 1) / 7), weeklyTotals.length - 1) : weeklyTotals.length - 1
+  const delta = deltaText(weeklyTotals[lastIdx] || 0, lastIdx > 0 ? weeklyTotals[lastIdx - 1] : 0)
 
   return {
     key: config.key,
     title: config.title,
     value: String(currentMonthTotal),
-    delta: `${deltaSign}${deltaPercent}%`,
+    delta,
+    deltaHint: 'dibanding minggu lalu',
     detail: config.detail,
     tone: config.tone,
     points: weeklyTotals,
@@ -109,23 +116,17 @@ function buildYearlyMetric(config, sensusList, year) {
 
   const yearTotal = monthlyTotals.reduce((sum, v) => sum + v, 0)
 
-  // Delta: last non-zero month vs the one before it
-  let lastIdx = -1
-  for (let i = 11; i >= 0; i--) {
-    if (monthlyTotals[i] > 0) { lastIdx = i; break }
-  }
-  const lastValue = lastIdx >= 0 ? monthlyTotals[lastIdx] : 0
-  const prevValue = lastIdx > 0 ? monthlyTotals[lastIdx - 1] : 0
-  const deltaPercent = prevValue > 0
-    ? Math.round(((lastValue - prevValue) / prevValue) * 100)
-    : (lastValue > 0 ? 100 : 0)
-  const deltaSign = deltaPercent >= 0 ? '+' : ''
+  // Tahun berjalan: bulan ini dibanding bulan lalu. Tahun lampau: Desember dibanding November.
+  const today = new Date()
+  const monthIdx = today.getFullYear() === year ? today.getMonth() : 11
+  const delta = deltaText(monthlyTotals[monthIdx], monthIdx > 0 ? monthlyTotals[monthIdx - 1] : 0)
 
   return {
     key: config.key,
     title: config.title,
     value: String(yearTotal),
-    delta: `${deltaSign}${deltaPercent}%`,
+    delta,
+    deltaHint: 'dibanding bulan lalu',
     detail: `Total tahun ${year}`,
     tone: config.tone,
     points: monthlyTotals,
@@ -179,7 +180,7 @@ function buildEmptyMetric(config, referenceDate = new Date(), value = '0', mode 
     key: config.key,
     title: config.title,
     value,
-    delta: '+0%',
+    delta: null,
     detail: config.detail,
     tone: config.tone,
     points: Array(pointLabels.length).fill(0),

@@ -5,7 +5,7 @@
         <p class="metric-card__eyebrow">{{ metric.detail }}</p>
         <h3>{{ metric.title }}</h3>
       </div>
-      <span class="metric-card__delta" :class="`metric-card__delta--${metricTone}`">{{ metric.delta }}</span>
+      <span v-if="metric.delta" class="metric-card__delta" :class="`metric-card__delta--${metricTone}`" :title="metric.deltaHint || undefined">{{ metric.delta }}</span>
     </div>
 
     <div class="metric-card__value-row">

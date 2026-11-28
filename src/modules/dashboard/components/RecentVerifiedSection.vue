@@ -215,7 +215,7 @@ defineProps({
   }
 }
 
-.dashboard-empty {
+.recent-card__table td.dashboard-empty {
   padding: 28px 16px;
   text-align: center;
   font-size: 14px;
