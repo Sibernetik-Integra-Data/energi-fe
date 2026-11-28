@@ -115,6 +115,7 @@
 </template>
 
 <script setup>
+import { isDuplicate, isStillReferenced, serverText } from '../../../../api/apiError'
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TphForm from './TphForm.vue'
@@ -291,10 +292,10 @@ function closeForm() {
 }
 
 const friendly = (err, fallback) => {
-  const m = err?.message || ''
-  if (/tph_block_type_side_line_uq|sudah ada/i.test(m)) return t('tph.error.duplicate')
-  if (/dipakai|nonaktifkan/i.test(m)) return t('tph.error.inUse')
-  return m || fallback
+  if (isDuplicate(err, /tph_block_type_side_line_uq|sudah ada/i)) return t('tph.error.duplicate')
+  // TPH yang sudah dipakai ditolak oleh pemeriksaan di DAO (pesan teks, belum ber-errorCode).
+  if (isStillReferenced(err, /dipakai|nonaktifkan/i) || /dipakai|nonaktifkan/i.test(serverText(err))) return t('tph.error.inUse')
+  return err?.message || fallback
 }
 
 async function onFormSubmit(payload) {

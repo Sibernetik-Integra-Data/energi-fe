@@ -86,6 +86,7 @@
 </template>
 
 <script setup>
+import { isStillReferenced } from '../../../../api/apiError'
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SensusProgressStatusForm from './SensusProgressStatusForm.vue'
@@ -226,7 +227,7 @@ async function onDeleteConfirm() {
     showToast(t('sensusProgressStatus.toastDeleted'))
   } catch (err) {
     console.error('[SensusProgressStatus] Delete failed:', err)
-    deleteError.value = /dirujuk|409/i.test(err?.message || '')
+    deleteError.value = isStillReferenced(err)
       ? t('sensusProgressStatus.inUse')
       : err?.message || t('sensusProgressStatus.deleteStatusFailed')
   } finally {

@@ -1,4 +1,5 @@
 import { getAccessToken } from '../auth/tokenMemory'
+import { localizeApiError } from './apiError'
 
 const API_PREFIX = import.meta.env.VITE_API_PREFIX || ''
 const SIGNING_SECRET = import.meta.env.VITE_SIGNING_SECRET || ''
@@ -251,7 +252,7 @@ export async function apiFetch(path, opts = {}) {
   const contentType = res.headers.get('content-type') || ''
   if (contentType.includes('application/json')) {
     const body = await res.json()
-    if (!res.ok) throw body
+    if (!res.ok) throw localizeApiError(body)
     return body
   }
 
@@ -286,7 +287,7 @@ export async function signedApiFetch(path, opts = {}) {
   const contentType = res.headers.get('content-type') || ''
   if (contentType.includes('application/json')) {
     const body = await res.json()
-    if (!res.ok) throw body
+    if (!res.ok) throw localizeApiError(body)
     return body
   }
 
@@ -323,7 +324,7 @@ export async function signedApiFetchBlob(path, opts = {}) {
     const contentType = res.headers.get('content-type') || ''
     if (contentType.includes('application/json')) {
       const body = await res.json()
-      throw body
+      throw localizeApiError(body)
     }
     throw new Error(res.statusText || `Request failed with status ${res.status}`)
   }

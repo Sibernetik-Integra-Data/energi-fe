@@ -88,6 +88,7 @@
 </template>
 
 <script setup>
+import { isStillReferenced } from '../../../../api/apiError'
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import GroupOfWorkForm from './GroupOfWorkForm.vue'
@@ -235,7 +236,7 @@ async function onDeleteConfirm() {
     await loadData()
   } catch (err) {
     console.error('[GroupOfWork] Delete failed:', err)
-    deleteError.value = /dirujuk|409/i.test(err?.message || '')
+    deleteError.value = isStillReferenced(err)
       ? t('groupOfWork.error.inUse')
       : err?.message || t('groupOfWork.error.delete')
   } finally {

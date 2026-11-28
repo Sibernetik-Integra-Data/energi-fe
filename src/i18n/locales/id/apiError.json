@@ -1,0 +1,33 @@
+{
+  "apiError": {
+    "NOT_FOUND": "Data tidak ditemukan.",
+    "INVALID_ID": "ID tidak valid.",
+    "INVALID_PAYLOAD": "Data yang dikirim tidak valid.",
+    "REQUIRED_FIELD": "Kolom {field} wajib diisi.",
+    "INVALID_DATE": "Format tanggal tidak valid (harus TTTT-BB-HH).",
+    "UNKNOWN_ENTITY": "Jenis data tidak dikenal.",
+    "UNAUTHENTICATED": "Sesi Anda berakhir. Silakan masuk lagi.",
+    "FORBIDDEN": "Akses ditolak.",
+    "NOT_YOUR_TASK": "Akses ditolak: ini bukan tugas Anda.",
+    "MANDOR_ASSIGNMENT_ONLY": "Akses ditolak: hanya untuk penugasan oleh Mandor.",
+    "SENSUS_AUTHOR_ONLY": "Akses ditolak: unggah foto sensus hanya untuk penulis sensus.",
+    "DUPLICATE": "Data yang sama sudah ada.",
+    "STILL_REFERENCED": "Data masih dipakai data lain, jadi tidak bisa dihapus.",
+    "RECEIPT_DELETE_FORBIDDEN": "Penerimaan tidak dapat dihapus; batalkan penerimaannya.",
+    "RECEIPT_CANCELLED": "Penerimaan sudah dibatalkan dan tidak dapat diubah.",
+    "RECEIPT_IMMUTABLE": "Isi penerimaan tidak dapat diubah; batalkan lalu buat penerimaan baru.",
+    "TRIP_ALREADY_RECEIVED": "Trip sudah diterima; batalkan penerimaannya sebelum mengubah trip.",
+    "TRIP_HAS_RECEIPT": "Trip ini sudah memiliki penerimaan yang berlaku.",
+    "TRIP_HAS_RECEIPT_HISTORY": "Trip memiliki riwayat penerimaan dan tidak dapat dihapus.",
+    "TRIP_NOT_FOUND": "Trip tidak ditemukan.",
+    "RECEIPT_NOT_FOUND": "Penerimaan tidak ditemukan.",
+    "UNKNOWN_UNIT": "Satuan tidak dikenal.",
+    "REPLACED_RECEIPT_NOT_FOUND": "Penerimaan yang digantikan tidak ditemukan.",
+    "RECEIPT_RULE_VIOLATION": "Data penerimaan tidak memenuhi aturan.",
+    "SENSUS_PLANNED_DELETE": "Penugasan sensus sudah masuk planning; hapus planning-nya dulu.",
+    "SENSUS_PLANNED_LOCKED": "Penugasan sensus sudah masuk planning; aktivitas dan lokasinya tidak bisa diubah.",
+    "UNKNOWN_DESTINATION_TYPE": "Tipe tujuan tidak dikenal.",
+    "INVALID_GROUP_OF_WORK": "Kelompok pekerjaan tidak valid.",
+    "INTERNAL": "Terjadi kesalahan di server. Coba lagi nanti."
+  }
+}

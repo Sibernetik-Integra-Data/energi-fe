@@ -104,6 +104,7 @@
 </template>
 
 <script setup>
+import { isDuplicate, isStillReferenced } from '../../../../api/apiError'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { currentIntlLocale } from '../../../../i18n'
@@ -273,7 +274,7 @@ async function onFormSubmit(formData) {
     await loadData()
   } catch (err) {
     console.error('[TypeOfUnit] Save failed:', err)
-    actionError.value = /409/.test(err?.message || '')
+    actionError.value = isDuplicate(err)
       ? t('typeOfUnit.nameTaken', { name: formData.name })
       : err?.message || t('typeOfUnit.saveFailed')
   } finally {
@@ -300,7 +301,7 @@ async function onDeleteConfirm() {
     await loadData()
   } catch (err) {
     console.error('[TypeOfUnit] Delete failed:', err)
-    deleteError.value = /dirujuk|409/i.test(err?.message || '')
+    deleteError.value = isStillReferenced(err)
       ? t('typeOfUnit.inUse')
       : err?.message || t('typeOfUnit.deleteFailed')
   } finally {

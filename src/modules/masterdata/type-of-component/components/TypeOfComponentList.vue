@@ -91,6 +91,7 @@
 </template>
 
 <script setup>
+import { isDuplicate, isStillReferenced } from '../../../../api/apiError'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { currentIntlLocale } from '../../../../i18n'
@@ -212,7 +213,7 @@ async function onFormSubmit(formData) {
     await loadData()
   } catch (err) {
     console.error('[TypeOfComponent] Save failed:', err)
-    actionError.value = /409/.test(err?.message || '')
+    actionError.value = isDuplicate(err)
       ? t('typeOfComponent.nameTaken', { name: formData.name })
       : err?.message || t('typeOfComponent.saveFailed')
   } finally {
@@ -239,7 +240,7 @@ async function onDeleteConfirm() {
     await loadData()
   } catch (err) {
     console.error('[TypeOfComponent] Delete failed:', err)
-    deleteError.value = /dirujuk|409/i.test(err?.message || '')
+    deleteError.value = isStillReferenced(err)
       ? t('typeOfComponent.inUse')
       : err?.message || t('typeOfComponent.deleteFailed')
   } finally {

@@ -105,6 +105,7 @@
 </template>
 
 <script setup>
+import { isStillReferenced } from '../../../../api/apiError'
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import KebunForm from './KebunForm.vue'
@@ -299,7 +300,7 @@ async function onDeleteConfirm() {
     showToast(t('aktifitasKebun.toast.deleted'))
   } catch (err) {
     console.error('[AktifitasKebun] Delete failed:', err)
-    deleteError.value = /dirujuk|409/i.test(err?.message || '')
+    deleteError.value = isStillReferenced(err)
       ? t('aktifitasKebun.error.inUse')
       : err?.message || t('aktifitasKebun.error.delete')
   } finally {

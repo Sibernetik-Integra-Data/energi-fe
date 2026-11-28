@@ -1,0 +1,33 @@
+{
+  "apiError": {
+    "NOT_FOUND": "Data not found.",
+    "INVALID_ID": "Invalid ID.",
+    "INVALID_PAYLOAD": "The submitted data is not valid.",
+    "REQUIRED_FIELD": "The {field} field is required.",
+    "INVALID_DATE": "Invalid date format (expected YYYY-MM-DD).",
+    "UNKNOWN_ENTITY": "Unknown data type.",
+    "UNAUTHENTICATED": "Your session has ended. Please sign in again.",
+    "FORBIDDEN": "Access denied.",
+    "NOT_YOUR_TASK": "Access denied: this is not your task.",
+    "MANDOR_ASSIGNMENT_ONLY": "Access denied: only for assignments made by a foreman (Mandor).",
+    "SENSUS_AUTHOR_ONLY": "Access denied: only the census author can upload census photos.",
+    "DUPLICATE": "The same data already exists.",
+    "STILL_REFERENCED": "This data is still used by other data, so it cannot be deleted.",
+    "RECEIPT_DELETE_FORBIDDEN": "A receipt cannot be deleted; cancel the receipt instead.",
+    "RECEIPT_CANCELLED": "The receipt has been cancelled and cannot be changed.",
+    "RECEIPT_IMMUTABLE": "Receipt details cannot be changed; cancel it and create a new receipt.",
+    "TRIP_ALREADY_RECEIVED": "The trip has been received; cancel the receipt before changing the trip.",
+    "TRIP_HAS_RECEIPT": "This trip already has a valid receipt.",
+    "TRIP_HAS_RECEIPT_HISTORY": "This trip has receipt history and cannot be deleted.",
+    "TRIP_NOT_FOUND": "Trip not found.",
+    "RECEIPT_NOT_FOUND": "Receipt not found.",
+    "UNKNOWN_UNIT": "Unknown unit.",
+    "REPLACED_RECEIPT_NOT_FOUND": "The receipt being replaced was not found.",
+    "RECEIPT_RULE_VIOLATION": "The receipt data does not meet the rules.",
+    "SENSUS_PLANNED_DELETE": "This census assignment is already planned; delete its plan first.",
+    "SENSUS_PLANNED_LOCKED": "This census assignment is already planned; its activity and location cannot be changed.",
+    "UNKNOWN_DESTINATION_TYPE": "Unknown destination type.",
+    "INVALID_GROUP_OF_WORK": "Invalid work group.",
+    "INTERNAL": "Something went wrong on the server. Please try again later."
+  }
+}

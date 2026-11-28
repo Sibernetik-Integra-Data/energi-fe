@@ -129,6 +129,7 @@
 </template>
 
 <script setup>
+import { isStillReferenced } from '../../../../api/apiError'
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import PetakForm from './PetakForm.vue'
@@ -328,7 +329,7 @@ async function onDeleteConfirm() {
     showToast(t('petak.toast.deleted', { name }))
   } catch (err) {
     console.error('[Petak] Delete failed:', err)
-    deleteError.value = /dirujuk|409/i.test(err?.message || '')
+    deleteError.value = isStillReferenced(err)
       ? t('petak.error.inUse')
       : err?.message || t('petak.error.delete')
   } finally {

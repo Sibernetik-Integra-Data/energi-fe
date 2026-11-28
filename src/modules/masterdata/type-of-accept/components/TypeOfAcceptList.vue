@@ -105,6 +105,7 @@
 </template>
 
 <script setup>
+import { isDuplicate, isStillReferenced } from '../../../../api/apiError'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { currentIntlLocale } from '../../../../i18n'
@@ -260,7 +261,7 @@ async function onFormSubmit(formData) {
     await loadData()
   } catch (err) {
     console.error('[TypeOfAccept] Save failed:', err)
-    actionError.value = /409/.test(err?.message || '')
+    actionError.value = isDuplicate(err)
       ? t('typeOfAccept.nameTaken', { name: formData.name })
       : err?.message || t('typeOfAccept.saveFailed')
   } finally {
@@ -287,7 +288,7 @@ async function onDeleteConfirm() {
     await loadData()
   } catch (err) {
     console.error('[TypeOfAccept] Delete failed:', err)
-    deleteError.value = /dirujuk|409/i.test(err?.message || '')
+    deleteError.value = isStillReferenced(err)
       ? t('typeOfAccept.inUse')
       : err?.message || t('typeOfAccept.deleteFailed')
   } finally {

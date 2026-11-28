@@ -108,6 +108,7 @@
 </template>
 
 <script setup>
+import { isDuplicate, isStillReferenced } from '../../../../api/apiError'
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BlockForm from './BlockForm.vue'
@@ -243,10 +244,9 @@ function closeForm() {
 }
 
 const friendly = (err, fallback) => {
-  const m = err?.message || ''
-  if (/block_group_name_uq|sudah ada/i.test(m)) return t('blocks.error.duplicate')
-  if (/dirujuk/i.test(m)) return t('blocks.error.inUse')
-  return m || fallback
+  if (isDuplicate(err, /block_group_name_uq|sudah ada/i)) return t('blocks.error.duplicate')
+  if (isStillReferenced(err, /dirujuk/i)) return t('blocks.error.inUse')
+  return err?.message || fallback
 }
 
 async function onFormSubmit(payload) {
