@@ -402,9 +402,9 @@ const sensusFinding = computed(() => {
   if (!totals[0].total) return t('dashboard.sensus.findNone', { days })
   const top = totals[0]
   const tied = totals.filter((x) => x.total === top.total)
-  if (tied.length === totals.length) return t('dashboard.sensus.findAllSame', { n: formatNumber(top.total), days })
-  if (tied.length > 1) return t('dashboard.sensus.findTied', { groups: tied.map((x) => x.label).join(t('dashboard.sensus.and')), n: formatNumber(top.total), days })
-  return t('dashboard.sensus.findTop', { group: top.label, n: formatNumber(top.total), days })
+  if (tied.length === totals.length) return t('dashboard.sensus.findAllSame', { n: formatNumber(top.total), days }, top.total)
+  if (tied.length > 1) return t('dashboard.sensus.findTied', { groups: tied.map((x) => x.label).join(t('dashboard.sensus.and')), n: formatNumber(top.total), days }, top.total)
+  return t('dashboard.sensus.findTop', { group: top.label, n: formatNumber(top.total), days }, top.total)
 })
 
 const pendingAll = computed(() => pendingSensus(sensus.value.list))

@@ -31,9 +31,9 @@
       "subtitle": "censuses per day",
       "filterGroup": "Filter group",
       "findNone": "No census recorded in the last {days} days.",
-      "findAllSame": "All groups are equal: {n} censuses each in {days} days.",
-      "findTied": "{groups} recorded the most: {n} censuses each in {days} days.",
-      "findTop": "{group} recorded the most: {n} censuses in {days} days.",
+      "findAllSame": "All groups are equal: {n} census each in {days} days. | All groups are equal: {n} censuses each in {days} days.",
+      "findTied": "{groups} recorded the most: {n} census each in {days} days. | {groups} recorded the most: {n} censuses each in {days} days.",
+      "findTop": "{group} recorded the most: {n} census in {days} days. | {group} recorded the most: {n} censuses in {days} days.",
       "and": " and ",
       "chartLabel": "Line chart of daily census by group, {days} days. Total: {totals}. Use the left and right arrows to read each day."
     },
