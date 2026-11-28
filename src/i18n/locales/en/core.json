@@ -70,13 +70,16 @@
   },
   "announcement": {
     "region": "Announcements",
-    "close": "Close announcement"
+    "close": "Close announcement",
+    "readMore": "Read more"
   },
   "module": {
     "comingSoonEyebrow": "Coming soon",
     "comingSoonMessage": "This module is being prepared and is not available yet.",
     "maintenanceEyebrow": "Under maintenance",
-    "maintenanceMessage": "This module is under maintenance. Please try again later."
+    "maintenanceMessage": "This module is under maintenance. Please try again later.",
+    "badgeComingSoon": "Soon",
+    "badgeMaintenance": "Maintenance"
   },
   "comingSoon": {
     "notYet": "This page is not available yet — coming soon.",

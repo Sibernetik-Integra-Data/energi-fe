@@ -165,7 +165,8 @@ import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import BaseIcon from "../icon";
 import { navLabel as navLabelFor } from "./navLabels";
-import { cloneNavigation, loadStrapiSidebarNavigation } from "./strapiNavigation";
+import { cloneNavigation, getCachedSidebarNavigation, loadStrapiSidebarNavigation } from "./strapiNavigation";
+import { currentLocaleCode, onLocaleChange } from "../../../i18n";
 import { canViewAuditLog } from "../../../auth/access";
 import { cmsBrand } from "../../../utils/cmsTheme";
 
@@ -348,11 +349,21 @@ watch(
 )
 
 async function hydrateRemoteNavigation() {
-  const remoteItems = await loadStrapiSidebarNavigation()
+  const requestedLocale = currentLocaleCode()
+  const remoteItems = await loadStrapiSidebarNavigation(requestedLocale)
+  // Ignore an answer for a language that is no longer selected.
+  if (requestedLocale !== currentLocaleCode()) return
   if (Array.isArray(remoteItems) && remoteItems.length > 0) {
     applyResolvedItems(remoteItems, { fromRemote: true })
   }
 }
+
+// Language switch: show the menu already known for that language (if any), then refresh it.
+onLocaleChange(() => {
+  const cached = getCachedSidebarNavigation()
+  if (cached) applyResolvedItems(cached, { fromRemote: true })
+  hydrateRemoteNavigation()
+})
 
 onMounted(() => {
   hydrateRemoteNavigation()

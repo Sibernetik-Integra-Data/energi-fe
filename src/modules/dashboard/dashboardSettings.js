@@ -1,10 +1,13 @@
 import { ref } from 'vue'
+import { currentLocaleCode, onLocaleChange, withLocale } from '../../i18n'
 
 // Dashboard presentation managed in Strapi (single type "Dashboard Setting"):
 // intro texts, quick links and the "Menunggu verifikasi" panel (pending). Metric
 // cards were removed with the p08 redesign. The data itself still comes from the backend (model.js).
 const ENDPOINT = (import.meta.env.VITE_STRAPI_DASHBOARD_ENDPOINT || '/api/dashboard-setting').trim()
-const CACHE_KEY = 'energi-cms-dashboard'
+// One cache per language ('energi-cms-dashboard:en'), so a switch shows the right texts at once.
+const CACHE_PREFIX = 'energi-cms-dashboard'
+const cacheKey = (locale) => `${CACHE_PREFIX}:${locale}`
 const SAFE_LINK = /^(https:\/\/\S+|\/(?!\/)\S*)$/
 
 const text = (value, max) => (typeof value === 'string' ? value.trim().slice(0, max) : '')
@@ -27,9 +30,9 @@ function normalize(data) {
   }
 }
 
-function readCache() {
+function readCache(locale) {
   try {
-    return normalize(JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'))
+    return normalize(JSON.parse(localStorage.getItem(cacheKey(locale)) || 'null'))
   } catch {
     return null
   }
@@ -37,19 +40,31 @@ function readCache() {
 
 /** Settings ref: the cached value right away (no flash), then the fresh one. null = built-in dashboard. */
 export function useDashboardSettings() {
-  const settings = ref(readCache())
-  if (ENDPOINT) {
-    fetch(ENDPOINT, { cache: 'no-store', headers: { Accept: 'application/json' } })
+  const settings = ref(readCache(currentLocaleCode()))
+  let latest = 0
+  function load() {
+    if (!ENDPOINT) return
+    const locale = currentLocaleCode()
+    const id = ++latest
+    fetch(withLocale(ENDPOINT, locale), { cache: 'no-store', headers: { Accept: 'application/json' } })
       .then((response) => (response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`))))
       .then((payload) => {
-        settings.value = normalize(payload?.data)
         try {
-          localStorage.setItem(CACHE_KEY, JSON.stringify(payload?.data ?? null))
+          localStorage.setItem(cacheKey(locale), JSON.stringify(payload?.data ?? null))
         } catch {
           // storage blocked: settings still apply for this visit
         }
+        // Only the latest request (current language) updates the screen.
+        if (id === latest) settings.value = normalize(payload?.data)
       })
       .catch((error) => console.warn('[Dashboard] Failed to load CMS settings, keeping the current ones.', error))
   }
+  load()
+  // Language switch (while the dashboard is mounted): cached texts at once, then fresh ones.
+  onLocaleChange((locale) => {
+    const cached = readCache(locale)
+    if (cached) settings.value = cached
+    load()
+  })
   return settings
 }

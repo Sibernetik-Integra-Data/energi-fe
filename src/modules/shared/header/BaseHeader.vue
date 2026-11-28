@@ -161,18 +161,18 @@ const isOwner = computed(() => isOwnerAccess(props.user))
 
 // Texts and help link from the CMS for this page; the props are the fallback.
 const pageSettings = computed(() => pageSettingsFor(route.path))
-// Bahasa selain Indonesia: judul dari terjemahan menu halaman ini (Strapi belum multibahasa).
+// Strapi texts (already in the active language) win; the nav.* translation is the fallback
+// (CMS not loaded yet or no page title set), then the props.
 const translatedTitle = computed(() => {
-  if (locale.value === 'id') return ''
+  void locale.value
   const key = NAV_KEY_BY_PATH[route.path.replace(/\/+$/, '')]
   return key ? t(key) : ''
 })
-const translatedEyebrow = computed(() => {
-  if (locale.value === 'id') return ''
-  return route.path.startsWith('/master-data/') ? t('nav.masterData') : translatedTitle.value
-})
-const shownEyebrow = computed(() => translatedEyebrow.value || pageSettings.value.eyebrow || props.eyebrow)
-const shownTitle = computed(() => translatedTitle.value || pageSettings.value.title || props.title)
+const translatedEyebrow = computed(() =>
+  route.path.startsWith('/master-data/') ? t('nav.masterData') : translatedTitle.value
+)
+const shownEyebrow = computed(() => pageSettings.value.eyebrow || translatedEyebrow.value || props.eyebrow)
+const shownTitle = computed(() => pageSettings.value.title || translatedTitle.value || props.title)
 const helpTitle = computed(() => {
   const pageTitle = pageSettings.value.helpPage?.title
   return pageTitle ? t('header.helpFor', { title: pageTitle }) : t('header.help')

@@ -4,8 +4,11 @@ const STRAPI_SIDEBAR_MEDIA_ENDPOINT = (import.meta.env.VITE_STRAPI_SIDEBAR_MEDIA
 const STRAPI_SIDEBAR_MEDIA_POPULATE = (import.meta.env.VITE_STRAPI_SIDEBAR_MEDIA_POPULATE || 'pagination[pageSize]=250').trim()
 const STRAPI_API_TOKEN = (import.meta.env.VITE_STRAPI_API_TOKEN || '').trim()
 
-let sidebarNavigationPromise = null
-let cachedNavigationItems = null
+import i18n, { currentLocaleCode, withLocale } from '../../../i18n'
+
+// Per language: one request in flight and the last good answer (never served for another language).
+const sidebarNavigationPromises = new Map()
+const cachedNavigationByLocale = new Map()
 
 function cloneItem(item) {
   return {
@@ -20,13 +23,14 @@ export function cloneNavigation(items = []) {
     : []
 }
 
-export function hasSidebarNavigationCache() {
-  return Array.isArray(cachedNavigationItems) && cachedNavigationItems.length > 0
+export function hasSidebarNavigationCache(locale = currentLocaleCode()) {
+  const cached = cachedNavigationByLocale.get(locale)
+  return Array.isArray(cached) && cached.length > 0
 }
 
-export function getCachedSidebarNavigation() {
-  return hasSidebarNavigationCache()
-    ? cloneNavigation(cachedNavigationItems)
+export function getCachedSidebarNavigation(locale = currentLocaleCode()) {
+  return hasSidebarNavigationCache(locale)
+    ? cloneNavigation(cachedNavigationByLocale.get(locale))
     : null
 }
 
@@ -224,11 +228,11 @@ function mergeSidebarIconMedia(items = [], mediaMap = new Map()) {
   })
 }
 
-async function fetchSidebarMediaMap() {
-  const requestUrl = appendQueryParams(
+async function fetchSidebarMediaMap(locale) {
+  const requestUrl = withLocale(appendQueryParams(
     resolveStrapiEndpointUrl(STRAPI_SIDEBAR_MEDIA_ENDPOINT),
     STRAPI_SIDEBAR_MEDIA_POPULATE
-  )
+  ), locale)
   if (!requestUrl) return new Map()
 
   try {
@@ -252,10 +256,11 @@ async function fetchSidebarMediaMap() {
 }
 
 // Module status from the CMS (Sidebar Item -> moduleStatus); see shared/modules/moduleAvailability.js.
+// Kunci terjemahan lencana; diterjemahkan saat item dibuat (item dimuat ulang saat bahasa berganti).
 const MODULE_STATUS_BADGES = {
   active: '',
-  'coming-soon': 'Segera',
-  maintenance: 'Perbaikan'
+  'coming-soon': 'module.badgeComingSoon',
+  maintenance: 'module.badgeMaintenance'
 }
 
 function createSidebarItem(attributes = {}, id = null) {
@@ -280,6 +285,8 @@ function createSidebarItem(attributes = {}, id = null) {
     id: id ?? undefined,
     documentId: hasText(attributes.documentId) ? attributes.documentId : undefined,
     key: toText(key, ''),
+    // Label already in the requested language (Strapi ?locale=); see navLabels.js.
+    fromCms: hasText(attributes.label || attributes.title || attributes.name),
     label: toText(attributes.label || attributes.title || attributes.name, 'Untitled'),
     icon,
     iconUrl,
@@ -287,7 +294,7 @@ function createSidebarItem(attributes = {}, id = null) {
     compact: toBoolean(attributes.compact),
     defaultExpanded: toBoolean(attributes.defaultExpanded),
     // A badge set in the CMS wins; otherwise unavailable modules get one automatically.
-    badge: toText(attributes.badge, '') || MODULE_STATUS_BADGES[moduleStatus],
+    badge: toText(attributes.badge, '') || (MODULE_STATUS_BADGES[moduleStatus] ? i18n.global.t(MODULE_STATUS_BADGES[moduleStatus]) : ''),
     moduleStatus,
     moduleMessage: toText(attributes.moduleMessage, ''),
     // Page texts and contextual help for the header (shared/modules/moduleAvailability.js).
@@ -458,8 +465,8 @@ function resolveStrapiUrl(endpoint = STRAPI_SIDEBAR_ENDPOINT) {
   return appendQueryParams(resolveStrapiEndpointUrl(endpoint), STRAPI_SIDEBAR_POPULATE)
 }
 
-async function fetchSidebarNavigation() {
-  const requestUrl = resolveStrapiUrl()
+async function fetchSidebarNavigation(locale) {
+  const requestUrl = withLocale(resolveStrapiUrl(), locale)
   if (!requestUrl) return null
 
   const [navigationResponse, mediaMap] = await Promise.all([
@@ -468,7 +475,7 @@ async function fetchSidebarNavigation() {
       cache: 'no-store',
       headers: buildStrapiHeaders()
     }),
-    fetchSidebarMediaMap()
+    fetchSidebarMediaMap(locale)
   ])
 
   if (!navigationResponse.ok) {
@@ -480,25 +487,27 @@ async function fetchSidebarNavigation() {
   return mergeSidebarIconMedia(items, mediaMap)
 }
 
-export async function loadStrapiSidebarNavigation() {
-  if (!sidebarNavigationPromise) {
-    sidebarNavigationPromise = (async () => {
+export async function loadStrapiSidebarNavigation(locale = currentLocaleCode()) {
+  let promise = sidebarNavigationPromises.get(locale)
+  if (!promise) {
+    promise = (async () => {
       try {
-        const items = await fetchSidebarNavigation()
+        const items = await fetchSidebarNavigation(locale)
         const normalizedItems = Array.isArray(items) ? items : []
         if (normalizedItems.length > 0) {
-          cachedNavigationItems = normalizedItems
+          cachedNavigationByLocale.set(locale, normalizedItems)
         }
         return normalizedItems
       } catch (error) {
         console.warn('[Sidebar] Failed to load Strapi navigation, using fallback menu.', error)
         return []
       } finally {
-        sidebarNavigationPromise = null
+        sidebarNavigationPromises.delete(locale)
       }
     })()
+    sidebarNavigationPromises.set(locale, promise)
   }
 
-  const items = await sidebarNavigationPromise
+  const items = await promise
   return cloneNavigation(items)
 }

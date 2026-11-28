@@ -1,4 +1,5 @@
 import { computed, ref } from 'vue'
+import i18n, { currentLocaleCode, onLocaleChange, withLocale } from '../../../i18n'
 
 // Announcements managed in Strapi (collection "Announcement"). The CMS decides
 // which ones are active (switch + schedule, server clock); this module fetches,
@@ -13,6 +14,7 @@ const announcements = ref([])
 const dismissed = ref(readDismissed())
 let started = false
 let inFlight = null
+let inFlightLocale = ''
 
 function readDismissed() {
   try {
@@ -49,18 +51,23 @@ function normalize(item) {
     level: LEVELS.has(item.level) ? item.level : 'info',
     dismissible: item.dismissible !== false,
     linkUrl,
-    linkLabel: linkUrl ? (typeof item.linkLabel === 'string' && item.linkLabel.trim()) || 'Selengkapnya' : '',
+    linkLabel: linkUrl ? (typeof item.linkLabel === 'string' && item.linkLabel.trim()) || i18n.global.t('announcement.readMore') : '',
     isInternalLink: linkUrl.startsWith('/'),
   }
 }
 
 async function refresh() {
-  if (!ENDPOINT || inFlight) return inFlight
-  inFlight = (async () => {
+  const locale = currentLocaleCode()
+  if (!ENDPOINT) return null
+  // One request per language; a request for the previous language is ignored when it lands.
+  if (inFlight && inFlightLocale === locale) return inFlight
+  inFlightLocale = locale
+  const request = (async () => {
     try {
-      const response = await fetch(ENDPOINT, { cache: 'no-store', headers: { Accept: 'application/json' } })
+      const response = await fetch(withLocale(ENDPOINT, locale), { cache: 'no-store', headers: { Accept: 'application/json' } })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const payload = await response.json()
+      if (locale !== currentLocaleCode()) return
       const items = Array.isArray(payload?.data) ? payload.data.map(normalize).filter(Boolean) : []
       announcements.value = items
 
@@ -75,16 +82,18 @@ async function refresh() {
       // CMS unreachable: keep what is shown; no banner is better than an error.
       console.warn('[Announcement] Failed to load announcements.', error)
     } finally {
-      inFlight = null
+      if (inFlight === request) inFlight = null
     }
   })()
-  return inFlight
+  inFlight = request
+  return request
 }
 
 function start() {
   if (started) return
   started = true
   void refresh()
+  onLocaleChange(() => { void refresh() })
   setInterval(() => { void refresh() }, REFRESH_MS)
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') void refresh()

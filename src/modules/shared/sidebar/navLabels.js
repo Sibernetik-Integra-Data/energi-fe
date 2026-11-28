@@ -1,6 +1,6 @@
 // Kunci terjemahan menu per alamat halaman.
-// Bahasa Indonesia: label dari Strapi (bisa diubah admin). Bahasa lain: terjemahan
-// di locales/*.json, sampai Strapi multibahasa (i18n) diaktifkan untuk Sidebar Item.
+// Label dari Strapi sudah dalam bahasa aktif (?locale=) dan selalu dipakai. Kunci ini hanya
+// cadangan: menu bawaan (shared/navigation.js, sebelum Strapi termuat) dan item tanpa label.
 export const NAV_KEY_BY_PATH = {
   '/dashboard': 'nav.dashboard',
   '/sensus': 'nav.sensus',
@@ -35,7 +35,9 @@ export const NAV_KEY_BY_PATH = {
 /** Label menu untuk bahasa aktif. `t`/`locale` dari useI18n(). */
 export function navLabel(item, t, locale) {
   const label = item?.label || ''
-  if (locale === 'id') return label
+  if (item?.fromCms && label) return label
   const key = NAV_KEY_BY_PATH[(item?.to || '').replace(/\/+$/, '')]
-  return key ? t(key) : label
+  if (key) return t(key)
+  void locale
+  return label
 }

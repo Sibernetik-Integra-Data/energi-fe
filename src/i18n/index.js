@@ -1,5 +1,6 @@
 // Multibahasa (vue-i18n, Composition API). Bahasa sumber: Indonesia.
 // Teks yang belum diterjemahkan jatuh ke Bahasa Indonesia (fallbackLocale).
+import { getCurrentScope, onScopeDispose, watch } from 'vue'
 import { createI18n } from 'vue-i18n'
 
 // Satu file per modul: locales/<bahasa>/<modul>.json, kunci teratas = nama modul
@@ -89,6 +90,33 @@ export function setLocale(code) {
   } catch {
     // penyimpanan diblokir: pilihan berlaku sampai halaman ditutup
   }
+}
+
+/** Kode bahasa aktif ('id' | 'en') untuk parameter `locale` ke Strapi. */
+export function currentLocaleCode() {
+  const code = i18n.global.locale.value
+  return isSupported(code) ? code : DEFAULT_LOCALE
+}
+
+/** Tambahkan `locale=<bahasa aktif>` ke URL Strapi (menghormati query yang sudah ada). */
+export function withLocale(url, code = currentLocaleCode()) {
+  if (!url) return url
+  const hashIndex = url.indexOf('#')
+  const base = hashIndex >= 0 ? url.slice(0, hashIndex) : url
+  const hash = hashIndex >= 0 ? url.slice(hashIndex) : ''
+  return `${base}${base.includes('?') ? '&' : '?'}locale=${encodeURIComponent(code)}${hash}`
+}
+
+/**
+ * Jalankan `callback(code)` setiap kali bahasa berganti. Mengembalikan fungsi berhenti;
+ * dipanggil di setup() komponen, pengamat berhenti sendiri saat komponen dilepas.
+ */
+export function onLocaleChange(callback) {
+  const stop = watch(() => i18n.global.locale.value, (code, previous) => {
+    if (code !== previous) callback(code)
+  })
+  if (getCurrentScope()) onScopeDispose(stop)
+  return stop
 }
 
 export function initLocale() {

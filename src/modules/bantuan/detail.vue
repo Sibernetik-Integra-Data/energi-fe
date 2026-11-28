@@ -66,7 +66,7 @@ import BaseSidebar from '../shared/sidebar'
 import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../auth/keycloak'
 import { useAppStore } from '../../stores'
 import { navigation as sharedNavigation } from '../shared/navigation'
-import { currentIntlLocale } from '../../i18n'
+import { currentIntlLocale, onLocaleChange } from '../../i18n'
 import HelpRichText from './components/HelpRichText'
 import { fetchHelpPage, formatFileSize, safeMediaUrl } from './api'
 
@@ -97,18 +97,27 @@ function fileBadge(file) {
   return (fromName && fromName.length <= 4 ? fromName : 'FILE').toUpperCase()
 }
 
-watch(() => route.params.slug, async (slug) => {
-  loading.value = true
+let loadId = 0
+async function loadPage(slug, { quiet = false } = {}) {
+  const id = ++loadId
+  if (!quiet) loading.value = true
   error.value = false
   try {
-    page.value = await fetchHelpPage(slug)
+    const result = await fetchHelpPage(slug)
+    if (id === loadId) page.value = result
   } catch {
-    error.value = true
-    page.value = null
+    if (id === loadId) {
+      error.value = true
+      page.value = null
+    }
   } finally {
-    loading.value = false
+    if (id === loadId) loading.value = false
   }
-}, { immediate: true })
+}
+
+watch(() => route.params.slug, (slug) => loadPage(slug), { immediate: true })
+// Language switch: reload the same page in the new language (the current text stays until then).
+onLocaleChange(() => loadPage(route.params.slug, { quiet: true }))
 </script>
 
 <style scoped>

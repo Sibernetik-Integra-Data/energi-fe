@@ -70,13 +70,16 @@
   },
   "announcement": {
     "region": "Pengumuman",
-    "close": "Tutup pengumuman"
+    "close": "Tutup pengumuman",
+    "readMore": "Selengkapnya"
   },
   "module": {
     "comingSoonEyebrow": "Segera hadir",
     "comingSoonMessage": "Modul ini sedang disiapkan dan belum bisa dipakai.",
     "maintenanceEyebrow": "Sedang dalam perbaikan",
-    "maintenanceMessage": "Modul ini sedang dalam perbaikan. Silakan coba lagi nanti."
+    "maintenanceMessage": "Modul ini sedang dalam perbaikan. Silakan coba lagi nanti.",
+    "badgeComingSoon": "Segera",
+    "badgeMaintenance": "Perbaikan"
   },
   "comingSoon": {
     "notYet": "Halaman ini belum tersedia — segera hadir.",

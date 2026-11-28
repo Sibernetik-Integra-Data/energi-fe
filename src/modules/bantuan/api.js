@@ -1,9 +1,11 @@
+import { withLocale } from '../../i18n'
+
 // Help / SOP pages from Strapi (collection "Help Page"); public, read-only.
 const LIST_ENDPOINT = (import.meta.env.VITE_STRAPI_HELP_ENDPOINT || '/api/help-pages').trim()
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 async function getJson(url) {
-  const response = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json' } })
+  const response = await fetch(withLocale(url), { cache: 'no-store', headers: { Accept: 'application/json' } })
   if (response.status === 404) return null
   if (!response.ok) throw new Error(`HTTP ${response.status}`)
   const payload = await response.json()

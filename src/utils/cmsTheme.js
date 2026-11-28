@@ -1,9 +1,12 @@
 import { reactive, ref } from 'vue'
+import { currentLocaleCode, onLocaleChange, withLocale } from '../i18n'
 
 // Colours and logo managed in Strapi (single type "Theme Setting").
 // The defaults stay in src/index.css; a value from the CMS overrides one token.
 const THEME_ENDPOINT = (import.meta.env.VITE_STRAPI_THEME_ENDPOINT || '/api/theme-setting').trim()
-const CACHE_KEY = 'energi-cms-theme'
+// One cache per language ('energi-cms-theme:en'): app name, browser title and logo text are translated.
+const CACHE_PREFIX = 'energi-cms-theme'
+const cacheKey = (locale) => `${CACHE_PREFIX}:${locale}`
 const STYLE_ID = 'cms-theme'
 
 const TOKEN_VARIABLES = {
@@ -146,25 +149,25 @@ function applyCmsTheme(theme) {
   cmsBrand.logoAlt = typeof theme?.logo?.alternativeText === 'string' ? theme.logo.alternativeText : ''
 }
 
-function readCachedTheme() {
+function readCachedTheme(locale) {
   try {
-    const cached = localStorage.getItem(CACHE_KEY)
+    const cached = localStorage.getItem(cacheKey(locale))
     return cached ? JSON.parse(cached) : null
   } catch {
     return null
   }
 }
 
-function writeCachedTheme(theme) {
+function writeCachedTheme(theme, locale) {
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(theme))
+    localStorage.setItem(cacheKey(locale), JSON.stringify(theme))
   } catch {
     // storage blocked or full; the theme still applies for this visit
   }
 }
 
-async function fetchCmsTheme() {
-  const response = await fetch(THEME_ENDPOINT, {
+async function fetchCmsTheme(locale) {
+  const response = await fetch(withLocale(THEME_ENDPOINT, locale), {
     method: 'GET',
     cache: 'no-store',
     headers: { Accept: 'application/json' }
@@ -180,19 +183,34 @@ async function fetchCmsTheme() {
  * away (no flash of default colours), then refreshes it from the CMS.
  * If the CMS is unreachable, the cached or built-in theme stays.
  */
-export function initCmsTheme() {
-  const cached = readCachedTheme()
+let themeRequestId = 0
+let localeWatchStarted = false
+
+function loadCmsTheme() {
+  const locale = currentLocaleCode()
+  const cached = readCachedTheme(locale)
   if (cached) applyCmsTheme(cached)
 
   if (!THEME_ENDPOINT) return
 
-  fetchCmsTheme()
+  const id = ++themeRequestId
+  fetchCmsTheme(locale)
     .then((theme) => {
       if (!theme) return
-      applyCmsTheme(theme)
-      writeCachedTheme(theme)
+      writeCachedTheme(theme, locale)
+      // A newer request (language switched meanwhile) wins.
+      if (id === themeRequestId) applyCmsTheme(theme)
     })
     .catch((error) => {
       console.warn('[Theme] Failed to load CMS theme, keeping the current one.', error)
     })
+}
+
+export function initCmsTheme() {
+  loadCmsTheme()
+  // Language switch: cached texts of that language at once, then fresh ones.
+  if (!localeWatchStarted) {
+    localeWatchStarted = true
+    onLocaleChange(() => loadCmsTheme())
+  }
 }

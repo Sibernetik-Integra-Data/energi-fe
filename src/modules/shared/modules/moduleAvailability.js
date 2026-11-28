@@ -1,5 +1,6 @@
 import { reactive, shallowRef } from 'vue'
 import { loadStrapiSidebarNavigation } from '../sidebar/strapiNavigation'
+import { currentLocaleCode, onLocaleChange } from '../../../i18n'
 
 // Per-module settings managed in Strapi on each menu item (Sidebar Item):
 // - moduleStatus / moduleMessage: module on/off (notice page instead of the module);
@@ -18,6 +19,8 @@ const MAX_RESULTS = 50
 
 let lastKnownModules = []
 let lastLoadedAt = 0
+// Language of lastKnownModules; texts of one language are never kept as fresh for another.
+let lastLoadedLocale = ''
 // Same list, reactive, for the header (page texts and help link).
 const knownModules = shallowRef([])
 
@@ -41,19 +44,28 @@ function flatten(items, result = []) {
 }
 
 async function loadModules() {
-  if (lastLoadedAt && Date.now() - lastLoadedAt < FRESH_MS) return lastKnownModules
+  const locale = currentLocaleCode()
+  if (lastLoadedAt && lastLoadedLocale === locale && Date.now() - lastLoadedAt < FRESH_MS) return lastKnownModules
 
   // Never block navigation for long: without an answer from the CMS the last
   // known statuses are used (all active on a first visit).
   const timeout = new Promise((resolve) => setTimeout(() => resolve(null), LOAD_TIMEOUT_MS))
-  const items = await Promise.race([loadStrapiSidebarNavigation(), timeout])
-  if (Array.isArray(items) && items.length > 0) {
+  const items = await Promise.race([loadStrapiSidebarNavigation(locale), timeout])
+  // The language may have changed while waiting: drop the outdated answer.
+  if (locale === currentLocaleCode() && Array.isArray(items) && items.length > 0) {
     lastKnownModules = flatten(items)
     lastLoadedAt = Date.now()
+    lastLoadedLocale = locale
     knownModules.value = lastKnownModules
   }
   return lastKnownModules
 }
+
+// Language switch: reload the page texts (header) in the new language right away.
+onLocaleChange(() => {
+  lastLoadedAt = 0
+  void loadModules().catch(() => {})
+})
 
 function normalizePath(path) {
   const trimmed = (path || '/').replace(/\/+$/, '')

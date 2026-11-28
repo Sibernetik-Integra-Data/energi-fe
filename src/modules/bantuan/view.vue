@@ -48,6 +48,7 @@ import { logoutFromKeycloak, profileToUser, getAuthenticatedUser } from '../../a
 import { useAppStore } from '../../stores'
 import { navigation as sharedNavigation } from '../shared/navigation'
 import { fetchHelpPages } from './api'
+import { onLocaleChange } from '../../i18n'
 
 const { t } = useI18n()
 const appStore = useAppStore()
@@ -72,13 +73,22 @@ const groups = computed(() => {
   return [...byCategory.entries()].map(([category, items]) => ({ category, pages: items }))
 })
 
-onMounted(async () => {
+let loadId = 0
+async function loadPages() {
+  const id = ++loadId
   try {
-    pages.value = await fetchHelpPages()
+    const result = await fetchHelpPages()
+    if (id !== loadId) return
+    pages.value = result
+    error.value = false
   } catch {
-    error.value = true
+    if (id === loadId) error.value = true
   } finally {
-    loading.value = false
+    if (id === loadId) loading.value = false
   }
-})
+}
+
+onMounted(loadPages)
+// Language switch: reload the list in the new language (current list stays until then).
+onLocaleChange(loadPages)
 </script>
