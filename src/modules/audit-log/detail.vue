@@ -2,12 +2,12 @@
   <div class="flex h-screen bg-(--bg) text-(--text) max-[920px]:flex-col">
     <BaseSidebar :items="navigation" :user="user" />
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <BaseHeader eyebrow="Monitoring" title="Detail Audit Log" :notifications="0" :user="user" :on-logout="logoutFromKeycloak" />
+      <BaseHeader eyebrow="Pemantauan" title="Detail Jejak Audit" :notifications="0" :user="user" :on-logout="logoutFromKeycloak" />
       <main class="min-w-0 flex-1 overflow-y-auto bg-(--surface-muted) p-6 max-[920px]:p-4">
-        <button type="button" class="mb-5 inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-sm font-semibold text-teal-700 transition-colors hover:text-teal-800 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500" @click="router.push('/audit-log')"><span aria-hidden="true">←</span> Kembali ke Audit Log</button>
+        <button type="button" class="mb-5 inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-sm font-semibold text-teal-700 transition-colors hover:text-teal-800 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500" @click="router.push('/audit-log')"><span aria-hidden="true">←</span> Kembali ke Jejak Audit</button>
         <header class="mb-5">
           <p class="m-0 text-xs font-semibold uppercase tracking-wider text-teal-700">Jejak aktivitas sistem</p>
-          <h1 class="m-0 mt-1 text-2xl font-semibold">Detail Audit Log</h1>
+          <h1 class="m-0 mt-1 text-2xl font-semibold">Detail Jejak Audit</h1>
           <p class="m-0 mt-1 break-all font-mono text-xs text-(--text-muted)">{{ route.params.id }}</p>
         </header>
 

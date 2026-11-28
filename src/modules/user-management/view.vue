@@ -2,12 +2,12 @@
   <div class="flex h-screen bg-(--bg) text-(--text)">
     <BaseSidebar :items="navigation" :user="currentUser" />
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <BaseHeader eyebrow="Administration" title="User Management" :user="currentUser" :on-logout="logoutFromKeycloak" />
+      <BaseHeader eyebrow="Administrasi" title="Manajemen Pengguna" :user="currentUser" :on-logout="logoutFromKeycloak" />
       <main class="flex-1 overflow-y-auto p-7 max-[720px]:p-4">
         <section class="mx-auto flex max-w-400 flex-col gap-5">
           <header class="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 class="m-0 text-2xl font-extrabold">User Management</h1>
+              <h1 class="m-0 text-2xl font-extrabold">Manajemen Pengguna</h1>
               <p class="m-0 mt-1 text-sm text-(--text-muted)">Kelola user Keycloak, akses akun, dan role client mobile.</p>
             </div>
             <div class="flex flex-wrap gap-3">

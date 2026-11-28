@@ -69,7 +69,7 @@
             <span class="header__user-menu-item-icon">
               <BaseIcon name="users" :size="16" />
             </span>
-            User Management
+            Manajemen Pengguna
           </button>
 
           <button
@@ -121,7 +121,7 @@ import { isOwnerAccess } from '../../../auth/access'
 const props = defineProps({
   eyebrow: {
     type: String,
-    default: 'Dashboard'
+    default: 'Dasbor'
   },
   title: {
     type: String,

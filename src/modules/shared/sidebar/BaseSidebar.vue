@@ -113,8 +113,8 @@
             </span>
             <span v-show="!isCollapsed"
               :class="['flex-1 text-[15px] font-semibold leading-snug tracking-[-0.01em]', isItemActive(item) ? 'text-(--brand)' : 'text-current']">
-              <template v-if="item.label === 'Pengiriman & Penerimaan'">
-                <span class="block">Pengiriman &amp;</span>
+              <template v-if="['Pengiriman & Penerimaan', 'Pengiriman dan Penerimaan'].includes(item.label)">
+                <span class="block">Pengiriman dan</span>
                 <span class="block">Penerimaan</span>
               </template>
               <span v-else class="truncate">{{ item.label }}</span>

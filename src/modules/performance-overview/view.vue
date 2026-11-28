@@ -2,10 +2,10 @@
   <div class="flex h-screen bg-(--bg) text-(--text) max-[920px]:flex-col">
     <BaseSidebar :items="navigation" :user="user" />
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <BaseHeader eyebrow="Management" title="Performance Overview" :notifications="0" :user="user" :on-logout="logoutFromKeycloak" />
+      <BaseHeader eyebrow="Manajemen" title="Ikhtisar Kinerja" :notifications="0" :user="user" :on-logout="logoutFromKeycloak" />
       <main class="min-w-0 flex-1 overflow-y-auto bg-(--surface-muted) p-6 max-[920px]:p-4">
         <div class="mb-6">
-          <h1 class="m-0 text-2xl font-semibold leading-8">Performance Overview</h1>
+          <h1 class="m-0 text-2xl font-semibold leading-8">Ikhtisar Kinerja</h1>
           <p class="m-0 mt-1 text-sm text-(--text-muted)">Monitor your plantation operations and activities</p>
         </div>
 

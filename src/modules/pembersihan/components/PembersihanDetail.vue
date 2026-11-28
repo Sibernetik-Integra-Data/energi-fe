@@ -60,7 +60,7 @@
                         s.d.
                         <span class="font-bold">{{ plan.planningEndDate || "—" }}</span>
                     </p>
-                    <p v-else class="text-sm leading-5 m-0">Rencana Pengerjaan : <span class="font-bold">Belum Ada Planning</span></p>
+                    <p v-else class="text-sm leading-5 m-0">Rencana Pengerjaan : <span class="font-bold">Belum Ada Rencana</span></p>
                 </div>
             </div>
 

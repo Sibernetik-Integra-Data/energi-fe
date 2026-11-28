@@ -181,7 +181,7 @@ export function createPlanningModel() {
 
   const header = {
     title: 'Perencanaan',
-    eyebrow: 'Planning',
+    eyebrow: 'Perencanaan',
     notifications: 3
   }
 

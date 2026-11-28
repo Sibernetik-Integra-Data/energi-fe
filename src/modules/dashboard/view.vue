@@ -4,7 +4,7 @@
 
     <div class="dashboard-main">
       <BaseHeader
-        eyebrow="Dashboard"
+        eyebrow="Dasbor"
         :title="header.title"
         :notifications="header.notifications"
         :user="user"

@@ -3,7 +3,7 @@
         <BaseSidebar :items="navigation" :user="user" />
 
         <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
-            <BaseHeader eyebrow="Pengiriman & Penerimaan" :title="header.title" :notifications="header.notifications"
+            <BaseHeader eyebrow="Pengiriman dan Penerimaan" :title="header.title" :notifications="header.notifications"
                 :user="user" :on-logout="logoutFromKeycloak" />
 
             <main class="flex-1 min-w-0 p-6 max-[920px]:p-4.5 overflow-y-auto flex flex-col gap-5">

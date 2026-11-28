@@ -4,7 +4,7 @@
 
     <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
       <BaseHeader
-        eyebrow="Planning"
+        eyebrow="Perencanaan"
         :title="header.title"
         :notifications="header.notifications"
         :user="user"

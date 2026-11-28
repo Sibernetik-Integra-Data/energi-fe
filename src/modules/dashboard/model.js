@@ -223,12 +223,12 @@ export function createDashboardModel() {
   const navigation = cloneNavigation(sharedNavigation)
 
   const header = {
-    title: 'Dashboard',
+    title: 'Dasbor',
     notifications: 5
   }
 
   const intro = {
-    title: 'Dashboard',
+    title: 'Dasbor',
     description: 'Ringkasan aktivitas kebun, progres pekerjaan, dan daftar tindak lanjut yang sedang berjalan.'
   }
 

@@ -23,7 +23,7 @@
               <div class="mx-6 h-px bg-(--border)"></div>
               <nav class="flex flex-col gap-1 p-6">
                 <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'profile' ? 'is-active bg-(--brand-soft)' : ''" @click="setTab('profile')"><BaseIcon name="profile" :size="16" /> Profil</button>
-                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'performance' ? 'is-active bg-(--brand-soft)' : ''" @click="setTab('performance')"><BaseIcon name="dashboard" :size="16" /> Performance Overview</button>
+                <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'performance' ? 'is-active bg-(--brand-soft)' : ''" @click="setTab('performance')"><BaseIcon name="dashboard" :size="16" /> Ikhtisar Kinerja</button>
                 <button type="button" class="worker-tab flex h-10 cursor-pointer items-center gap-1 rounded-lg p-2.5 text-left text-sm font-medium text-(--text) transition-colors hover:bg-(--surface-muted) hover:text-(--text)" :class="tab === 'account' ? 'is-active bg-(--brand-soft)' : ''" @click="setTab('account')"><BaseIcon name="settings" :size="16" /> Konfigurasi Akun</button>
               </nav>
             </div>

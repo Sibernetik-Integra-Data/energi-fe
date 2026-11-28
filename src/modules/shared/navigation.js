@@ -1,13 +1,13 @@
 export const navigation = [
-  { label: 'Dashboard', icon: 'dashboard', to: '/dashboard', compact: true },
+  { label: 'Dasbor', icon: 'dashboard', to: '/dashboard', compact: true },
   { label: 'Sensus', icon: 'note', to: '/sensus', compact: true },
-  { label: 'Planning', icon: 'calendar', to: '/planning', compact: true },
+  { label: 'Perencanaan', icon: 'calendar', to: '/planning', compact: true },
   { label: 'Pembersihan', icon: 'broom', to: '/pembersihan', compact: true },
   { label: 'Pemupukan', icon: 'plant', to: '/pemupukan', compact: true },
   { label: 'Panen', icon: 'location', to: '/panen', compact: true },
-  { label: 'Pengiriman & Penerimaan', icon: 'package', to: '/pengiriman-penerimaan', compact: true },
-  { label: 'Performance Overview', icon: 'database', to: '/performance-overview', compact: true },
-  { label: 'Audit Log', icon: 'users', to: '/audit-log', compact: true },
+  { label: 'Pengiriman dan Penerimaan', icon: 'package', to: '/pengiriman-penerimaan', compact: true },
+  { label: 'Ikhtisar Kinerja', icon: 'database', to: '/performance-overview', compact: true },
+  { label: 'Jejak Audit', icon: 'users', to: '/audit-log', compact: true },
   {
     label: 'Data Master',
     icon: 'settings',

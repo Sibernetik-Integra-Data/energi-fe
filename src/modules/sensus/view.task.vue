@@ -43,7 +43,7 @@
             <div class="mt-4 flex items-center gap-3 px-4 py-3 rounded-lg bg-[#cce9ff] border border-[#18a0fb] text-[#123b5d]">
               <img :src="infoIcon" alt="" aria-hidden="true" class="w-6 h-6 shrink-0" />
               <p v-if="plan.planningStartDate || plan.planningEndDate" class="text-sm font-semibold text-sky-800 m-0">Rencana Pengerjaan : <strong class="font-bold">{{ plan.planningStartDate || '—' }} s.d. {{ plan.planningEndDate || '—' }}</strong></p>
-              <p v-else class="text-sm font-semibold text-sky-800 m-0">Rencana Pengerjaan : <strong class="font-bold">Belum Ada Planning</strong></p>
+              <p v-else class="text-sm font-semibold text-sky-800 m-0">Rencana Pengerjaan : <strong class="font-bold">Belum Ada Rencana</strong></p>
             </div>
           </section>
 

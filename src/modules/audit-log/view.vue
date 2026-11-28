@@ -2,11 +2,11 @@
   <div class="flex h-screen bg-(--bg) text-(--text) max-[920px]:flex-col">
     <BaseSidebar :items="navigation" :user="user" />
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
-      <BaseHeader eyebrow="Monitoring" title="Audit Log" :notifications="0" :user="user" :on-logout="logoutFromKeycloak" />
+      <BaseHeader eyebrow="Pemantauan" title="Jejak Audit" :notifications="0" :user="user" :on-logout="logoutFromKeycloak" />
       <main class="min-w-0 flex-1 overflow-y-auto bg-(--surface-muted) p-6 max-[920px]:p-4">
         <header class="mb-6">
           <p class="m-0 text-xs font-semibold uppercase tracking-wider text-teal-700">Jejak aktivitas sistem</p>
-          <h1 class="m-0 mt-1 text-2xl font-semibold">Audit Log</h1>
+          <h1 class="m-0 mt-1 text-2xl font-semibold">Jejak Audit</h1>
           <p class="m-0 mt-1 text-sm text-(--text-muted)">Riwayat perubahan data dan operasi sistem.</p>
         </header>
         <section class="rounded-2xl border border-(--border) bg-(--surface) p-4 sm:p-5">
