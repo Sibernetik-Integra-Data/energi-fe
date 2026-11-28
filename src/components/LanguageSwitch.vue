@@ -58,7 +58,10 @@ const { t, locale } = useI18n()
   border-radius: 999px;
   background: transparent;
   color: var(--text-muted);
-  font: 700 12px/1 inherit;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
   letter-spacing: 0.04em;
   cursor: pointer;
 }
